@@ -1,0 +1,47 @@
+name: Bug report
+description: Something in Codestamp does not work as it should.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Security problems go to the Security tab (Report a vulnerability), not here. Remove tokens,
+        passwords and private URLs from anything you paste.
+  - type: input
+    id: version
+    attributes:
+      label: Codestamp version
+      description: Shown in the status bar, bottom right.
+      placeholder: 0.3.6
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 24H2
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a collection with a GraphQL request
+        2. Press Fetch schema
+        3. Type a field name in the query
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened instead
+      description: Error messages and screenshots help.
+    validations:
+      required: true

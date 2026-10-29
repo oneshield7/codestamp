@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Codestamp logo 3d: address lines between code braces with a stamp in the corner">
+  <rect width="512" height="512" rx="112" fill="#111318"/>
+  <path d="M124 150c-26 0-34 14-34 38v28c0 22-10 34-26 40 16 6 26 18 26 40v28c0 24 8 38 34 38M388 150c26 0 34 14 34 38v28c0 22 10 34 26 40-16 6-26 18-26 40v28c0 24-8 38-34 38" fill="none" stroke="#ffffff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M168 216h176M168 256h176M168 296h112" stroke="#ffffff" stroke-width="20" stroke-linecap="round"/>
+  <rect x="372" y="60" width="64" height="72" rx="4" fill="#d1432b"/>
+</svg>

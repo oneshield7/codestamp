@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Codestamp</title>
+    <link rel="stylesheet" href="/src/launch.css" />
+  </head>
+  <body>
+    <div id="launch" role="status" aria-label="Codestamp is starting">
+      <div class="launch-mark">
+        <svg class="launch-ring" viewBox="0 0 104 104" aria-hidden="true">
+          <rect class="launch-track" x="3" y="3" width="98" height="98" rx="25" pathLength="100" />
+          <rect class="launch-trace" x="3" y="3" width="98" height="98" rx="25" pathLength="100" />
+        </svg>
+        <img src="/branding/codestamp-logo.svg" alt="" />
+      </div>
+    </div>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

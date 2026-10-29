@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Codestamp logo 3c: a stamp held between code braces">
+  <rect width="512" height="512" rx="112" fill="#111318"/>
+  <path d="M124 150c-26 0-34 14-34 38v28c0 22-10 34-26 40 16 6 26 18 26 40v28c0 24 8 38 34 38M388 150c26 0 34 14 34 38v28c0 22 10 34 26 40-16 6-26 18-26 40v28c0 24-8 38-34 38" fill="none" stroke="#ffffff" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="176" y="176" width="160" height="160" rx="4" fill="#d1432b"/>
+  <g fill="#111318">
+    <circle cx="208" cy="176" r="10"/><circle cx="240" cy="176" r="10"/><circle cx="272" cy="176" r="10"/><circle cx="304" cy="176" r="10"/>
+    <circle cx="208" cy="336" r="10"/><circle cx="240" cy="336" r="10"/><circle cx="272" cy="336" r="10"/><circle cx="304" cy="336" r="10"/>
+    <circle cx="176" cy="208" r="10"/><circle cx="176" cy="240" r="10"/><circle cx="176" cy="272" r="10"/><circle cx="176" cy="304" r="10"/>
+    <circle cx="336" cy="208" r="10"/><circle cx="336" cy="240" r="10"/><circle cx="336" cy="272" r="10"/><circle cx="336" cy="304" r="10"/>
+  </g>
+</svg>

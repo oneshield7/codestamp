@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Codestamp logo 3e: code braces printed on a red stamp">
+  <rect width="512" height="512" rx="112" fill="#111318"/>
+  <rect x="112" y="112" width="288" height="288" rx="6" fill="#d1432b"/>
+  <g fill="#111318">
+    <circle cx="160" cy="112" r="14"/><circle cx="208" cy="112" r="14"/><circle cx="256" cy="112" r="14"/><circle cx="304" cy="112" r="14"/><circle cx="352" cy="112" r="14"/>
+    <circle cx="160" cy="400" r="14"/><circle cx="208" cy="400" r="14"/><circle cx="256" cy="400" r="14"/><circle cx="304" cy="400" r="14"/><circle cx="352" cy="400" r="14"/>
+    <circle cx="112" cy="160" r="14"/><circle cx="112" cy="208" r="14"/><circle cx="112" cy="256" r="14"/><circle cx="112" cy="304" r="14"/><circle cx="112" cy="352" r="14"/>
+    <circle cx="400" cy="160" r="14"/><circle cx="400" cy="208" r="14"/><circle cx="400" cy="256" r="14"/><circle cx="400" cy="304" r="14"/><circle cx="400" cy="352" r="14"/>
+  </g>
+  <path d="M220 184c-22 0-28 12-28 32v18c0 14-8 20-22 22 14 2 22 8 22 22v18c0 20 6 32 28 32M292 184c22 0 28 12 28 32v18c0 14 8 20 22 22-14 2-22 8-22 22v18c0 20-6 32-28 32" fill="none" stroke="#ffffff" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

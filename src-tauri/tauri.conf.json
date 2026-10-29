@@ -1,0 +1,79 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Codestamp",
+  "version": "0.3.6",
+  "identifier": "dev.codestamp.desktop",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "create": false,
+        "title": "Codestamp",
+        "width": 1280,
+        "height": 820,
+        "minWidth": 720,
+        "minHeight": 520,
+        "resizable": true,
+        "decorations": false,
+        "fullscreen": false,
+        "dragDropEnabled": false,
+        "additionalBrowserArgs": "--disable-gpu --disable-features=msWebOOUI,msPdfOOUI,msSmartScreenProtection"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src ipc: http://ipc.localhost; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "publisher": "Codestamp",
+    "shortDescription": "API client for HTTP, GraphQL, gRPC, WebSocket, SOAP and MCP",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "webviewInstallMode": { "type": "downloadBootstrapper", "silent": true },
+      "signCommand": {
+        "cmd": "powershell.exe",
+        "args": [
+          "-NoProfile",
+          "-NonInteractive",
+          "-ExecutionPolicy",
+          "Bypass",
+          "-File",
+          "windows/sign.ps1",
+          "%1"
+        ]
+      },
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["English", "Indonesian"],
+        "customLanguageFiles": { "Indonesian": "windows/Indonesian.nsh" },
+        "displayLanguageSelector": true,
+        "compression": "lzma",
+        "installerIcon": "icons/icon.ico",
+        "startMenuFolder": "Codestamp",
+        "installerHooks": "windows/hooks.nsh"
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "",
+      "endpoints": [],
+      "requireSignedVersion": true,
+      "windows": { "installMode": "passive" }
+    }
+  }
+}

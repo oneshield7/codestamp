@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Logo 3 variants at real pixel sizes</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 16px;
+        background: #f3f4f6;
+        font:
+          13px 'Segoe UI',
+          sans-serif;
+      }
+      .row {
+        display: flex;
+        align-items: flex-end;
+        gap: 18px;
+        margin-bottom: 10px;
+      }
+      figure {
+        margin: 0;
+        text-align: center;
+      }
+      canvas {
+        image-rendering: pixelated;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="row" id="row16"></div>
+    <div class="row" id="row28"></div>
+    <script>
+      const names = [
+        '3a-open',
+        '3b-outline',
+        '3c-stamp-in-braces',
+        '3d-lines-in-braces',
+        '3e-braces-on-stamp',
+      ];
+      for (const [size, rowId] of [
+        [16, 'row16'],
+        [28, 'row28'],
+      ]) {
+        const row = document.getElementById(rowId);
+        for (const name of names) {
+          const image = new Image();
+          image.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            canvas.getContext('2d').drawImage(image, 0, 0, size, size);
+            canvas.style.width = `${size * 4}px`;
+            canvas.style.height = `${size * 4}px`;
+            const figure = document.createElement('figure');
+            figure.append(
+              canvas,
+              Object.assign(document.createElement('figcaption'), {
+                textContent: `${name.slice(0, 2)} · ${size}px`,
+              }),
+            );
+            row.append(figure);
+          };
+          image.src = `${name}.svg`;
+        }
+      }
+    </script>
+  </body>
+</html>

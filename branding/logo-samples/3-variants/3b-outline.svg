@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Codestamp logo 3b: the card drawn as an outline">
+  <rect width="512" height="512" rx="112" fill="#111318"/>
+  <rect x="72" y="136" width="368" height="240" rx="22" fill="none" stroke="#ffffff" stroke-width="14"/>
+  <path d="M154 190c-20 0-26 11-26 27v16c0 14-7 21-20 23 13 2 20 9 20 23v16c0 16 6 27 26 27M196 190c20 0 26 11 26 27v16c0 14 7 21 20 23-13 2-20 9-20 23v16c0 16-6 27-26 27" fill="none" stroke="#ffffff" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M276 176v160" stroke="#4a505c" stroke-width="6" stroke-linecap="round"/>
+  <rect x="352" y="168" width="56" height="64" rx="4" fill="#d1432b"/>
+  <path d="M304 270h104M304 300h104M304 330h68" stroke="#ffffff" stroke-width="12" stroke-linecap="round"/>
+</svg>

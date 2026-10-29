@@ -1,0 +1,66 @@
+name: Release
+
+# Pushing a tag such as v0.3.6 builds the Windows installer and attaches it to a draft release,
+# which stays unpublished until someone reviews it.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    name: Windows installer
+    runs-on: windows-latest
+    env:
+      # Secrets cannot be read in `if:`, so whether a certificate is configured is noted here.
+      HAS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install dependencies
+        run: npm ci
+
+      # WINDOWS_CERTIFICATE is a base64-encoded .pfx and WINDOWS_CERTIFICATE_PASSWORD its password.
+      - name: Import the code-signing certificate
+        if: env.HAS_CERTIFICATE == 'true'
+        shell: pwsh
+        env:
+          WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+          WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        run: |
+          $path = Join-Path $env:RUNNER_TEMP 'codestamp.pfx'
+          [IO.File]::WriteAllBytes($path, [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE))
+          $password = ConvertTo-SecureString $env:WINDOWS_CERTIFICATE_PASSWORD -AsPlainText -Force
+          $certificate = Import-PfxCertificate -FilePath $path -CertStoreLocation Cert:\CurrentUser\My -Password $password
+          Remove-Item $path
+          "CODESTAMP_SIGNING_THUMBPRINT=$($certificate.Thumbprint)" >> $env:GITHUB_ENV
+
+      - name: Build codestamp-cli
+        run: cargo build --release --manifest-path src-tauri/Cargo.toml --bin codestamp-cli
+
+      - name: Build the signed installer
+        if: env.HAS_CERTIFICATE == 'true'
+        run: npx tauri build
+
+      - name: Build the unsigned installer
+        if: env.HAS_CERTIFICATE != 'true'
+        run: npx tauri build --config src-tauri/tauri.unsigned.conf.json
+
+      - name: Attach the installer to a draft release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          files: src-tauri/target/release/bundle/nsis/*-setup.exe

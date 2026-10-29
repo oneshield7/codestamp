@@ -1,0 +1,18 @@
+{
+  "name": "codestamp-e2e",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "description": "End-to-end suites that drive a release build of Codestamp over the WebView2 DevTools Protocol",
+  "scripts": {
+    "launch": "node launch.mjs",
+    "prepare:updater": "node updater/prepare.mjs"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.14.6",
+    "@grpc/proto-loader": "^0.8.1",
+    "@grpc/reflection": "^1.0.4",
+    "axios": "^1.21.0",
+    "graphql": "^17.0.2"
+  }
+}

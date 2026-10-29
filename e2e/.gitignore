@@ -1,0 +1,3 @@
+# Test builds, WebView2 profile, Git hosts, screenshots and the updater fixtures.
+.work/
+node_modules/

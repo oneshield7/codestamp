@@ -1,0 +1,384 @@
+/* Themes are set with data-theme on <html>; any element can carry it too (theme previews). */
+:root,
+[data-theme='light'] {
+  /* The bundled fonts; Settings › Appearance replaces --font-ui / --font-code and the sizes. */
+  --font-ui-default: 'Geist Variable', 'Segoe UI', system-ui, sans-serif;
+  --font-code-default: 'Geist Mono Variable', 'Cascadia Code', Consolas, monospace;
+  --font-ui: var(--font-ui-default);
+  --font-code: var(--font-code-default);
+  --font-emoji: 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+  --font-size-ui: 14px;
+  --font-size-code: 13px;
+  --code-line-height: 1.6;
+  --code-ligatures: normal;
+
+  /* "Postmark": a monochrome ink interface; colour is kept for meaning (status, HTTP method). */
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --surface-muted: #f9fafb;
+  --surface-sunken: #edeef1;
+  --border: #e2e4e9;
+  --border-soft: #ecedf0;
+  --border-strong: #c9cdd4;
+  --text: #111318;
+  --text-2: #383d47;
+  --text-muted: #5a606c;
+  --accent: #111318;
+  --accent-soft: #e6e8ec;
+  --accent-text: #111318;
+  --on-accent: #ffffff;
+  --focus: #2f6bff;
+  --ok: #0a7a4b;
+  --ok-bg: #e8f6ef;
+  --ok-line: #b6e2cb;
+  --err: #c0261b;
+  --err-bg: #fdecea;
+  --err-line: #f5c2bd;
+  --warn: #a44b07;
+  --warn-bg: #fdf1e6;
+  --warn-line: #f1cba6;
+
+  --method-get: #0a7a4b;
+  --method-get-bg: #e8f6ef;
+  --method-get-line: #b6e2cb;
+  --method-post: #a44b07;
+  --method-post-bg: #fdf1e6;
+  --method-post-line: #f1cba6;
+  --method-put: #1d5bd8;
+  --method-put-bg: #eaf0fd;
+  --method-put-line: #bfd0f7;
+  --method-patch: #6d3fd0;
+  --method-patch-bg: #f1ecfd;
+  --method-patch-line: #d4c6f7;
+  --method-delete: #c0261b;
+  --method-delete-bg: #fdecea;
+  --method-delete-line: #f5c2bd;
+  --method-other: #383d47;
+  --method-other-bg: #edeef1;
+  --method-other-line: #c9cdd4;
+  --method-ws: #0f7487;
+  --method-ws-bg: #e6f5f8;
+  --method-ws-line: #b3dfe7;
+  --method-mcp: #7a5a00;
+  --method-mcp-bg: #fbf4dc;
+  --method-mcp-line: #ecd99b;
+  --method-gql: #a8156f;
+  --method-gql-bg: #fbe8f3;
+  --method-gql-line: #f1bfdd;
+  --method-grpc: #4f6b0a;
+  --method-grpc-bg: #f1f6e1;
+  --method-grpc-line: #d3e2a8;
+  --method-soap: #4338ca;
+  --method-soap-bg: #eef0fe;
+  --method-soap-line: #c9cef8;
+
+  /* {{variables}} in fields and editors; an unknown one uses --err. */
+  --var: #a3166b;
+  --var-bg: #fbe9f4;
+  --var-line: #efbfdc;
+
+  --code-property: #6d3fd0;
+  --code-keyword: #6d3fd0;
+  --code-function: #1d5bd8;
+  --code-comment: #5a606c;
+  --code-string: #0a7a4b;
+  --code-number: #a44b07;
+  --code-atom: #1d5bd8;
+  --code-punctuation: #5a606c;
+  --code-active-line: rgba(17, 19, 24, 0.04);
+
+  --dot-ok: #12b76a;
+  --dot-off: #8c8a84;
+  --dot-err: #d92d20;
+
+  /* Icon colours: each place in the app keeps one (see [data-hue] below). */
+  --hue-blue: #2459d6;
+  --hue-blue-bg: #e8effd;
+  --hue-green: #137a46;
+  --hue-green-bg: #e5f4ec;
+  --hue-teal: #0b6f74;
+  --hue-teal-bg: #e1f3f3;
+  --hue-violet: #6b3fd4;
+  --hue-violet-bg: #efe9fd;
+  --hue-amber: #9a5b00;
+  --hue-amber-bg: #fcf1dc;
+  --hue-orange: #b5470d;
+  --hue-orange-bg: #fdeee4;
+  --hue-rose: #b8245f;
+  --hue-rose-bg: #fce8f0;
+  --hue-slate: #4a5568;
+  --hue-slate-bg: #eceef2;
+
+  /* The custom title bar, and the red Windows gives a hovered Close button in every theme. */
+  --titlebar-height: 36px;
+  --statusbar-height: 30px;
+  --window-close-bg: #c42b1c;
+  --window-close-text: #ffffff;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-card: 0 1px 2px rgba(17, 19, 24, 0.05), 0 12px 32px rgba(17, 19, 24, 0.08);
+  --shadow-raise: 0 1px 2px rgba(17, 19, 24, 0.06);
+  --shadow-segment: 0 1px 2px rgba(17, 19, 24, 0.1);
+  --shadow-pop: 0 12px 32px rgba(17, 19, 24, 0.14);
+  --shadow-dialog: 0 24px 64px rgba(17, 19, 24, 0.28);
+  --backdrop: rgba(17, 19, 24, 0.4);
+
+  color-scheme: light;
+}
+
+/* Dark themes share the colours that carry meaning; tinted backgrounds are translucent so
+   they sit on either surface. Text on a tone (Send, danger) uses --on-accent, which is dark. */
+[data-theme='dark'],
+[data-theme='night'] {
+  --ok: #4fcf93;
+  --ok-bg: rgba(79, 207, 147, 0.12);
+  --ok-line: rgba(79, 207, 147, 0.34);
+  --err: #ff8077;
+  --err-bg: rgba(255, 128, 119, 0.12);
+  --err-line: rgba(255, 128, 119, 0.36);
+  --warn: #f2a865;
+  --warn-bg: rgba(242, 168, 101, 0.12);
+  --warn-line: rgba(242, 168, 101, 0.34);
+
+  --method-get: #4fcf93;
+  --method-get-bg: rgba(79, 207, 147, 0.12);
+  --method-get-line: rgba(79, 207, 147, 0.34);
+  --method-post: #f2a865;
+  --method-post-bg: rgba(242, 168, 101, 0.12);
+  --method-post-line: rgba(242, 168, 101, 0.34);
+  --method-put: #82acff;
+  --method-put-bg: rgba(130, 172, 255, 0.13);
+  --method-put-line: rgba(130, 172, 255, 0.36);
+  --method-patch: #bba4ff;
+  --method-patch-bg: rgba(187, 164, 255, 0.13);
+  --method-patch-line: rgba(187, 164, 255, 0.36);
+  --method-delete: #ff8077;
+  --method-delete-bg: rgba(255, 128, 119, 0.12);
+  --method-delete-line: rgba(255, 128, 119, 0.36);
+  --method-ws: #5ccfe2;
+  --method-ws-bg: rgba(92, 207, 226, 0.12);
+  --method-ws-line: rgba(92, 207, 226, 0.34);
+  --method-mcp: #e8c55e;
+  --method-mcp-bg: rgba(232, 197, 94, 0.12);
+  --method-mcp-line: rgba(232, 197, 94, 0.34);
+  --method-gql: #f27fc6;
+  --method-gql-bg: rgba(242, 127, 198, 0.12);
+  --method-gql-line: rgba(242, 127, 198, 0.34);
+  --method-grpc: #b5d65a;
+  --method-grpc-bg: rgba(181, 214, 90, 0.12);
+  --method-grpc-line: rgba(181, 214, 90, 0.34);
+  --method-soap: #a8b4ff;
+  --method-soap-bg: rgba(168, 180, 255, 0.13);
+  --method-soap-line: rgba(168, 180, 255, 0.36);
+
+  --var: #f48dca;
+  --var-bg: rgba(244, 141, 202, 0.13);
+  --var-line: rgba(244, 141, 202, 0.36);
+
+  --code-property: #bba4ff;
+  --code-keyword: #bba4ff;
+  --code-function: #82acff;
+  --code-string: #4fcf93;
+  --code-number: #f2a865;
+  --code-atom: #82acff;
+  --code-active-line: rgba(255, 255, 255, 0.04);
+
+  --dot-off: #6b7280;
+
+  --hue-blue: #82aaff;
+  --hue-blue-bg: rgba(130, 170, 255, 0.15);
+  --hue-green: #5fd49a;
+  --hue-green-bg: rgba(95, 212, 154, 0.14);
+  --hue-teal: #5ccfcc;
+  --hue-teal-bg: rgba(92, 207, 204, 0.14);
+  --hue-violet: #b9a2ff;
+  --hue-violet-bg: rgba(185, 162, 255, 0.15);
+  --hue-amber: #f2bd5c;
+  --hue-amber-bg: rgba(242, 189, 92, 0.14);
+  --hue-orange: #ff9d6b;
+  --hue-orange-bg: rgba(255, 157, 107, 0.14);
+  --hue-rose: #f68fbd;
+  --hue-rose-bg: rgba(246, 143, 189, 0.15);
+  --hue-slate: #b6bfcd;
+  --hue-slate-bg: rgba(182, 191, 205, 0.14);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.32);
+  --shadow-raise: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-segment: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --shadow-dialog: 0 24px 64px rgba(0, 0, 0, 0.6);
+  --backdrop: rgba(0, 0, 0, 0.55);
+
+  color-scheme: dark;
+}
+
+/* Dark: neutral graphite. */
+[data-theme='dark'] {
+  --bg: #15171c;
+  --surface: #1c1f25;
+  --surface-muted: #21252c;
+  --surface-sunken: #111317;
+  --border: #2d313a;
+  --border-soft: #262a32;
+  --border-strong: #3f4450;
+  --text: #eceef2;
+  --text-2: #c4c8d0;
+  --text-muted: #9ba1ac;
+  --accent: #eceef2;
+  --accent-soft: #2c3139;
+  --accent-text: #eceef2;
+  --on-accent: #111318;
+  --focus: #6f9bff;
+  --method-other: #c4c8d0;
+  --method-other-bg: #262a32;
+  --method-other-line: #3f4450;
+  --code-comment: #9ba1ac;
+  --code-punctuation: #9ba1ac;
+}
+
+/* Dark Night: deep navy black for working at night; borders stay visible without glare. */
+[data-theme='night'] {
+  --bg: #070a12;
+  --surface: #0d121d;
+  --surface-muted: #111827;
+  --surface-sunken: #05070d;
+  --border: #1c2436;
+  --border-soft: #151c2b;
+  --border-strong: #2c3852;
+  --text: #e1e7f5;
+  --text-2: #b7c1d7;
+  --text-muted: #8a95ae;
+  --accent: #e1e7f5;
+  --accent-soft: #19223a;
+  --accent-text: #e1e7f5;
+  --on-accent: #070a12;
+  --focus: #7f9fff;
+  --method-other: #b7c1d7;
+  --method-other-bg: #151c2b;
+  --method-other-line: #2c3852;
+  --code-comment: #8a95ae;
+  --code-punctuation: #8a95ae;
+}
+
+/* An icon (or its tile) with data-hue takes that colour; a tile also uses --hue-bg. */
+[data-hue='blue'] {
+  --hue: var(--hue-blue);
+  --hue-bg: var(--hue-blue-bg);
+}
+
+[data-hue='green'] {
+  --hue: var(--hue-green);
+  --hue-bg: var(--hue-green-bg);
+}
+
+[data-hue='teal'] {
+  --hue: var(--hue-teal);
+  --hue-bg: var(--hue-teal-bg);
+}
+
+[data-hue='violet'] {
+  --hue: var(--hue-violet);
+  --hue-bg: var(--hue-violet-bg);
+}
+
+[data-hue='amber'] {
+  --hue: var(--hue-amber);
+  --hue-bg: var(--hue-amber-bg);
+}
+
+[data-hue='orange'] {
+  --hue: var(--hue-orange);
+  --hue-bg: var(--hue-orange-bg);
+}
+
+[data-hue='rose'] {
+  --hue: var(--hue-rose);
+  --hue-bg: var(--hue-rose-bg);
+}
+
+[data-hue='slate'] {
+  --hue: var(--hue-slate);
+  --hue-bg: var(--hue-slate-bg);
+}
+
+[data-hue] {
+  color: var(--hue);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* The window itself never scrolls: its scrollbar would run up beside the title bar's buttons.
+   The content scrolls in `.scroller` below the title bar instead. */
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: var(--font-size-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.mono {
+  font-family: var(--font-code);
+  font-size: var(--font-size-code);
+  font-variant-ligatures: var(--code-ligatures);
+}
+
+.emoji {
+  font-family: var(--font-emoji);
+  line-height: 1;
+}
+
+/* A page heading with its coloured icon in front. */
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Codestamp logo samples</title>
+    <style>
+      :root {
+        --bg: #f3f4f6;
+        --surface: #ffffff;
+        --text: #111318;
+        --muted: #5a606c;
+        --line: #e2e4e9;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #070a12;
+          --surface: #0d121d;
+          --text: #e1e7f5;
+          --muted: #8a95ae;
+          --line: #1c2436;
+        }
+      }
+      body {
+        margin: 0;
+        padding: 24px 16px;
+        background: var(--bg);
+        color: var(--text);
+        font:
+          14px/1.5 'Segoe UI',
+          system-ui,
+          sans-serif;
+      }
+      ol {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+        gap: 14px;
+        margin: 0 auto;
+        padding: 0;
+        max-width: 1100px;
+        list-style: none;
+      }
+      li {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--surface);
+      }
+      .big {
+        width: 100%;
+        aspect-ratio: 1;
+      }
+      .small {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+      h2 {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 600;
+      }
+      p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <ol>
+      <li>
+        <img class="big" src="1-postmark.svg" alt="" />
+        <h2>1. Postmark</h2>
+        <p>The current mark, redrawn: a cancellation circle and three waves.</p>
+        <div class="small">
+          <img src="1-postmark.svg" width="28" height="28" alt="" />
+          <img src="1-postmark.svg" width="16" height="16" alt="" /> sidebar, tab
+        </div>
+      </li>
+      <li>
+        <img class="big" src="2-stamp.svg" alt="" />
+        <h2>2. Stamp</h2>
+        <p>A perforated postage stamp with a P and a red value line.</p>
+        <div class="small">
+          <img src="2-stamp.svg" width="28" height="28" alt="" />
+          <img src="2-stamp.svg" width="16" height="16" alt="" /> sidebar, tab
+        </div>
+      </li>
+      <li>
+        <img class="big" src="3-card-braces.svg" alt="" />
+        <h2>3. Card and braces</h2>
+        <p>A card with code braces on the message side, address and stamp on the other.</p>
+        <div class="small">
+          <img src="3-card-braces.svg" width="28" height="28" alt="" />
+          <img src="3-card-braces.svg" width="16" height="16" alt="" /> sidebar, tab
+        </div>
+      </li>
+      <li>
+        <img class="big" src="4-envelope-send.svg" alt="" />
+        <h2>4. Envelope, sent</h2>
+        <p>An envelope with a red send button: a request going out.</p>
+        <div class="small">
+          <img src="4-envelope-send.svg" width="28" height="28" alt="" />
+          <img src="4-envelope-send.svg" width="16" height="16" alt="" /> sidebar, tab
+        </div>
+      </li>
+      <li>
+        <img class="big" src="5-folded-p.svg" alt="" />
+        <h2>5. Folded P</h2>
+        <p>A P on paper with its corner folded over, like a card in the post.</p>
+        <div class="small">
+          <img src="5-folded-p.svg" width="28" height="28" alt="" />
+          <img src="5-folded-p.svg" width="16" height="16" alt="" /> sidebar, tab
+        </div>
+      </li>
+    </ol>
+  </body>
+</html>

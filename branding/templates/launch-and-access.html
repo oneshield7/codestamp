@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="id" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Codestamp: launch and access notice</title>
+    <style>
+      :root,
+      [data-theme='light'] {
+        --bg: #f3f4f6;
+        --surface: #ffffff;
+        --surface-muted: #f9fafb;
+        --surface-sunken: #edeef1;
+        --border: #e2e4e9;
+        --border-soft: #ecedf0;
+        --text: #111318;
+        --text-2: #383d47;
+        --text-muted: #5a606c;
+        --accent-soft: #e6e8ec;
+        --accent-text: #111318;
+        --ok: #0a7a4b;
+        --ok-bg: #e8f6ef;
+        --focus: #2f6bff;
+        --shadow-card: 0 1px 2px rgba(17, 19, 24, 0.05), 0 12px 32px rgba(17, 19, 24, 0.08);
+        --page: #e9ebef;
+      }
+      [data-theme='dark'] {
+        --bg: #15171c;
+        --surface: #1c1f25;
+        --surface-muted: #21252c;
+        --surface-sunken: #111317;
+        --border: #2d313a;
+        --border-soft: #262a32;
+        --text: #eceef2;
+        --text-2: #c4c8d0;
+        --text-muted: #9ba1ac;
+        --accent-soft: #2c3139;
+        --accent-text: #eceef2;
+        --ok: #4fcf93;
+        --ok-bg: rgba(79, 207, 147, 0.12);
+        --focus: #6f9bff;
+        --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px rgba(0, 0, 0, 0.32);
+        --page: #0e1014;
+      }
+      [data-theme='night'] {
+        --bg: #070a12;
+        --surface: #0d121d;
+        --surface-muted: #111827;
+        --surface-sunken: #05070d;
+        --border: #1c2436;
+        --border-soft: #151c2b;
+        --text: #e1e7f5;
+        --text-2: #b7c1d7;
+        --text-muted: #8a95ae;
+        --accent-soft: #19223a;
+        --accent-text: #e1e7f5;
+        --ok: #4fcf93;
+        --ok-bg: rgba(79, 207, 147, 0.12);
+        --focus: #7f9fff;
+        --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.5), 0 12px 32px rgba(0, 0, 0, 0.4);
+        --page: #04060b;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 24px 16px 48px;
+        background: var(--page);
+        color: var(--text);
+        font:
+          14px/1.5 'Google Sans Flex',
+          'Segoe UI',
+          system-ui,
+          sans-serif;
+      }
+
+      main {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+        max-width: 1040px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      h2 {
+        margin: 0 0 4px;
+        font-size: 16px;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      .lead,
+      .note {
+        color: var(--text-muted);
+      }
+
+      .note {
+        font-size: 13px;
+      }
+
+      .note li + li {
+        margin-top: 4px;
+      }
+
+      .controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px 16px;
+        margin: 12px 0;
+      }
+
+      .segmented {
+        display: inline-flex;
+        padding: 3px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .segmented button {
+        height: 28px;
+        padding: 0 12px;
+        border: 0;
+        border-radius: 6px;
+        background: transparent;
+        color: var(--text-2);
+        font: inherit;
+        font-size: 13px;
+      }
+
+      .segmented button[aria-pressed='true'] {
+        background: var(--surface-sunken);
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .button {
+        height: 32px;
+        padding: 0 14px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+        color: var(--text-2);
+        font: inherit;
+        font-size: 13px;
+      }
+
+      label.check {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--text-2);
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+      }
+
+      /* A scaled-down Codestamp window. */
+      .stage {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        max-height: 620px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--bg);
+        box-shadow: var(--shadow-card);
+      }
+
+      .titlebar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 36px;
+        padding: 0 12px;
+        border-bottom: 1px solid var(--border-soft);
+        background: var(--bg);
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .titlebar .controls-os {
+        margin-left: auto;
+        letter-spacing: 18px;
+      }
+
+      .app {
+        display: grid;
+        grid-template-columns: minmax(150px, 22%) 1fr;
+        height: calc(100% - 36px);
+      }
+
+      .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 14px 10px;
+        border-right: 1px solid var(--border-soft);
+        font-size: 13px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 6px 12px;
+        font-weight: 600;
+      }
+
+      .brand svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      .item {
+        padding: 6px 8px;
+        border-radius: 8px;
+        color: var(--text-2);
+      }
+
+      .item.active {
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+      }
+
+      .heading {
+        padding: 10px 8px 2px;
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+
+      .content {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 18px 22px;
+        overflow: hidden;
+      }
+
+      .content h3 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      .panel {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface);
+      }
+
+      .panel-head {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--border-soft);
+        font-weight: 600;
+      }
+
+      .panel-body {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 14px;
+        font-size: 13px;
+      }
+
+      .group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px;
+        border: 1px solid var(--border-soft);
+        border-radius: 8px;
+      }
+
+      .group-head {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+      }
+
+      .chip {
+        padding: 2px 8px;
+        border-radius: 6px;
+        background: var(--surface-sunken);
+        color: var(--text-2);
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .chip.ok {
+        background: var(--ok-bg);
+        color: var(--ok);
+      }
+
+      .mono {
+        font-family: 'Google Sans Code', Consolas, monospace;
+        font-size: 12px;
+      }
+
+      .muted {
+        color: var(--text-muted);
+      }
+
+      /* Option A: the banner the app already uses for info notices. */
+      .banner {
+        display: none;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        background: var(--accent-soft);
+        color: var(--accent-text);
+        font-size: 13px;
+      }
+
+      .banner.shown {
+        display: flex;
+      }
+
+      .banner p {
+        flex: 1;
+      }
+
+      .banner .link {
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        font-weight: 600;
+        text-decoration: underline;
+      }
+
+      /* Option B: a Windows notification, shown at the corner of the screen. */
+      .toast {
+        position: absolute;
+        right: 14px;
+        bottom: 14px;
+        display: none;
+        width: min(360px, calc(100% - 28px));
+        padding: 12px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        background: #2b2b2b;
+        color: #ffffff;
+        font:
+          13px/1.45 'Segoe UI',
+          system-ui,
+          sans-serif;
+        box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+        z-index: 3;
+      }
+
+      .toast.shown {
+        display: block;
+      }
+
+      .toast header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 12px;
+        color: #c8c8c8;
+      }
+
+      .toast header svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      .toast strong {
+        display: block;
+      }
+
+      .toast p {
+        color: #dcdcdc;
+      }
+
+      /* The launch screen, drawn before the app itself loads. */
+      .splash {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: var(--bg);
+        z-index: 2;
+      }
+
+      .mark {
+        position: relative;
+        width: 104px;
+        height: 104px;
+        display: grid;
+        place-items: center;
+      }
+
+      .mark > svg.logo {
+        width: 84px;
+        height: 84px;
+      }
+
+      .ring {
+        position: absolute;
+        inset: 0;
+        overflow: visible;
+      }
+
+      .ring rect {
+        fill: none;
+        stroke-width: 3;
+      }
+
+      .ring .track {
+        stroke: var(--border);
+      }
+
+      /* One stretch of ink runs round the logo's edge while the app loads. */
+      .ring .trace {
+        stroke: var(--text);
+        stroke-linecap: round;
+        stroke-dasharray: 22 78;
+        animation: trace 1.4s linear infinite;
+      }
+
+      @keyframes trace {
+        from {
+          stroke-dashoffset: 100;
+        }
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+
+      .splash.leaving {
+        animation: splash-out 320ms cubic-bezier(0.4, 0, 1, 1) forwards;
+      }
+
+      .splash.leaving .mark {
+        animation: mark-out 260ms cubic-bezier(0.4, 0, 1, 1) forwards;
+      }
+
+      @keyframes splash-out {
+        to {
+          opacity: 0;
+        }
+      }
+
+      @keyframes mark-out {
+        to {
+          opacity: 0;
+          transform: scale(1.08);
+        }
+      }
+
+      /* The app settles in from slightly smaller and out of focus, then stays still. */
+      .app.arriving {
+        animation: app-in 460ms cubic-bezier(0.16, 1, 0.3, 1) both;
+      }
+
+      @keyframes app-in {
+        from {
+          opacity: 0;
+          transform: scale(0.965);
+          filter: blur(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+          filter: none;
+        }
+      }
+
+      .reduced .ring .trace {
+        animation: none;
+        stroke-dasharray: none;
+        opacity: 0.6;
+      }
+
+      .reduced .ring .track {
+        animation: pulse 1.2s ease-in-out infinite alternate;
+      }
+
+      @keyframes pulse {
+        to {
+          opacity: 0.35;
+        }
+      }
+
+      .reduced .splash.leaving,
+      .reduced .splash.leaving .mark {
+        animation: splash-out 150ms linear forwards;
+      }
+
+      .reduced .app.arriving {
+        animation: fade-in 150ms linear both;
+      }
+
+      @keyframes fade-in {
+        from {
+          opacity: 0;
+        }
+      }
+
+      .timeline {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      @media (max-width: 640px) {
+        .app {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Template: layar pembuka dan notifikasi akses</h1>
+        <p class="lead">
+          Pratinjau sebelum diterapkan ke Codestamp. Tombol di bawah menjalankan ulang animasinya.
+        </p>
+      </header>
+
+      <section aria-labelledby="launch-title">
+        <h2 id="launch-title">Poin 2: layar pembuka</h2>
+        <div class="controls">
+          <div class="segmented" role="group" aria-label="Theme">
+            <button type="button" data-theme-pick="light" aria-pressed="false">Light</button>
+            <button type="button" data-theme-pick="dark" aria-pressed="true">Dark</button>
+            <button type="button" data-theme-pick="night" aria-pressed="false">Dark Night</button>
+          </div>
+          <div class="segmented" role="group" aria-label="Startup time">
+            <button type="button" data-start="1400" aria-pressed="true">Start 1.4 s</button>
+            <button type="button" data-start="300" aria-pressed="false">Start 0.3 s</button>
+          </div>
+          <label class="check"><input type="checkbox" id="reduce" /> Reduce motion</label>
+          <button type="button" class="button" id="replay">Replay launch</button>
+        </div>
+
+        <div class="stage" id="stage">
+          <div class="titlebar">
+            <span>Codestamp</span>
+            <span class="controls-os" aria-hidden="true">−□×</span>
+          </div>
+
+          <div class="splash" id="splash" role="status" aria-label="Codestamp is starting">
+            <div class="mark">
+              <svg class="ring" viewBox="0 0 104 104" aria-hidden="true">
+                <rect class="track" x="3" y="3" width="98" height="98" rx="25" pathLength="100" />
+                <rect class="trace" x="3" y="3" width="98" height="98" rx="25" pathLength="100" />
+              </svg>
+              <svg class="logo" viewBox="0 0 512 512" aria-hidden="true">
+                <rect width="512" height="512" rx="112" fill="#111318" />
+                <path
+                  d="M150 182c-22 0-28 12-28 30v18c0 16-8 24-22 26 14 2 22 10 22 26v18c0 18 6 30 28 30M196 182c22 0 28 12 28 30v18c0 16 8 24 22 26-14 2-22 10-22 26v18c0 18-6 30-28 30"
+                  fill="none"
+                  stroke="#ffffff"
+                  stroke-width="20"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <path d="M278 168v176" stroke="#4a505c" stroke-width="6" stroke-linecap="round" />
+                <rect x="352" y="150" width="68" height="78" rx="4" fill="#d1432b" />
+                <path
+                  d="M310 268h110M310 302h110M310 336h74"
+                  stroke="#ffffff"
+                  stroke-width="14"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <div class="app" id="app">
+            <aside class="sidebar">
+              <div class="brand">
+                <svg viewBox="0 0 512 512" aria-hidden="true">
+                  <rect width="512" height="512" rx="112" fill="#111318" />
+                  <rect x="352" y="150" width="68" height="78" rx="4" fill="#d1432b" />
+                  <path
+                    d="M310 268h110M310 302h110M310 336h74"
+                    stroke="#ffffff"
+                    stroke-width="14"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                Codestamp
+              </div>
+              <span class="item">Home</span>
+              <span class="heading">Collections</span>
+              <span class="item active">Shop</span>
+              <span class="heading">Tools</span>
+              <span class="item">Orchestration</span>
+              <span class="item">Git changes</span>
+            </aside>
+            <section class="content" aria-label="Shop collection">
+              <div class="banner" id="banner" role="status">
+                <p>
+                  ada gave this device access to Shop API. Its restricted values are ready to use.
+                </p>
+                <button type="button" class="link">Open variables</button>
+                <button type="button" class="link" id="dismiss">Dismiss</button>
+              </div>
+              <h3>Shop</h3>
+              <div class="panel">
+                <div class="panel-head">Collaboration</div>
+                <div class="panel-body">
+                  <p class="muted">Access groups</p>
+                  <div class="group">
+                    <div class="group-head">
+                      Shop API <span class="chip" id="chip">No access</span>
+                    </div>
+                    <p class="muted" id="waiting">
+                      Waiting for a member to grant access. They will ask you for the key under This
+                      device.
+                    </p>
+                    <p>
+                      Budi <span class="muted">budi@example.com</span>
+                      <span class="mono muted">9MY3-7RF4-B7EY-HCZV</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <aside class="toast" id="toast" aria-label="Windows notification">
+            <header>
+              <svg viewBox="0 0 512 512" aria-hidden="true">
+                <rect width="512" height="512" rx="112" fill="#111318" />
+                <rect x="352" y="150" width="68" height="78" rx="4" fill="#d1432b" />
+              </svg>
+              Codestamp · now
+            </header>
+            <strong>Access granted</strong>
+            <p>
+              ada gave this device access to Shop API in “Shop”. Press Sync now to get its values.
+            </p>
+          </aside>
+        </div>
+        <p class="timeline" id="timeline" aria-live="polite"></p>
+
+        <ul class="note">
+          <li>
+            Layar ini ditulis langsung di <span class="mono">index.html</span>, jadi tampil sebelum
+            aplikasi selesai dimuat. Latar jendela memakai warna tema yang terakhir dipilih,
+            sehingga tidak ada kilatan putih lagi.
+          </li>
+          <li>
+            Garis loading berjalan selama aplikasi menyiapkan data. Layar pembuka tampil minimal 0,5
+            detik, supaya pada start yang cepat tidak berkedip.
+          </li>
+          <li>
+            Saat siap, logo memudar sambil membesar sedikit, lalu aplikasi muncul dari ukuran 96,5%
+            dengan blur yang menghilang (0,46 detik, kurva pegas seperti macOS). Setelah itu tidak
+            ada animasi lain; aturan "tanpa animasi" di DESIGN.md tetap berlaku untuk pemakaian
+            sehari-hari.
+          </li>
+          <li>
+            Bila Windows diatur untuk mengurangi animasi, logo tidak berputar dan perpindahan cukup
+            memudar 0,15 detik. Centang "Reduce motion" di atas untuk melihatnya.
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="notice-title">
+        <h2 id="notice-title">Poin 3: notifikasi saat akses diterima</h2>
+        <div class="controls">
+          <button type="button" class="button" id="show-a">Show option A</button>
+          <button type="button" class="button" id="show-b">Show option B</button>
+          <button type="button" class="button" id="reset">Reset</button>
+        </div>
+        <ul class="note">
+          <li>
+            <strong>Option A, di dalam aplikasi (saran):</strong> setelah rekan menekan Sync now dan
+            aksesnya sudah diberikan, muncul banner di atas konten, menyebut siapa yang memberi
+            akses dan grupnya, dengan tombol Open variables. Tanpa dependency baru dan tanpa
+            jaringan tambahan.
+          </li>
+          <li>
+            <strong>Option B, notifikasi Windows:</strong> selama ada permintaan akses yang
+            menunggu, Codestamp memeriksa repository di latar setiap 5 menit (hanya membaca, tanpa
+            sinkron), lalu menampilkan notifikasi Windows begitu akses diberikan, walau Codestamp
+            sedang diminimalkan. Akibatnya ada aktivitas jaringan di latar (sejak Tahap 26 sinkron
+            hanya lewat Sync now) dan butuh plugin notifikasi Tauri. Option A tetap muncul setelah
+            Sync now.
+          </li>
+        </ul>
+      </section>
+    </main>
+
+    <script>
+      const root = document.documentElement;
+      const stage = document.getElementById('stage');
+      const splash = document.getElementById('splash');
+      const app = document.getElementById('app');
+      const timeline = document.getElementById('timeline');
+      const reduce = document.getElementById('reduce');
+      const MIN_SPLASH_MS = 500;
+      let startMs = 1400;
+      let timer = 0;
+
+      function press(selector, button) {
+        for (const other of document.querySelectorAll(selector)) {
+          other.setAttribute('aria-pressed', String(other === button));
+        }
+      }
+
+      function launch() {
+        clearTimeout(timer);
+        splash.hidden = false;
+        splash.classList.remove('leaving');
+        app.classList.remove('arriving');
+        app.style.visibility = 'hidden';
+        const shown = Math.max(startMs, MIN_SPLASH_MS);
+        timeline.textContent = `Loading… the launch screen stays ${shown} ms, then the app appears.`;
+        timer = setTimeout(() => {
+          splash.classList.add('leaving');
+          app.style.visibility = 'visible';
+          app.classList.add('arriving');
+          timeline.textContent = 'Ready.';
+          timer = setTimeout(() => (splash.hidden = true), 340);
+        }, shown);
+      }
+
+      for (const button of document.querySelectorAll('[data-theme-pick]')) {
+        button.addEventListener('click', () => {
+          root.dataset.theme = button.dataset.themePick;
+          press('[data-theme-pick]', button);
+          launch();
+        });
+      }
+      for (const button of document.querySelectorAll('[data-start]')) {
+        button.addEventListener('click', () => {
+          startMs = Number(button.dataset.start);
+          press('[data-start]', button);
+          launch();
+        });
+      }
+      reduce.checked = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      stage.classList.toggle('reduced', reduce.checked);
+      reduce.addEventListener('change', () => {
+        stage.classList.toggle('reduced', reduce.checked);
+        launch();
+      });
+      document.getElementById('replay').addEventListener('click', launch);
+
+      const banner = document.getElementById('banner');
+      const toast = document.getElementById('toast');
+      const chip = document.getElementById('chip');
+      const waiting = document.getElementById('waiting');
+      function granted() {
+        chip.textContent = 'You are a member';
+        chip.classList.add('ok');
+        waiting.hidden = true;
+      }
+      function reset() {
+        banner.classList.remove('shown');
+        toast.classList.remove('shown');
+        chip.textContent = 'No access';
+        chip.classList.remove('ok');
+        waiting.hidden = false;
+      }
+      document.getElementById('show-a').addEventListener('click', () => {
+        reset();
+        granted();
+        banner.classList.add('shown');
+      });
+      document.getElementById('show-b').addEventListener('click', () => {
+        reset();
+        toast.classList.add('shown');
+      });
+      document.getElementById('reset').addEventListener('click', reset);
+      document
+        .getElementById('dismiss')
+        .addEventListener('click', () => banner.classList.remove('shown'));
+
+      launch();
+    </script>
+  </body>
+</html>

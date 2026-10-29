@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Codestamp logo, card with code braces">
+  <rect width="512" height="512" rx="112" fill="#111318"/>
+  <rect x="64" y="128" width="384" height="256" rx="22" fill="#ffffff"/>
+  <path d="M150 182c-22 0-28 12-28 30v18c0 16-8 24-22 26 14 2 22 10 22 26v18c0 18 6 30 28 30M196 182c22 0 28 12 28 30v18c0 16 8 24 22 26-14 2-22 10-22 26v18c0 18-6 30-28 30" fill="none" stroke="#111318" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M276 164v184" stroke="#c9cdd4" stroke-width="6" stroke-linecap="round"/>
+  <rect x="358" y="156" width="62" height="72" rx="4" fill="#d1432b"/>
+  <path d="M306 268h114M306 300h114M306 332h76" stroke="#111318" stroke-width="12" stroke-linecap="round"/>
+</svg>

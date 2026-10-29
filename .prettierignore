@@ -1,0 +1,6 @@
+dist
+node_modules
+src-tauri
+package-lock.json
+e2e/.work
+e2e/package-lock.json

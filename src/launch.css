@@ -1,0 +1,134 @@
+/* The launch screen of index.html. Kept out of an inline <style>: that would get a CSP hash, and
+   the browser would then refuse the styles injected later, such as CodeMirror's. */
+
+#launch {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: var(--bg, #f3f4f6);
+}
+
+.launch-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 104px;
+  height: 104px;
+}
+
+.launch-mark img {
+  width: 84px;
+  height: 84px;
+}
+
+.launch-ring {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.launch-ring rect {
+  fill: none;
+  stroke-width: 3;
+}
+
+.launch-track {
+  stroke: var(--border, #e2e4e9);
+}
+
+/* One stretch of ink runs round the logo's edge while the app loads. */
+.launch-trace {
+  stroke: var(--text, #111318);
+  stroke-linecap: round;
+  stroke-dasharray: 22 78;
+  animation: launch-trace 1.4s linear infinite;
+}
+
+html:not(.launched) #app {
+  opacity: 0;
+}
+
+.launched #launch {
+  pointer-events: none;
+  animation: launch-out 320ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.launched .launch-mark {
+  animation: launch-mark-out 260ms cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+/* The app settles in from slightly smaller and out of focus, then stays still. Only the start
+   is held, so no transform or filter stays on #app to move fixed popovers afterwards. */
+.launched #app {
+  animation: launch-app-in 460ms cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes launch-trace {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes launch-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes launch-mark-out {
+  to {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes launch-app-in {
+  from {
+    opacity: 0;
+    transform: scale(0.965);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes launch-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes launch-pulse {
+  to {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .launch-trace {
+    animation: none;
+    stroke-dasharray: none;
+    opacity: 0.6;
+  }
+
+  .launch-track {
+    animation: launch-pulse 1.2s ease-in-out infinite alternate;
+  }
+
+  .launched #launch,
+  .launched .launch-mark {
+    animation: launch-out 150ms linear forwards;
+  }
+
+  .launched #app {
+    animation: launch-fade-in 150ms linear backwards;
+  }
+}
