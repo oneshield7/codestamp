@@ -1,18 +1,18 @@
-# Stage 37: Grup akses
+# Stage 37: Access groups
 
-Suite [`stage37-e2e.mjs`](../../../e2e/stage37-e2e.mjs) · 28 cek
+Suite [`stage37-e2e.mjs`](../../../e2e/stage37-e2e.mjs) · 28 checks
 
-Perangkat ini membuat grup dan membatasi sebuah nilai ke grup itu. Rekan kerja yang ditulis hanya dari dokumentasi format (`access-mate.mjs`) meminta akses, membaca nilainya setelah diberi akses, membuat grup sendiri, dan memasukkan perangkat ini setelah diminta. Mengeluarkan rekan membuat grup mendapat kunci baru.
+This device creates a group and restricts a value to it. A teammate written only from the format documentation (`access-mate.mjs`) requests access, reads the value once granted, creates a group of its own, and adds this device after being asked. Removing the teammate gives the group a new key.
 
-## Kebutuhan
+## Requirements
 
-- Git for Windows. `https://git.test/` dipetakan ke bare repository lokal di `e2e/.work/git-hosts/` (lihat [harness](../README.md#harness)).
-- Rekan kerja Node `access-mate.mjs`.
-- Membuat kunci perangkat di Windows Credential Manager akun yang menjalankan tes.
+- Git for Windows. `https://git.test/` is mapped to a local bare repository in `e2e/.work/git-hosts/` (see [harness](../README.md#harness)).
+- The Node teammate `access-mate.mjs`.
+- Creates a device key in the Windows Credential Manager of the account that runs the tests.
 
-## Alur
+## Flow
 
-### 1. Awal
+### 1. Setup
 
 - the collection is shared
 
@@ -63,4 +63,4 @@ Perangkat ini membuat grup dan membatasi sebuah nilai ke grup itu. Rekan kerja y
 
 ---
 
-Sebelumnya: [Git changes dengan riwayat panjang](stage-36.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Layar pembuka](stage-38.md)
+Previous: [Git changes with a long history](stage-36.md) · [Stage list](../README.md#stage-list) · Next: [Launch screen](stage-38.md)

@@ -1,14 +1,14 @@
 # Stage 23: Orchestration
 
-Suite [`stage23-e2e.mjs`](../../../e2e/stage23-e2e.mjs) · 16 cek
+Suite [`stage23-e2e.mjs`](../../../e2e/stage23-e2e.mjs) · 16 checks
 
-Membangun flow dari Start ke End di atas API toko lokal (register, login, add to cart, checkout) dan memeriksa peta langkahnya: garis nilai yang diterima dan diteruskan langkah terpilih, navigasi dengan panah, checks, flow berhenti (dengan garis berhenti sampai End) atau lanjut saat gagal, urutan dan penyimpanan, request yang terhapus, Quick search, dan menghapus flow. Membuat "E2E Shop" lalu menghapusnya.
+Builds a flow from Start to End on top of a local shop API (register, login, add to cart, checkout) and checks its step map: the value lines the selected step receives and passes on, arrow-key navigation, checks, a flow that stops (with a stop line to End) or continues on failure, order and saving, deleted requests, Quick search, and deleting the flow. Creates "E2E Shop" and deletes it afterwards.
 
-## Kebutuhan
+## Requirements
 
-- Server HTTP lokal yang dibuat oleh suite itu sendiri (Node `http`).
+- A local HTTP server started by the suite itself (Node `http`).
 
-## Alur
+## Flow
 
 ### 1. The page and a new flow
 
@@ -49,4 +49,4 @@ Membangun flow dari Start ke End di atas API toko lokal (register, login, add to
 
 ---
 
-Sebelumnya: [Request gRPC](stage-22.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Body XML dan HTML, SOAP, dan import WSDL](stage-24.md)
+Previous: [gRPC requests](stage-22.md) · [Stage list](../README.md#stage-list) · Next: [XML and HTML bodies, SOAP, and WSDL import](stage-24.md)

@@ -1,14 +1,14 @@
-# Stage 18: Import OpenAPI dan Swagger
+# Stage 18: OpenAPI and Swagger import
 
-Suite [`stage18-e2e.mjs`](../../../e2e/stage18-e2e.mjs) · 9 cek
+Suite [`stage18-e2e.mjs`](../../../e2e/stage18-e2e.mjs) · 9 checks
 
-Mengimpor spec OpenAPI 3 dari file YAML dan spec Swagger 2 dari URL menjadi collection, lalu mengirim salah satu request hasil import. Membuat "E2E Pets" dan "E2E Legacy" lalu menghapusnya.
+Imports an OpenAPI 3 spec from a YAML file and a Swagger 2 spec from a URL as collections, then sends one of the imported requests. Creates "E2E Pets" and "E2E Legacy" and deletes them afterwards.
 
-## Kebutuhan
+## Requirements
 
-- Server HTTP lokal yang dibuat oleh suite itu sendiri (Node `http`).
+- A local HTTP server started by the suite itself (Node `http`).
 
-## Alur
+## Flow
 
 ### 1. YAML file
 
@@ -27,4 +27,4 @@ Mengimpor spec OpenAPI 3 dari file YAML dan spec Swagger 2 dari URL menjadi coll
 
 ---
 
-Sebelumnya: [Auth: Digest, AWS SigV4, dan OAuth 2.0](stage-17.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Request GraphQL](stage-19.md)
+Previous: [Auth: Digest, AWS SigV4, and OAuth 2.0](stage-17.md) · [Stage list](../README.md#stage-list) · Next: [GraphQL requests](stage-19.md)

@@ -1,14 +1,14 @@
-# Stage 19: Request GraphQL
+# Stage 19: GraphQL requests
 
-Suite [`stage19-e2e.mjs`](../../../e2e/stage19-e2e.mjs) · 10 cek
+Suite [`stage19-e2e.mjs`](../../../e2e/stage19-e2e.mjs) · 10 checks
 
-Menguji kartu GraphQL, variabel dengan `{{variabel}}`, mengambil schema, completion dan pemeriksaan di editor, Copy as code, dan Run all terhadap server GraphQL sungguhan. Membuat "E2E GraphQL" lalu menghapusnya.
+Tests the GraphQL card, variables with `{{variables}}`, fetching the schema, completion and validation in the editor, Copy as code, and Run all against a real GraphQL server. Creates "E2E GraphQL" and deletes it afterwards.
 
-## Kebutuhan
+## Requirements
 
-- Server GraphQL lokal yang dibuat suite dengan paket npm `graphql`.
+- A local GraphQL server built by the suite with the npm package `graphql`.
 
-## Alur
+## Flow
 
 ### 1. The card
 
@@ -34,4 +34,4 @@ Menguji kartu GraphQL, variabel dengan `{{variabel}}`, mengambil schema, complet
 
 ---
 
-Sebelumnya: [Import OpenAPI dan Swagger](stage-18.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Example dan mock server](stage-20.md)
+Previous: [OpenAPI and Swagger import](stage-18.md) · [Stage list](../README.md#stage-list) · Next: [Examples and the mock server](stage-20.md)

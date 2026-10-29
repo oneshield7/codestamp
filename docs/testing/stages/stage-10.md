@@ -1,23 +1,23 @@
-# Stage 10: Body form, cookie jar, variabel dinamis, dan Copy as code
+# Stage 10: Form body, cookie jar, dynamic variables, and Copy as code
 
-Suite [`stage10-e2e.mjs`](../../../e2e/stage10-e2e.mjs) · 37 cek
+Suite [`stage10-e2e.mjs`](../../../e2e/stage10-e2e.mjs) · 37 checks
 
-Mengirim body form-data dengan file yang dipilih, URL-encoded, dan binary ke server lokal, lalu memeriksa apa yang benar-benar diterima server. Suite ini juga menguji variabel dinamis seperti `{{$guid}}`, duplikat request, section, dan collection, dialog Copy as code (dropdown Language dan Values, environment variable sebagai bawaan, bahasa yang diingat), export Collection v2.1, dan cookie jar yang tersimpan terenkripsi serta tetap ada setelah aplikasi dibuka ulang. Kode hasil Copy as code dijalankan sungguhan di [codegen](codegen.md).
+Sends form-data bodies with a chosen file, URL-encoded bodies, and binary bodies to a local server, then checks what the server actually received. The suite also covers dynamic variables such as `{{$guid}}`, duplicating requests, sections, and collections, the Copy as code dialog (Language and Values dropdowns, environment variables by default, the remembered language), Collection v2.1 export, and the cookie jar, which is stored encrypted and survives a restart. The code from Copy as code is run for real in [codegen](codegen.md).
 
-## Kebutuhan
+## Requirements
 
-- Server HTTP lokal yang dibuat oleh suite itu sendiri (Node `http`).
-- Dialog simpan atau buka file Windows, dijawab oleh `answer-dialog.ps1`.
+- A local HTTP server started by the suite itself (Node `http`).
+- The Windows save or open file dialog, answered by `answer-dialog.ps1`.
 
-## Alur
+## Flow
 
 ### 1. Local server
 
-Menyalakan server lokal yang dipakai langkah berikutnya.
+Starts the local server the next steps use.
 
 ### 2. CDP
 
-Terhubung ke salinan uji lewat CDP dan memasang helper.
+Connects to the test copy over CDP and installs the helpers.
 
 ### 3. Form data with a picked file
 
@@ -51,7 +51,7 @@ Terhubung ke salinan uji lewat CDP dan memasang helper.
 
 ### 8. Copy as code
 
-- language and values are dropdowns, with eight languages and environment variables first
+- language and values are dropdowns, with fifteen languages and environment variables first
 - cURL reads variables from the environment and uses --form for files
 - fetch code builds a FormData and reads the file in Node
 - Python code sends files with requests
@@ -85,4 +85,4 @@ Terhubung ke salinan uji lewat CDP dan memasang helper.
 
 ---
 
-[Daftar stage](../README.md#daftar-stage) · Berikutnya: [Collaboration lewat Git](stage-11.md)
+[Stage list](../README.md#stage-list) · Next: [Collaboration through Git](stage-11.md)

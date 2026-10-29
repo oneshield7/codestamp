@@ -1,14 +1,14 @@
-# Stage 32: Share ke repository yang sudah berisi file
+# Stage 32: Sharing to a repository that already has files
 
-Suite [`stage32-e2e.mjs`](../../../e2e/stage32-e2e.mjs) · 13 cek
+Suite [`stage32-e2e.mjs`](../../../e2e/stage32-e2e.mjs) · 13 checks
 
-Join menjelaskan masalahnya bila repository tidak dibagikan dari Codestamp. Share menampilkan daftar file untuk ditinjau sebelum menggantinya, dan repository yang sudah diganti bisa di-join.
+Join explains the problem when a repository was not shared from Codestamp. Share lists the files for review before replacing them, and a repository that was replaced can be joined.
 
-## Kebutuhan
+## Requirements
 
-- Git for Windows. `https://git.test/` dipetakan ke bare repository lokal di `e2e/.work/git-hosts/` (lihat [harness](../README.md#harness)).
+- Git for Windows. `https://git.test/` is mapped to a local bare repository in `e2e/.work/git-hosts/` (see [harness](../README.md#harness)).
 
-## Alur
+## Flow
 
 ### 1. Join explains what is wrong with a repository Codestamp did not share
 
@@ -34,4 +34,4 @@ Join menjelaskan masalahnya bila repository tidak dibagikan dari Codestamp. Shar
 
 ---
 
-Sebelumnya: [Git accounts, Git changes, dan replace collection](stage-31.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Status bar, Ctrl+S, sync manual, dan environment bersama](stage-33.md)
+Previous: [Git accounts, Git changes, and replacing a collection](stage-31.md) · [Stage list](../README.md#stage-list) · Next: [Status bar, Ctrl+S, manual sync, and shared environments](stage-33.md)

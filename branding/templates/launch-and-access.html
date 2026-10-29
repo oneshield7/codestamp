@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="id" data-theme="dark">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -537,14 +537,14 @@
   <body>
     <main>
       <header>
-        <h1>Template: layar pembuka dan notifikasi akses</h1>
+        <h1>Template: launch screen and access notice</h1>
         <p class="lead">
-          Pratinjau sebelum diterapkan ke Codestamp. Tombol di bawah menjalankan ulang animasinya.
+          A preview before it goes into Codestamp. The buttons below replay the animation.
         </p>
       </header>
 
       <section aria-labelledby="launch-title">
-        <h2 id="launch-title">Poin 2: layar pembuka</h2>
+        <h2 id="launch-title">Point 2: launch screen</h2>
         <div class="controls">
           <div class="segmented" role="group" aria-label="Theme">
             <button type="button" data-theme-pick="light" aria-pressed="false">Light</button>
@@ -664,29 +664,28 @@
 
         <ul class="note">
           <li>
-            Layar ini ditulis langsung di <span class="mono">index.html</span>, jadi tampil sebelum
-            aplikasi selesai dimuat. Latar jendela memakai warna tema yang terakhir dipilih,
-            sehingga tidak ada kilatan putih lagi.
+            This screen is written directly in <span class="mono">index.html</span>, so it shows
+            before the app has finished loading. The window background uses the last chosen theme
+            color, so there is no more white flash.
           </li>
           <li>
-            Garis loading berjalan selama aplikasi menyiapkan data. Layar pembuka tampil minimal 0,5
-            detik, supaya pada start yang cepat tidak berkedip.
+            The loading line runs while the app prepares its data. The launch screen shows for at
+            least 0.5 seconds, so a fast start does not flicker.
           </li>
           <li>
-            Saat siap, logo memudar sambil membesar sedikit, lalu aplikasi muncul dari ukuran 96,5%
-            dengan blur yang menghilang (0,46 detik, kurva pegas seperti macOS). Setelah itu tidak
-            ada animasi lain; aturan "tanpa animasi" di DESIGN.md tetap berlaku untuk pemakaian
-            sehari-hari.
+            When ready, the logo fades out while growing slightly, then the app appears from 96.5%
+            scale with a fading blur (0.46 seconds, a spring curve like macOS). After that there is
+            no other animation; the "no animation" rule in DESIGN.md still applies to everyday use.
           </li>
           <li>
-            Bila Windows diatur untuk mengurangi animasi, logo tidak berputar dan perpindahan cukup
-            memudar 0,15 detik. Centang "Reduce motion" di atas untuk melihatnya.
+            When Windows is set to reduce animation, the logo does not spin and the transition is a
+            0.15 second fade. Tick "Reduce motion" above to see it.
           </li>
         </ul>
       </section>
 
       <section aria-labelledby="notice-title">
-        <h2 id="notice-title">Poin 3: notifikasi saat akses diterima</h2>
+        <h2 id="notice-title">Point 3: notice when access is granted</h2>
         <div class="controls">
           <button type="button" class="button" id="show-a">Show option A</button>
           <button type="button" class="button" id="show-b">Show option B</button>
@@ -694,18 +693,18 @@
         </div>
         <ul class="note">
           <li>
-            <strong>Option A, di dalam aplikasi (saran):</strong> setelah rekan menekan Sync now dan
-            aksesnya sudah diberikan, muncul banner di atas konten, menyebut siapa yang memberi
-            akses dan grupnya, dengan tombol Open variables. Tanpa dependency baru dan tanpa
-            jaringan tambahan.
+            <strong>Option A, inside the app (recommended):</strong> after the teammate presses Sync
+            now and access has been granted, a banner appears above the content, naming who granted
+            access and the group, with an Open variables button. No new dependency and no extra
+            network traffic.
           </li>
           <li>
-            <strong>Option B, notifikasi Windows:</strong> selama ada permintaan akses yang
-            menunggu, Codestamp memeriksa repository di latar setiap 5 menit (hanya membaca, tanpa
-            sinkron), lalu menampilkan notifikasi Windows begitu akses diberikan, walau Codestamp
-            sedang diminimalkan. Akibatnya ada aktivitas jaringan di latar (sejak Tahap 26 sinkron
-            hanya lewat Sync now) dan butuh plugin notifikasi Tauri. Option A tetap muncul setelah
-            Sync now.
+            <strong>Option B, a Windows notification:</strong> while an access request is waiting,
+            Codestamp checks the repository in the background every 5 minutes (read only, no sync),
+            then shows a Windows notification as soon as access is granted, even when Codestamp is
+            minimized. This means background network activity (since stage 26, syncing happens only
+            through Sync now) and it needs the Tauri notification plugin. Option A still appears
+            after Sync now.
           </li>
         </ul>
       </section>

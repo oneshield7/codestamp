@@ -1,14 +1,14 @@
-# Stage 30: Akun Git per collection
+# Stage 30: A Git account per collection
 
-Suite [`stage30-e2e.mjs`](../../../e2e/stage30-e2e.mjs) · 26 cek
+Suite [`stage30-e2e.mjs`](../../../e2e/stage30-e2e.mjs) · 26 checks
 
-Panel Collaboration meminta akun hanya bila dipakai, dua collection memakai dua author berbeda, akun satu collection bisa diganti, collection https punya akun sign-in sendiri, dan backend ikut menjaga nilai akun. Dua bare repository lokal berperan sebagai dua host Git.
+The Collaboration panel asks for an account only when one is needed, two collections use two different authors, one collection's account can be changed, an https collection has its own sign-in account, and the backend guards the account values too. Two local bare repositories act as two Git hosts.
 
-## Kebutuhan
+## Requirements
 
-- Git for Windows. `https://git.test/` dipetakan ke bare repository lokal di `e2e/.work/git-hosts/` (lihat [harness](../README.md#harness)).
+- Git for Windows. `https://git.test/` is mapped to a local bare repository in `e2e/.work/git-hosts/` (see [harness](../README.md#harness)).
 
-## Alur
+## Flow
 
 ### 1. The share form asks for an account only where one is used
 
@@ -53,4 +53,4 @@ Panel Collaboration meminta akun hanya bila dipakai, dua collection memakai dua 
 
 ---
 
-Sebelumnya: [Find di editor, nama baru, dan Docs yang ringkas](stage-29.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Git accounts, Git changes, dan replace collection](stage-31.md)
+Previous: [Find in the editor, new names, and a compact Docs page](stage-29.md) · [Stage list](../README.md#stage-list) · Next: [Git accounts, Git changes, and replacing a collection](stage-31.md)

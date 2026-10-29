@@ -1,18 +1,18 @@
-# Stage 29: Find di editor, nama baru, dan Docs yang ringkas
+# Stage 29: Find in the editor, new names, and a compact Docs page
 
-Suite [`stage29-e2e.mjs`](../../../e2e/stage29-e2e.mjs) · 23 cek
+Suite [`stage29-e2e.mjs`](../../../e2e/stage29-e2e.mjs) · 23 checks
 
-Menguji Ctrl+F di editor response dan body, nama Orchestration dan Catalog, halaman Docs yang tetap pendek dengan banyak collection dan bisa dicari, serta hasil Docs di Quick search. Membuat "E2E Find" dan delapan collection "E2E Docs list" lalu menghapusnya.
+Tests Ctrl+F in the response and body editors, the names Orchestration and Catalog, a Docs page that stays short with many collections and can be searched, and Docs results in Quick search. Creates "E2E Find" and eight "E2E Docs list" collections and deletes them afterwards.
 
-## Kebutuhan
+## Requirements
 
-- Server HTTP lokal yang dibuat oleh suite itu sendiri (Node `http`).
+- A local HTTP server started by the suite itself (Node `http`).
 
-## Alur
+## Flow
 
 ### 1. Fixture
 
-Menyiapkan data atau keadaan untuk langkah berikutnya, tanpa cek sendiri.
+Prepares data or state for the next steps, with no checks of its own.
 
 ### 2. New names
 
@@ -54,4 +54,4 @@ Menyiapkan data atau keadaan untuk langkah berikutnya, tanpa cek sendiri.
 
 ---
 
-Sebelumnya: [Membuka request dan area scroll](stage-28.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Akun Git per collection](stage-30.md)
+Previous: [Opening a request and the scroll area](stage-28.md) · [Stage list](../README.md#stage-list) · Next: [A Git account per collection](stage-30.md)

@@ -1,14 +1,14 @@
-# Stage 13: Tema, Settings, variabel berwarna, dan klien MCP
+# Stage 13: Themes, Settings, colored variables, and the MCP client
 
-Suite [`stage13-e2e.mjs`](../../../e2e/stage13-e2e.mjs) · 28 cek
+Suite [`stage13-e2e.mjs`](../../../e2e/stage13-e2e.mjs) · 28 checks
 
-Mengganti tema dan membuka setiap bagian Settings, memeriksa `{{variabel}}` berwarna, lalu menjalankan request MCP ke server uji lewat STDIO (program dijalankan Codestamp setelah disetujui) dan lewat Streamable HTTP.
+Switches themes and opens every Settings section, checks colored `{{variables}}`, then runs MCP requests against a test server over STDIO (Codestamp starts the program after approval) and over Streamable HTTP.
 
-## Kebutuhan
+## Requirements
 
-- Server MCP uji `mcp-server.mjs` (Node).
+- The MCP test server `mcp-server.mjs` (Node).
 
-## Alur
+## Flow
 
 ### 1. Themes and Settings
 
@@ -49,4 +49,4 @@ Mengganti tema dan membuka setiap bagian Settings, memeriksa `{{variabel}}` berw
 
 ---
 
-Sebelumnya: [Tampilan dasar, Home, dan dialog New collection](stage-12.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Dropdown dan ikon berwarna](stage-14.md)
+Previous: [Basic look, Home, and the New collection dialog](stage-12.md) · [Stage list](../README.md#stage-list) · Next: [Dropdowns and colored icons](stage-14.md)

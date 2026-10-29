@@ -1,12 +1,82 @@
-# Codestamp
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="branding/banner-dark.svg">
+    <img alt="Codestamp: desktop API client. No account, no cloud." src="branding/banner-light.svg" width="100%">
+  </picture>
+</p>
 
-**English** · [Bahasa Indonesia](README.id.md)
+<p align="center">
+  <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-007ec6"></a>
+  <a href="../../releases"><img alt="Release: v0.3.6" src="https://img.shields.io/badge/release-v0.3.6-007ec6"></a>
+  <img alt="Platform: Windows 10 and 11" src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078d6">
+</p>
+
+<p align="center"><strong>English</strong> · <a href="README.id.md">Bahasa Indonesia</a></p>
 
 Codestamp is a desktop API client for HTTP, GraphQL, WebSocket, Server-Sent Events, gRPC, SOAP and MCP. The network core is written in Rust on Tauri 2, the interface in Svelte 5 and TypeScript, and it runs on the WebView that ships with Windows instead of a bundled browser, so the installer is about 6.5 MB.
 
-It needs no account and no cloud. Collections live in a local SQLite database, secret values are encrypted with a key kept in the operating system's credential store, and teams share collections through a Git repository they already own.
-
 Current release: **0.3.6, Windows 10 and 11 (x64)**. macOS and Linux builds are planned.
+
+## What You Need To Know
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="branding/why/local-dark.svg">
+        <img alt="A computer holding codestamp.db, with the encryption key in Windows Credential Manager" src="branding/why/local-light.svg" width="380">
+      </picture>
+      <h3>Your collections stay on your computer</h3>
+      <p>There is no account and no cloud. Requests live in a local SQLite database, and Codestamp encrypts secret values with a key that Windows keeps in Credential Manager.</p>
+    </td>
+    <td width="50%" valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="branding/why/git-dark.svg">
+        <img alt="Two edits to different fields of one request, merged without a conflict" src="branding/why/git-light.svg" width="380">
+      </picture>
+      <h3>Your team shares through Git</h3>
+      <p>Each request is a separate file in a repository your team already has. Codestamp merges changes field by field, so two people who edit different parts of one request do not get a conflict. Signing in stays with Git's credential manager.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="branding/why/secrets-dark.svg">
+        <img alt="A masked token that history, export, Copy as code and access groups never write out" src="branding/why/secrets-light.svg" width="380">
+      </picture>
+      <h3>Secrets stay out of what you share</h3>
+      <p>History keeps <code>{{token}}</code> instead of the value, exports leave secrets empty, and Copy as code reads them from environment variables. Values only part of the team may see go into an access group, and the repository holds only their ciphertext.</p>
+    </td>
+    <td width="50%" valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="branding/why/kinds-dark.svg">
+        <img alt="One collection with POST, SOAP, gRPC and MCP requests as numbered steps" src="branding/why/kinds-light.svg" width="380">
+      </picture>
+      <h3>Mix request types in one collection</h3>
+      <p>HTTP, GraphQL, WebSocket, Server-Sent Events, gRPC, SOAP and MCP requests sit in the same notebook as numbered steps.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="branding/why/postman-dark.svg">
+        <img alt="Postman collections imported into Codestamp and exported back" src="branding/why/postman-light.svg" width="380">
+      </picture>
+      <h3>Bring your Postman collections</h3>
+      <p>Codestamp imports Postman Collection v2.0 and v2.1 files with their environments, scripts use a Postman-style <code>pm.*</code> API, and you can export back to Postman Collection v2.1.</p>
+    </td>
+    <td width="50%" valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="branding/why/cli-dark.svg">
+        <img alt="codestamp-cli output with passed and failed steps and a JUnit report" src="branding/why/cli-light.svg" width="380">
+      </picture>
+      <h3>Run the same collection in CI</h3>
+      <p><code>codestamp-cli</code> runs a collection with its scripts and tests, writes JUnit or JSON reports, and exits with code 1 when a test fails.</p>
+    </td>
+  </tr>
+</table>
+
+The code is open under Apache-2.0, so you can read how Codestamp handles your secrets before you trust it with them.
 
 ## Features
 
@@ -89,8 +159,8 @@ End-to-end suites drive a release build of the app on Windows. They live in [`e2
 ## Documentation
 
 - [`README.id.md`](README.id.md): the full feature notes, stage by stage, with the installer, updater and security details (Indonesian).
-- [`DESIGN.md`](DESIGN.md): the design system and UI patterns (Indonesian).
-- [`docs/testing`](docs/testing/README.md): how each end-to-end stage works (Indonesian).
+- [`DESIGN.md`](DESIGN.md): the design system and UI patterns.
+- [`docs/testing`](docs/testing/README.md): how each end-to-end stage works.
 - [`CHANGELOG.md`](CHANGELOG.md): changes per release.
 
 ## Security
@@ -99,8 +169,8 @@ All input from the interface is validated again in the Rust core, TLS certificat
 
 ## Contributing
 
-Bug reports and pull requests are welcome. Read [`CONTRIBUTING.md`](CONTRIBUTING.md) first.
+Bug reports and pull requests are welcome. Read [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## License
 
-Codestamp is licensed under the [Apache License 2.0](LICENSE). The license does not grant permission to use the Codestamp name or logo for other products.
+Codestamp is licensed under the [Apache License 2.0](LICENSE).

@@ -1,15 +1,15 @@
-# Stage 40: Quick search, shortcut, status bar, Export, History, dan Recently deleted
+# Stage 40: Quick search, shortcuts, status bar, Export, History, and Recently deleted
 
-Suite [`stage40-e2e.mjs`](../../../e2e/stage40-e2e.mjs) · 40 cek
+Suite [`stage40-e2e.mjs`](../../../e2e/stage40-e2e.mjs) · 40 checks
 
-Quick search terbuka tanpa latar blur dan tanpa frame yang tersendat, tidak ada teks shortcut di layar maupun tooltip, tooltip rel dan title bar tidak terpotong, status bar menampilkan versi yang sedang berjalan, Export ada di collection dengan dropdown format (Codestamp, Postman v2.1, Docs), file Codestamp bisa diimpor, History terpisah per collection, dan Recently deleted memulihkan item lewat Undo maupun halamannya.
+Quick search opens without a blurred backdrop and without dropped frames, no shortcut text appears on screen or in tooltips, rail and title bar tooltips are not cut off, the status bar shows the running version, Export sits on the collection with a format dropdown (Codestamp, Postman v2.1, Docs), Codestamp files can be imported, History is separate per collection, and Recently deleted restores items through Undo or its own page.
 
-## Kebutuhan
+## Requirements
 
-- Server HTTP lokal yang dibuat oleh suite itu sendiri (Node `http`).
-- Dialog simpan atau buka file Windows, dijawab oleh `answer-dialog.ps1`.
+- A local HTTP server started by the suite itself (Node `http`).
+- The Windows save or open file dialog, answered by `answer-dialog.ps1`.
 
-## Alur
+## Flow
 
 ### 1. No shortcut text anywhere
 
@@ -83,4 +83,4 @@ Quick search terbuka tanpa latar blur dan tanpa frame yang tersendat, tidak ada 
 
 ---
 
-Sebelumnya: [Posisi jendela, environment aktif, dan lipatan](stage-39.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Alur collection dasar](collections.md)
+Previous: [Window position, the active environment, and folding](stage-39.md) · [Stage list](../README.md#stage-list) · Next: [Basic collection flow](collections.md)

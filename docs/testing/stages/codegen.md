@@ -1,55 +1,55 @@
-# Copy as code: kode yang dihasilkan dijalankan
+# Copy as code: the generated code is run
 
-Suite [`codegen-e2e.mjs`](../../../e2e/codegen-e2e.mjs) · 90 cek (15 bahasa × 6 kasus)
+Suite [`codegen-e2e.mjs`](../../../e2e/codegen-e2e.mjs) · 90 checks (15 languages × 6 cases)
 
-Generator Copy as code (`src/lib/request/codegen/`) di-bundle dengan rolldown. Setiap kasus lalu ditulis dalam 15 bahasa, dijalankan dengan toolchain sungguhan terhadap server HTTP lokal, dan request yang benar-benar diterima server dibandingkan dengan yang diharapkan: method, path, query (urutan ikut dicek), header, dan body. Kasus yang memakai _Environment variables_ menerima nilainya lewat environment proses, seperti saat pengguna menjalankan kode itu.
+The Copy as code generators (`src/lib/request/codegen/`) are bundled with rolldown. Each case is then written in 15 languages, run with the real toolchain against a local HTTP server, and the request the server actually received is compared with the expected one: method, path, query (order included), headers, and body. Cases that use _Environment variables_ get their values through the process environment, the same way a user runs the code.
 
-## Kebutuhan
+## Requirements
 
-- Server HTTP lokal yang dibuat oleh suite itu sendiri (Node `http`).
-- cURL: `bash` dan `curl`. Di Windows dipakai `curl.exe` bawaan Windows, karena curl dari Git for Windows mengirim argumen non-ASCII dalam code page ANSI.
-- PowerShell: `powershell` (5.1) atau `pwsh`. File `.ps1` disimpan sebagai UTF-8 dengan BOM, sesuai komentar di kode yang dihasilkan.
-- JavaScript: Node.js 18 atau lebih baru.
-- Python: Python 3 dengan paket `requests`.
-- Java: JDK 15 atau lebih baru (`java Main.java`).
+- A local HTTP server started by the suite itself (Node `http`).
+- cURL: `bash` and `curl`. On Windows the suite uses the `curl.exe` that ships with Windows, because the curl from Git for Windows sends non-ASCII arguments in the ANSI code page.
+- PowerShell: `powershell` (5.1) or `pwsh`. `.ps1` files are saved as UTF-8 with a BOM, as the comment in the generated code says.
+- JavaScript: Node.js 18 or later.
+- Python: Python 3 with the `requests` package.
+- Java: JDK 15 or later (`java Main.java`).
 - C#: .NET SDK 10 (`dotnet run request.cs`).
-- HTTPie: dipasang di `e2e/.work/venv` (`python -m venv e2e/.work/venv`, lalu `pip install httpie` dari venv itu).
-- JavaScript axios: `npm install --prefix e2e` (axios ada di `e2e/package.json`).
-- Rust: Cargo dengan `reqwest` 0.13 dan `serde_urlencoded` di cache Cargo (sekali `cargo fetch` cukup). Suite membangun offline (`cargo run --offline`) memakai baris `Cargo.toml` dari komentar kode yang dihasilkan, dengan folder build bersama di `e2e/.work/rust-target`.
-- Go, PHP, Ruby, Kotlin, Dart, dan Swift: Docker yang sedang berjalan, dengan image `golang:1.24-alpine`, `composer:2`, `ruby:3-alpine`, `gradle:jdk21`, `dart:stable`, dan `swift:6.1`. Suite tidak pernah mengunduh image (`--pull never`). Guzzle dipasang sekali lewat Composer ke `e2e/.work/php-deps` (dicoba sampai 3 kali, karena Packagist kadang timeout dari container) lalu dipakai bersama semua kasus PHP; Kotlin mengunduh OkHttp lewat Gradle, dan Dart mengunduh `http` lewat `dart pub get`. Server dijangkau lewat `host.docker.internal`.
+- HTTPie: installed in `e2e/.work/venv` (`python -m venv e2e/.work/venv`, then `pip install httpie` from that venv).
+- JavaScript axios: `npm install --prefix e2e` (axios is in `e2e/package.json`).
+- Rust: Cargo with `reqwest` 0.13 and `serde_urlencoded` in the Cargo cache (one `cargo fetch` is enough). The suite builds offline (`cargo run --offline`) from the `Cargo.toml` line in the generated code's comment, with a shared build folder in `e2e/.work/rust-target`.
+- Go, PHP, Ruby, Kotlin, Dart, and Swift: a running Docker with the images `golang:1.24-alpine`, `composer:2`, `ruby:3-alpine`, `gradle:jdk21`, `dart:stable`, and `swift:6.1`. The suite never pulls images (`--pull never`). Guzzle is installed once with Composer into `e2e/.work/php-deps` (up to 3 attempts, because Packagist sometimes times out from a container) and shared by every PHP case; Kotlin downloads OkHttp through Gradle, and Dart downloads `http` through `dart pub get`. The server is reached through `host.docker.internal`.
 
-Bahasa yang toolchain atau image-nya tidak tersedia ditandai SKIP, tidak gagal. Multipart di PowerShell juga di-SKIP bila yang ada hanya Windows PowerShell 5.1, karena `-Form` baru ada di PowerShell 7.
+A language whose toolchain or image is missing is marked SKIP, not failed. Multipart in PowerShell is also skipped when only Windows PowerShell 5.1 is available, because `-Form` arrived in PowerShell 7.
 
-## Alur
+## Flow
 
-Setiap kasus dijalankan di cURL, HTTPie, PowerShell, JavaScript `fetch` dan axios, Python `requests`, PHP Guzzle, Go `net/http`, Java `HttpClient`, Kotlin OkHttp, C# `HttpClient`, Dart `http`, Swift `URLSession`, Ruby `Net::HTTP`, dan Rust `reqwest`.
+Every case runs in cURL, HTTPie, PowerShell, JavaScript `fetch` and axios, Python `requests`, PHP Guzzle, Go `net/http`, Java `HttpClient`, Kotlin OkHttp, C# `HttpClient`, Dart `http`, Swift `URLSession`, Ruby `Net::HTTP`, and Rust `reqwest`.
 
 ### 1. JSON body, query and headers from environment variables
 
-- `{{baseUrl}}`, `{{search}}`, `{{token}}`, dan `{{name}}` dibaca dari environment variable.
-- Body JSON multi-baris berisi kutip, backslash, `$HOME`, `%`, backtick, kurung kurawal, dan `é` tiba persis sama.
-- Query tiba berurutan dan ter-encode (`kopi & teh`).
+- `{{baseUrl}}`, `{{search}}`, `{{token}}`, and `{{name}}` are read from environment variables.
+- A multi-line JSON body with quotes, backslashes, `$HOME`, `%`, backticks, braces, and `é` arrives exactly as written.
+- The query arrives in order and encoded (`kopi & teh`).
 
 ### 2. URL-encoded form
 
-- Field tiba dengan urutan aslinya dan ter-encode benar (`&`, `%`, `+`, spasi).
+- Fields arrive in their original order and correctly encoded (`&`, `%`, `+`, spaces).
 
 ### 3. Basic auth encoded when the code runs
 
-- Username dan password dari environment variable dienkode Base64 saat kode berjalan; password berisi `:`.
+- The username and password from environment variables are Base64-encoded when the code runs; the password contains `:`.
 
 ### 4. Multipart with a file
 
-- Field teks dan file tiba sebagai `multipart/form-data` dengan nama, nama file, dan isi file yang benar.
+- The text field and the file arrive as `multipart/form-data` with the right names, file name, and file content.
 
 ### 5. Binary file body
 
-- Isi file dikirim apa adanya sebagai body `PUT`.
+- The file content is sent as is as a `PUT` body.
 
 ### 6. Values as written, with characters each language has to escape
 
-- Nilai literal berisi `'`, `"`, `"""`, `'''`, `'@`, `"@`, `${x}`, `%s`, `{0}`, backtick, backslash, dan `{{literal}}` tiba tanpa berubah di URL, header, dan body.
+- Literal values containing `'`, `"`, `"""`, `'''`, `'@`, `"@`, `${x}`, `%s`, `{0}`, backticks, backslashes, and `{{literal}}` arrive unchanged in the URL, headers, and body.
 
 ---
 
-Sebelumnya: [CLI: codestamp-cli](cli.md) · [Daftar stage](../README.md#daftar-stage)
+Previous: [CLI: codestamp-cli](cli.md) · [Stage list](../README.md#stage-list)

@@ -1,14 +1,14 @@
-# Stage 24: Body XML dan HTML, SOAP, dan import WSDL
+# Stage 24: XML and HTML bodies, SOAP, and WSDL import
 
-Suite [`stage24-e2e.mjs`](../../../e2e/stage24-e2e.mjs) · 20 cek
+Suite [`stage24-e2e.mjs`](../../../e2e/stage24-e2e.mjs) · 20 checks
 
-Menguji body XML, HTML, dan Binary, response XML dan HTML yang dirapikan, request SOAP dari WSDL (import, SOAP 1.1 dan 1.2, fault, `xml2Json` di test script), tombol SOAP di kepala section, import WSDL menjadi collection, WSDL lewat http biasa di host lain, dan tooltip tile Home. Membuat "E2E SOAP" dan "Calculator" lalu menghapus keduanya.
+Tests XML, HTML, and Binary bodies, formatted XML and HTML responses, SOAP requests from a WSDL (import, SOAP 1.1 and 1.2, faults, `xml2Json` in test scripts), the SOAP button in the section header, importing a WSDL as a collection, a WSDL over plain http on another host, and the Home tile tooltips. Creates "E2E SOAP" and "Calculator" and deletes both afterwards.
 
-## Kebutuhan
+## Requirements
 
-- Server SOAP uji `soap-server.mjs` (Node).
+- The SOAP test server `soap-server.mjs` (Node).
 
-## Alur
+## Flow
 
 ### 1. XML, HTML and Binary bodies
 
@@ -53,4 +53,4 @@ Menguji body XML, HTML, dan Binary, response XML dan HTML yang dirapikan, reques
 
 ---
 
-Sebelumnya: [Orchestration](stage-23.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Title bar dan sidebar yang diciutkan](stage-25.md)
+Previous: [Orchestration](stage-23.md) · [Stage list](../README.md#stage-list) · Next: [Title bar and the collapsed sidebar](stage-25.md)

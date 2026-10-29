@@ -1,14 +1,14 @@
 # Stage 21: Server-Sent Events
 
-Suite [`stage21-e2e.mjs`](../../../e2e/stage21-e2e.mjs) · 7 cek
+Suite [`stage21-e2e.mjs`](../../../e2e/stage21-e2e.mjs) · 7 checks
 
-Response `text/event-stream` tampil event demi event, stream tanpa akhir bertahan melewati timeout request dan bisa dihentikan, dan Run all tidak macet karenanya. Membuat "E2E Events" lalu menghapusnya, dan mengembalikan timeout request seperti semula.
+A `text/event-stream` response shows event by event, an endless stream outlives the request timeout and can be stopped, and Run all does not hang on it. Creates "E2E Events" and deletes it afterwards, and restores the request timeout.
 
-## Kebutuhan
+## Requirements
 
-- Server HTTP lokal yang dibuat oleh suite itu sendiri (Node `http`).
+- A local HTTP server started by the suite itself (Node `http`).
 
-## Alur
+## Flow
 
 ### 1. A finite stream
 
@@ -28,4 +28,4 @@ Response `text/event-stream` tampil event demi event, stream tanpa akhir bertaha
 
 ---
 
-Sebelumnya: [Example dan mock server](stage-20.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Request gRPC](stage-22.md)
+Previous: [Examples and the mock server](stage-20.md) · [Stage list](../README.md#stage-list) · Next: [gRPC requests](stage-22.md)

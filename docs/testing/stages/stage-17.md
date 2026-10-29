@@ -1,22 +1,22 @@
-# Stage 17: Auth: Digest, AWS SigV4, dan OAuth 2.0
+# Stage 17: Auth: Digest, AWS SigV4, and OAuth 2.0
 
-Suite [`stage17-e2e.mjs`](../../../e2e/stage17-e2e.mjs) · 15 cek
+Suite [`stage17-e2e.mjs`](../../../e2e/stage17-e2e.mjs) · 15 checks
 
-Server lokal memeriksa apa yang mereka terima untuk Digest, AWS Signature V4, dan OAuth 2.0: client credentials, password dengan refresh, authorization code dengan PKCE di jendela sign-in, dan auth yang diwarisi dari collection. Token harus ikut terhapus bersama request-nya. Membuat "E2E Auth" lalu menghapusnya.
+Local servers check what they receive for Digest, AWS Signature V4, and OAuth 2.0: client credentials, password with refresh, authorization code with PKCE in the sign-in window, and auth inherited from the collection. Tokens must be deleted together with their request. Creates "E2E Auth" and deletes it afterwards.
 
-## Kebutuhan
+## Requirements
 
-- Server HTTP lokal yang dibuat oleh suite itu sendiri (Node `http`).
+- A local HTTP server started by the suite itself (Node `http`).
 
-## Alur
+## Flow
 
 ### 1. The servers
 
-Menyalakan server lokal yang memeriksa permintaan auth.
+Starts the local servers that check the auth requests.
 
 ### 2. CDP
 
-Terhubung ke salinan uji lewat CDP dan memasang helper.
+Connects to the test copy over CDP and installs the helpers.
 
 ### 3. Digest
 
@@ -56,4 +56,4 @@ Terhubung ke salinan uji lewat CDP dan memasang helper.
 
 ---
 
-Sebelumnya: [Path variable dan run berbasis data](stage-16.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Import OpenAPI dan Swagger](stage-18.md)
+Previous: [Path variables and data-driven runs](stage-16.md) · [Stage list](../README.md#stage-list) · Next: [OpenAPI and Swagger import](stage-18.md)

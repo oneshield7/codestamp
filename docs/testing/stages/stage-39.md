@@ -1,12 +1,12 @@
-# Stage 39: Posisi jendela, environment aktif, dan lipatan
+# Stage 39: Window position, the active environment, and folding
 
-Suite [`stage39-e2e.mjs`](../../../e2e/stage39-e2e.mjs) · 14 cek
+Suite [`stage39-e2e.mjs`](../../../e2e/stage39-e2e.mjs) · 14 checks
 
-Jendela terbuka di tengah layar, hanya environment aktif yang bertitik hijau, section Docs mulai terlipat dan lipatannya diingat, grup Tools di sidebar terlipat dan diingat setelah restart, rel ikon tetap menampilkan semua halaman, tombol "+" sejajar dengan angka jumlah request, dan gerigi di status bar membuka Settings.
+The window opens in the center of the screen, only the active environment has a green dot, Docs sections start folded and the folding is remembered, the Tools group in the sidebar is folded and remembered after a restart, the icon rail still shows every page, the "+" button lines up with the request count, and the gear in the status bar opens Settings.
 
-## Alur
+## Flow
 
-### 1. Awal
+### 1. Setup
 
 - the window opens in the middle of its screen
 
@@ -40,4 +40,4 @@ Jendela terbuka di tengah layar, hanya environment aktif yang bertitik hijau, se
 
 ---
 
-Sebelumnya: [Layar pembuka](stage-38.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Quick search, shortcut, status bar, Export, History, dan Recently deleted](stage-40.md)
+Previous: [Launch screen](stage-38.md) · [Stage list](../README.md#stage-list) · Next: [Quick search, shortcuts, status bar, Export, History, and Recently deleted](stage-40.md)

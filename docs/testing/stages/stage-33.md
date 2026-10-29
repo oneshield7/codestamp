@@ -1,16 +1,16 @@
-# Stage 33: Status bar, Ctrl+S, sync manual, dan environment bersama
+# Stage 33: Status bar, Ctrl+S, manual sync, and shared environments
 
-Suite [`stage33-e2e.mjs`](../../../e2e/stage33-e2e.mjs) · 16 cek
+Suite [`stage33-e2e.mjs`](../../../e2e/stage33-e2e.mjs) · 16 checks
 
-Status bar berisi Settings, Recently deleted, Cookies, dan Environments. Ctrl+S menyimpan environment dan panel collection, tidak ada yang tersinkron sendiri tanpa Sync now, variabel collection yang ditimpa environment aktif diberi tanda, dan environment milik collection ikut dibagikan.
+The status bar holds Settings, Recently deleted, Cookies, and Environments. Ctrl+S saves environments and the collection panel, nothing syncs on its own without Sync now, collection variables overridden by the active environment are marked, and environments owned by a collection are shared with it.
 
-## Kebutuhan
+## Requirements
 
-- Git for Windows. `https://git.test/` dipetakan ke bare repository lokal di `e2e/.work/git-hosts/` (lihat [harness](../README.md#harness)).
+- Git for Windows. `https://git.test/` is mapped to a local bare repository in `e2e/.work/git-hosts/` (see [harness](../README.md#harness)).
 
-## Alur
+## Flow
 
-### 1. Awal
+### 1. Setup
 
 - the collection is shared over the stand-in host
 
@@ -46,4 +46,4 @@ Status bar berisi Settings, Recently deleted, Cookies, dan Environments. Ctrl+S 
 
 ---
 
-Sebelumnya: [Share ke repository yang sudah berisi file](stage-32.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Pembaruan dalam aplikasi](stage-34.md)
+Previous: [Sharing to a repository that already has files](stage-32.md) · [Stage list](../README.md#stage-list) · Next: [In-app updates](stage-34.md)

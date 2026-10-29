@@ -1,15 +1,15 @@
-# Stage 35: Perbaikan Git: clone rusak dan sign-in hilang
+# Stage 35: Git fixes: a broken clone and a lost sign-in
 
-Suite [`stage35-e2e.mjs`](../../../e2e/stage35-e2e.mjs) · 9 cek
+Suite [`stage35-e2e.mjs`](../../../e2e/stage35-e2e.mjs) · 9 checks
 
-Sync now membangun ulang clone yang kehilangan folder `.git`, dan collection yang sign-in-nya hilang menawarkan tombol Sign in. `https://auth.test/` diarahkan ke server Git HTTP lokal yang menjawab 401 sampai tes "masuk". Credential helper Git dimatikan untuk salinan uji, jadi tidak ada jendela sign-in yang terbuka di desktop.
+Sync now rebuilds a clone that lost its `.git` folder, and a collection whose sign-in is gone offers a Sign in button. `https://auth.test/` points to a local Git HTTP server that answers 401 until the test "signs in". The Git credential helper is turned off for the test copy, so no sign-in window opens on the desktop.
 
-## Kebutuhan
+## Requirements
 
-- Git for Windows. `https://git.test/` dipetakan ke bare repository lokal di `e2e/.work/git-hosts/` (lihat [harness](../README.md#harness)).
-- Server Git HTTP lokal (`git http-backend`) yang dibuat suite.
+- Git for Windows. `https://git.test/` is mapped to a local bare repository in `e2e/.work/git-hosts/` (see [harness](../README.md#harness)).
+- A local Git HTTP server (`git http-backend`) started by the suite.
 
-## Alur
+## Flow
 
 ### 1. A clone that lost its .git is rebuilt by Sync now
 
@@ -28,4 +28,4 @@ Sync now membangun ulang clone yang kehilangan folder `.git`, dan collection yan
 
 ---
 
-Sebelumnya: [Pembaruan dalam aplikasi](stage-34.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Git changes dengan riwayat panjang](stage-36.md)
+Previous: [In-app updates](stage-34.md) · [Stage list](../README.md#stage-list) · Next: [Git changes with a long history](stage-36.md)

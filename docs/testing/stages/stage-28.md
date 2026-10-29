@@ -1,12 +1,12 @@
-# Stage 28: Membuka request dan area scroll
+# Stage 28: Opening a request and the scroll area
 
-Suite [`stage28-e2e.mjs`](../../../e2e/stage28-e2e.mjs) · 17 cek
+Suite [`stage28-e2e.mjs`](../../../e2e/stage28-e2e.mjs) · 17 checks
 
-Request yang dibuka dari Quick search atau Docs digulir ke tampilan dan menerima fokus, juga saat letaknya jauh di bawah, di section terlipat, atau dari halaman lain. Baris yang sudah terlihat tidak menggeser halaman. Title bar tetap di atas, dan hanya area di antara title bar dan status bar yang di-scroll. Membuat "E2E Jump" lalu menghapusnya.
+A request opened from Quick search or Docs scrolls into view and receives focus, also when it sits far down, in a folded section, or on another page. A row that is already visible does not move the page. The title bar stays on top, and only the area between the title bar and the status bar scrolls. Creates "E2E Jump" and deletes it afterwards.
 
-## Alur
+## Flow
 
-### 1. Awal
+### 1. Setup
 
 - the fixture is longer than the window
 
@@ -55,4 +55,4 @@ Request yang dibuka dari Quick search atau Docs digulir ke tampilan dan menerima
 
 ---
 
-Sebelumnya: [Indentasi None, SSL/TLS, dan Docs](stage-27.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Find di editor, nama baru, dan Docs yang ringkas](stage-29.md)
+Previous: [None indentation, SSL/TLS, and Docs](stage-27.md) · [Stage list](../README.md#stage-list) · Next: [Find in the editor, new names, and a compact Docs page](stage-29.md)

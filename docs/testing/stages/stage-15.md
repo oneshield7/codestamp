@@ -1,15 +1,15 @@
-# Stage 15: Wording, Quick search, dan simpan body response
+# Stage 15: Wording, Quick search, and saving the response body
 
-Suite [`stage15-e2e.mjs`](../../../e2e/stage15-e2e.mjs) · 24 cek
+Suite [`stage15-e2e.mjs`](../../../e2e/stage15-e2e.mjs) · 24 checks
 
-Memastikan teks UI tidak menyebut "Postman" dan memakai "Collaboration", lalu menguji Quick search: saran path, pencarian dari dalam editor kode, kata method, halaman Settings dan environment, serta menutupnya. Terakhir menyimpan body response ke file. Membuat collection "E2E Search" lalu menghapusnya.
+Makes sure the UI text never mentions "Postman" and uses "Collaboration", then tests Quick search: path suggestions, searching from inside the code editor, method words, Settings pages and environments, and closing it. Finally saves a response body to a file. Creates the collection "E2E Search" and deletes it afterwards.
 
-## Kebutuhan
+## Requirements
 
-- Server HTTP lokal yang dibuat oleh suite itu sendiri (Node `http`).
-- Dialog simpan atau buka file Windows, dijawab oleh `answer-dialog.ps1`.
+- A local HTTP server started by the suite itself (Node `http`).
+- The Windows save or open file dialog, answered by `answer-dialog.ps1`.
 
-## Alur
+## Flow
 
 ### 1. Wording
 
@@ -64,4 +64,4 @@ Memastikan teks UI tidak menyebut "Postman" dan memakai "Collaboration", lalu me
 
 ---
 
-Sebelumnya: [Dropdown dan ikon berwarna](stage-14.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Path variable dan run berbasis data](stage-16.md)
+Previous: [Dropdowns and colored icons](stage-14.md) · [Stage list](../README.md#stage-list) · Next: [Path variables and data-driven runs](stage-16.md)

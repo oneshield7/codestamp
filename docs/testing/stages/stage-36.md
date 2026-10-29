@@ -1,16 +1,16 @@
-# Stage 36: Git changes dengan riwayat panjang
+# Stage 36: Git changes with a long history
 
-Suite [`stage36-e2e.mjs`](../../../e2e/stage36-e2e.mjs) · 14 cek
+Suite [`stage36-e2e.mjs`](../../../e2e/stage36-e2e.mjs) · 14 checks
 
-Rekan kerja menambah 120 commit lewat bare repository lokal. Halaman Git changes tidak ikut scroll; daftar commit dan detailnya scroll sendiri di bawah header yang tetap. Di jendela kecil, isinya scroll utuh dan commit lama tetap bisa dimuat.
+A teammate adds 120 commits through a local bare repository. The Git changes page does not scroll as a whole; the commit list and its details scroll on their own under a fixed header. In a small window the content scrolls as a whole and older commits can still be loaded.
 
-## Kebutuhan
+## Requirements
 
-- Git for Windows. `https://git.test/` dipetakan ke bare repository lokal di `e2e/.work/git-hosts/` (lihat [harness](../README.md#harness)).
+- Git for Windows. `https://git.test/` is mapped to a local bare repository in `e2e/.work/git-hosts/` (see [harness](../README.md#harness)).
 
-## Alur
+## Flow
 
-### 1. Awal
+### 1. Setup
 
 - in a small window the history scrolls as a whole
 - older commits load in a small window too
@@ -29,4 +29,4 @@ Rekan kerja menambah 120 commit lewat bare repository lokal. Halaman Git changes
 
 ---
 
-Sebelumnya: [Perbaikan Git: clone rusak dan sign-in hilang](stage-35.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Grup akses](stage-37.md)
+Previous: [Git fixes: a broken clone and a lost sign-in](stage-35.md) · [Stage list](../README.md#stage-list) · Next: [Access groups](stage-37.md)

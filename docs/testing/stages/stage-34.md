@@ -1,15 +1,15 @@
-# Stage 34: Pembaruan dalam aplikasi
+# Stage 34: In-app updates
 
-Suite [`stage34-e2e.mjs`](../../../e2e/stage34-e2e.mjs) · 21 cek
+Suite [`stage34-e2e.mjs`](../../../e2e/stage34-e2e.mjs) · 21 checks
 
-Diuji terhadap server update lokal dengan build khusus. `node updater/prepare.mjs` membuat kunci tanda tangan sekali pakai, `test.conf.json` (kunci publik uji, alamat `http://127.0.0.1:9455`, dan izin http biasa), "installer" palsu yang hanya mencatat argumennya dan ditandatangani untuk versi berikutnya, serta `release.json` berisi versi yang diumumkan suite. Versinya dihitung dari versi aplikasi, jadi suite ini tidak perlu diubah setiap rilis. Halaman ini juga mencakup `stage34-guard` dan `stage34-unset`, yang memakai build biasa.
+Tested against a local update server with a dedicated build. `node updater/prepare.mjs` creates a single-use signing key, `test.conf.json` (the test public key, the address `http://127.0.0.1:9455`, and permission for plain http), a fake "installer" that only records its arguments and is signed for the next version, and `release.json` with the version the suite announces. The version is derived from the app version, so the suite does not need changes for each release. This page also covers `stage34-guard` and `stage34-unset`, which use the normal build.
 
-## Kebutuhan
+## Requirements
 
-- `node updater/prepare.mjs`, lalu build uji dengan `--config e2e/.work/updater/test.conf.json` (lihat [Menjalankan](../README.md#menjalankan)).
-- Rust (`rustc`) untuk mengompilasi installer palsu.
+- `node updater/prepare.mjs`, then the test build with `--config e2e/.work/updater/test.conf.json` (see [Running](../README.md#running)).
+- Rust (`rustc`) to compile the fake installer.
 
-## Alur
+## Flow
 
 ### 1. The check at start-up
 
@@ -53,20 +53,20 @@ Diuji terhadap server update lokal dengan build khusus. `node updater/prepare.mj
 - Codestamp closes and starts the installer in update mode
 - the test copy is no longer running
 
-## Penjaga perubahan yang belum disimpan
+## Unsaved changes guard
 
 Suite [`stage34-guard-e2e.mjs`](../../../e2e/stage34-guard-e2e.mjs).
 
-### 1. Awal
+### 1. Setup
 
 - unsaved collection variables still stop leaving, with the same message
 - test data cleaned up
 
-## Build tanpa alamat update
+## A build without an update address
 
 Suite [`stage34-unset-e2e.mjs`](../../../e2e/stage34-unset-e2e.mjs).
 
-### 1. Awal
+### 1. Setup
 
 - no update banner without an update server
 - the check answers notConfigured without a request
@@ -75,4 +75,4 @@ Suite [`stage34-unset-e2e.mjs`](../../../e2e/stage34-unset-e2e.mjs).
 
 ---
 
-Sebelumnya: [Status bar, Ctrl+S, sync manual, dan environment bersama](stage-33.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Perbaikan Git: clone rusak dan sign-in hilang](stage-35.md)
+Previous: [Status bar, Ctrl+S, manual sync, and shared environments](stage-33.md) · [Stage list](../README.md#stage-list) · Next: [Git fixes: a broken clone and a lost sign-in](stage-35.md)

@@ -1,27 +1,27 @@
-# DESIGN.md: panduan desain Codestamp
+# DESIGN.md: Codestamp design guide
 
-Panduan visual dan pola UI Codestamp: acuan saat menambah atau mengubah layar, baik untuk manusia maupun AI agent. Arah visualnya bernama **"Postmark"**. Sumber kebenaran token adalah `src/app.css`. Bila dokumen ini berbeda dengan kode, kode yang benar dan dokumen ini yang diperbarui.
+Visual guide and UI patterns for Codestamp: the reference for adding or changing screens, for both people and AI agents. The visual direction is called **"Postmark"**. The source of truth for tokens is `src/app.css`. If this document differs from the code, the code is correct and this document gets updated.
 
-## 1. Karakter
+## 1. Character
 
-- **Alat kerja harian**, bukan halaman pemasaran: tenang, padat, mudah dipindai.
-- **Monokrom "tinta"**: abu dingin dan putih. Latar tinta hampir hitam hanya untuk tombol aksi utama di dialog dan panel (Create collection, Duplicate, Save, Share), **tidak pernah untuk menu** (tile, toolbar, item sidebar). **Warna hanya untuk makna**: status (ok / warn / err), method HTTP ("cap pos"), dan ikon emoji collection.
-- **Bentuk notebook**: collection adalah daftar langkah bernomor. Satu request terbuka sebagai kartu, sisanya baris ringkas.
-- **Datar**: garis 1px dan latar yang sedikit berbeda lebih diutamakan daripada bayangan. Bayangan hanya untuk yang terangkat atau mengambang (item sidebar aktif, kartu terbuka, popover, dialog).
-- **Tanpa animasi atau transition**; perubahan state langsung terlihat. Satu-satunya pengecualian adalah perpindahan dari layar pembuka ke aplikasi saat Codestamp dibuka (lihat _Layar pembuka_).
-- **Hanya tema terang** (`color-scheme: light`). Semua warna lewat token, sehingga tema gelap kelak cukup mendefinisikan ulang token di `:root`.
+- **A daily work tool**, not a marketing page: calm, dense, easy to scan.
+- **"Ink" monochrome**: cool grays and white. The near-black ink background is only for primary action buttons in dialogs and panels (Create collection, Duplicate, Save, Share), **never for menus** (tiles, toolbar, sidebar items). **Color only for meaning**: status (ok / warn / err), HTTP methods ("method stamp"), and collection emoji icons.
+- **Notebook shape**: a collection is a numbered list of steps. One request is open as a card, the rest are compact rows.
+- **Flat**: 1px borders and slightly different backgrounds are preferred over shadows. Shadows are only for raised or floating elements (active sidebar item, open card, popovers, dialogs).
+- **No animations or transitions**; state changes show immediately. The only exception is the switch from the launch screen to the app when Codestamp opens (see _Launch screen_).
+- **Three themes, one set of tokens**: Light, Dark, and Dark Night redefine the same tokens in `src/app.css` and set `color-scheme` to `light` or `dark` (see _Themes_).
 
-## 2. Warna
+## 2. Color
 
-### Tema
+### Themes
 
-Empat pilihan di Settings › Appearance: **Light** (bawaan), **Dark** (grafit netral), **Dark Night** (hitam kebiruan untuk malam), dan **System** (mengikuti Windows, Light atau Dark). Tema dipasang lewat `data-theme` di `<html>`; elemen apa pun boleh memakai `data-theme` sendiri, seperti pratinjau di pemilih tema.
+Four options in Settings › Appearance: **Light** (default), **Dark** (neutral graphite), **Dark Night** (bluish black for night use), and **System** (follows Windows, Light or Dark). The theme is set through `data-theme` on `<html>`; any element may use its own `data-theme`, such as the previews in the theme picker.
 
-- Nilai di tabel bawah adalah tema Light. Dark dan Dark Night menimpa token yang sama di `src/app.css`; komponen tidak pernah tahu tema yang aktif.
-- Kedua tema gelap memakai warna makna yang sama (status, method, variabel) dalam versi terang, dengan latar dan garis tembus pandang (`rgba`) sehingga cocok di atas kedua permukaan.
-- `--on-accent` menjadi tinta gelap di tema gelap, karena `--accent` dan warna method di sana terang. Teks di atas warna method (Send, Run tool, tombol hapus) selalu memakai `--on-accent`.
-- Title bar Windows ikut gelap untuk Dark dan Dark Night (`set_theme` di Rust).
-- Semua pasangan teks/latar di ketiga tema lolos WCAG: teks ≥ 4,5:1, focus ≥ 3:1.
+- The values in the tables below are the Light theme. Dark and Dark Night override the same tokens in `src/app.css`; components never know which theme is active.
+- Both dark themes use the same meaning colors (status, method, variable) in lighter versions, with translucent (`rgba`) backgrounds and borders so they fit on both surfaces.
+- `--on-accent` becomes dark ink in the dark themes, because `--accent` and the method colors are light there. Text on method colors (Send, Run tool, delete buttons) always uses `--on-accent`.
+- The Windows title bar also turns dark for Dark and Dark Night (`set_theme` in Rust).
+- All text/background pairs in the three themes pass WCAG: text ≥ 4.5:1, focus ≥ 3:1.
 
 | Token             | Dark      | Dark Night |
 | ----------------- | --------- | ---------- |
@@ -34,734 +34,739 @@ Empat pilihan di Settings › Appearance: **Light** (bawaan), **Dark** (grafit n
 | `--accent`        | `#eceef2` | `#e1e7f5`  |
 | `--focus`         | `#6f9bff` | `#7f9fff`  |
 
-### Permukaan dan garis
+### Surfaces and borders
 
-| Token              | Nilai     | Dipakai untuk                                                                                      |
-| ------------------ | --------- | -------------------------------------------------------------------------------------------------- |
-| `--bg`             | `#f3f4f6` | Latar aplikasi di balik sidebar dan konten                                                         |
-| `--surface`        | `#ffffff` | Kartu, panel, dialog, input, item sidebar aktif                                                    |
-| `--surface-muted`  | `#f9fafb` | Area sekunder di dalam surface: bingkai editor kode, nilai di diff, tile pilihan, pilihan terpilih |
-| `--surface-sunken` | `#edeef1` | Hover tombol transparan, wadah segmented control, tombol nonaktif, chip netral, kotak ikon         |
-| `--border-soft`    | `#ecedf0` | Pemisah di dalam kartu/panel (bawah header, baris tabel, baris tab)                                |
-| `--border`         | `#e2e4e9` | Tepi kartu, panel, baris request, tombol quiet                                                     |
-| `--border-strong`  | `#c9cdd4` | Tepi input, tombol secondary, kartu request terbuka, garis putus-putus                             |
+| Token              | Value     | Used for                                                                                               |
+| ------------------ | --------- | ------------------------------------------------------------------------------------------------------ |
+| `--bg`             | `#f3f4f6` | App background behind the sidebar and content                                                          |
+| `--surface`        | `#ffffff` | Cards, panels, dialogs, inputs, active sidebar item                                                    |
+| `--surface-muted`  | `#f9fafb` | Secondary areas inside a surface: code editor frame, values in diffs, option tiles, selected options   |
+| `--surface-sunken` | `#edeef1` | Hover on transparent buttons, segmented control container, disabled buttons, neutral chips, icon boxes |
+| `--border-soft`    | `#ecedf0` | Dividers inside cards/panels (below the header, table rows, tab rows)                                  |
+| `--border`         | `#e2e4e9` | Edges of cards, panels, request rows, quiet buttons                                                    |
+| `--border-strong`  | `#c9cdd4` | Edges of inputs, secondary buttons, the open request card, dashed lines                                |
 
-### Teks
+### Text
 
-| Token          | Nilai     | Dipakai untuk                                                                    |
-| -------------- | --------- | -------------------------------------------------------------------------------- |
-| `--text`       | `#111318` | Judul, teks utama, tab aktif                                                     |
-| `--text-2`     | `#383d47` | Teks isi dan label kontrol                                                       |
-| `--text-muted` | `#5a606c` | Keterangan, metadata, header tabel (kontras ±6,3:1 di atas putih, lolos WCAG AA) |
+| Token          | Value     | Used for                                                                     |
+| -------------- | --------- | ---------------------------------------------------------------------------- |
+| `--text`       | `#111318` | Titles, primary text, active tab                                             |
+| `--text-2`     | `#383d47` | Body text and control labels                                                 |
+| `--text-muted` | `#5a606c` | Captions, metadata, table headers (contrast ±6.3:1 on white, passes WCAG AA) |
 
-### Tinta (aksen) dan fokus
+### Ink (accent) and focus
 
-| Token           | Nilai     | Dipakai untuk                                                                                 |
-| --------------- | --------- | --------------------------------------------------------------------------------------------- |
-| `--accent`      | `#111318` | Tombol aksi utama di dialog/panel (Create collection, Duplicate, Save, Share), badge langkah  |
-| `--on-accent`   | `#ffffff` | Teks di atas `--accent`                                                                       |
-| `--accent-soft` | `#e6e8ec` | Pilihan terpilih (versi riwayat, autocomplete), seleksi teks editor, target drop, banner info |
-| `--accent-text` | `#111318` | Link (tinta, berat 500; garis bawah saat hover untuk link "Open … →")                         |
-| `--focus`       | `#2f6bff` | **Hanya** penanda fokus: outline `:focus-visible` dan border input yang sedang difokus        |
+| Token           | Value     | Used for                                                                                          |
+| --------------- | --------- | ------------------------------------------------------------------------------------------------- |
+| `--accent`      | `#111318` | Primary action buttons in dialogs/panels (Create collection, Duplicate, Save, Share), step badges |
+| `--on-accent`   | `#ffffff` | Text on `--accent`                                                                                |
+| `--accent-soft` | `#e6e8ec` | Selected option (history version, autocomplete), editor text selection, drop target, info banner  |
+| `--accent-text` | `#111318` | Links (ink, weight 500; underline on hover for "Open … →" links)                                  |
+| `--focus`       | `#2f6bff` | **Only** the focus indicator: the `:focus-visible` outline and the border of the focused input    |
 
-### Semantik
+### Semantic
 
-Selalu dipakai bertiga (teks, latar, garis):
+Always used as a set of three (text, background, line):
 
-| Token                      | Nilai                             | Arti                                                                         |
-| -------------------------- | --------------------------------- | ---------------------------------------------------------------------------- |
-| `--ok` / `-bg` / `-line`   | `#0a7a4b` / `#e8f6ef` / `#b6e2cb` | Berhasil: status 2xx, tes lulus, tersinkron, "Created just now"              |
-| `--warn` / `-bg` / `-line` | `#a44b07` / `#fdf1e6` / `#f1cba6` | Perlu perhatian: variabel belum terisi, konflik menunggu, offline, read-only |
-| `--err` / `-bg` / `-line`  | `#c0261b` / `#fdecea` / `#f5c2bd` | Gagal atau destruktif: status 4xx/5xx, error, aksi hapus                     |
+| Token                      | Value                             | Meaning                                                                    |
+| -------------------------- | --------------------------------- | -------------------------------------------------------------------------- |
+| `--ok` / `-bg` / `-line`   | `#0a7a4b` / `#e8f6ef` / `#b6e2cb` | Success: 2xx status, passing tests, synced, "Created just now"             |
+| `--warn` / `-bg` / `-line` | `#a44b07` / `#fdf1e6` / `#f1cba6` | Needs attention: unfilled variables, pending conflicts, offline, read-only |
+| `--err` / `-bg` / `-line`  | `#c0261b` / `#fdecea` / `#f5c2bd` | Failure or destructive: 4xx/5xx status, errors, delete actions             |
 
-Warna semantik **selalu ditemani teks** ("200", "Tests 3/4", "Team · offline"). Jangan memakai warna sebagai satu-satunya penanda.
+Semantic colors are **always paired with text** ("200", "Tests 3/4", "Team · offline"). Never use color as the only indicator.
 
-### Method HTTP ("cap pos")
+### HTTP methods ("method stamp")
 
-Setiap method punya tiga token: `--method-<tone>` (teks), `--method-<tone>-bg`, `--method-<tone>-line`.
+Each method has three tokens: `--method-<tone>` (text), `--method-<tone>-bg`, `--method-<tone>-line`.
 
-| Tone     | Teks      | Latar     | Garis     | Method                   |
-| -------- | --------- | --------- | --------- | ------------------------ |
-| `get`    | `#0a7a4b` | `#e8f6ef` | `#b6e2cb` | GET                      |
-| `post`   | `#a44b07` | `#fdf1e6` | `#f1cba6` | POST                     |
-| `put`    | `#1d5bd8` | `#eaf0fd` | `#bfd0f7` | PUT                      |
-| `patch`  | `#6d3fd0` | `#f1ecfd` | `#d4c6f7` | PATCH                    |
-| `delete` | `#c0261b` | `#fdecea` | `#f5c2bd` | DELETE                   |
-| `other`  | `#383d47` | `#edeef1` | `#c9cdd4` | HEAD, OPTIONS            |
-| `ws`     | `#0f7487` | `#e6f5f8` | `#b3dfe7` | Label `WS` (WebSocket)   |
-| `mcp`    | `#7a5a00` | `#fbf4dc` | `#ecd99b` | Label `MCP` (server MCP) |
-| `gql`    | `#a8156f` | `#fbe8f3` | `#f1bfdd` | Label `GQL` (GraphQL)    |
-| `grpc`   | `#4f6b0a` | `#f1f6e1` | `#d3e2a8` | Label `gRPC`             |
-| `soap`   | `#4338ca` | `#eef0fe` | `#c9cef8` | Label `SOAP`             |
+| Tone     | Text      | Background | Line      | Method                   |
+| -------- | --------- | ---------- | --------- | ------------------------ |
+| `get`    | `#0a7a4b` | `#e8f6ef`  | `#b6e2cb` | GET                      |
+| `post`   | `#a44b07` | `#fdf1e6`  | `#f1cba6` | POST                     |
+| `put`    | `#1d5bd8` | `#eaf0fd`  | `#bfd0f7` | PUT                      |
+| `patch`  | `#6d3fd0` | `#f1ecfd`  | `#d4c6f7` | PATCH                    |
+| `delete` | `#c0261b` | `#fdecea`  | `#f5c2bd` | DELETE                   |
+| `other`  | `#383d47` | `#edeef1`  | `#c9cdd4` | HEAD, OPTIONS            |
+| `ws`     | `#0f7487` | `#e6f5f8`  | `#b3dfe7` | `WS` label (WebSocket)   |
+| `mcp`    | `#7a5a00` | `#fbf4dc`  | `#ecd99b` | `MCP` label (MCP server) |
+| `gql`    | `#a8156f` | `#fbe8f3`  | `#f1bfdd` | `GQL` label (GraphQL)    |
+| `grpc`   | `#4f6b0a` | `#f1f6e1`  | `#d3e2a8` | `gRPC` label             |
+| `soap`   | `#4338ca` | `#eef0fe`  | `#c9cef8` | `SOAP` label             |
 
-Ambil tone lewat `methodTone()` / `methodColor()` (method HTTP) atau `stampTone()` (cap per jenis request) di `src/lib/request/methods.ts`, dan label cap lewat `stampLabel()` di `src/lib/request/kinds.ts`; jangan menulis warna method langsung. Semua kombinasi teks/latar di atas lolos 4,5:1, termasuk untuk label 11px.
+Get the tone through `methodTone()` / `methodColor()` (HTTP methods) or `stampTone()` (the stamp for each request kind) in `src/lib/request/methods.ts`, and the stamp label through `stampLabel()` in `src/lib/request/kinds.ts`; never write method colors directly. Every text/background combination above passes 4.5:1, including for 11px labels.
 
-### Variabel `{{…}}`
+### Variables `{{…}}`
 
-| Token                     | Nilai (Light)                     | Dipakai untuk                                                                                  |
-| ------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `--var` / `-bg` / `-line` | `#a3166b` / `#fbe9f4` / `#efbfdc` | Referensi `{{nama}}` yang dikenal (Globals, collection, environment aktif, variabel dinamis)   |
-| `--err` / `-err-bg`       | (lihat Semantik)                  | Referensi yang tidak terdefinisi, plus garis bawah bergelombang dan tooltip "… is not defined" |
+| Token                     | Value (Light)                     | Used for                                                                                 |
+| ------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------- |
+| `--var` / `-bg` / `-line` | `#a3166b` / `#fbe9f4` / `#efbfdc` | Known `{{name}}` references (Globals, collection, active environment, dynamic variables) |
+| `--err` / `-err-bg`       | (see Semantic)                    | Undefined references, plus a wavy underline and an "… is not defined" tooltip            |
 
-- Dipakai di kolom URL, tabel params/headers, field auth, editor body/pesan/argumen MCP, dan baris URL request yang tertutup.
-- Satu sumber: `splitVariables()` / `variablePattern()` di `src/lib/format/variables.ts` (aturan nama sama dengan Rust), dan komponen `VariableText` untuk teks berwarna.
-- Kolom input tidak bisa mewarnai sebagian teksnya, jadi salinan berwarna digambar di atas input (tanpa latar, `pointer-events: none`) dan teks input dibuat transparan; caret dan seleksi tetap milik input.
+- Used in the URL field, params/headers tables, auth fields, the body/message/MCP argument editors, and the URL line of closed requests.
+- Single source: `splitVariables()` / `variablePattern()` in `src/lib/format/variables.ts` (same naming rules as Rust), and the `VariableText` component for colored text.
+- An input field cannot color part of its text, so a colored copy is drawn over the input (no background, `pointer-events: none`) and the input text is made transparent; the caret and selection still belong to the input.
 
-### Warna ikon (`--hue-*`)
+### Icon colors (`--hue-*`)
 
-Delapan warna untuk ikon judul: `blue`, `green`, `teal`, `violet`, `amber`, `orange`, `rose`, `slate`. Masing-masing punya `--hue-<nama>` (garis ikon) dan `--hue-<nama>-bg` (latar tile); tema gelap memakai versi terang dengan latar tembus pandang. Semua lolos 4,5:1 terhadap tile-nya dan permukaan di ketiga tema.
+Eight colors for title icons: `blue`, `green`, `teal`, `violet`, `amber`, `orange`, `rose`, `slate`. Each has `--hue-<name>` (icon stroke) and `--hue-<name>-bg` (tile background); the dark themes use lighter versions with translucent backgrounds. All pass 4.5:1 against their tile and the surface in all three themes.
 
-Cara pakai: beri `data-hue="blue"` pada ikon atau tile-nya. Atribut itu mengisi `--hue` dan `--hue-bg`, dan `color` mengikuti `--hue`, jadi `stroke: currentColor` ikut berwarna. Tile memakai `background: var(--hue-bg)`.
+Usage: set `data-hue="blue"` on the icon or its tile. The attribute fills `--hue` and `--hue-bg`, and `color` follows `--hue`, so `stroke: currentColor` picks up the color too. Tiles use `background: var(--hue-bg)`.
 
-| Tempat                                                                                | Warna  |
-| ------------------------------------------------------------------------------------- | ------ |
-| Home, aksi "New collection", fitur Requests, tile/adder HTTP request                  | blue   |
-| Environments, fitur Scripts and tests                                                 | green  |
-| Import, Docs, aksi Import, fitur Environments, tile/adder WebSocket, Settings › Proxy | teal   |
-| History, Catalog, aksi Join, fitur Team dan Appearance, Settings › Appearance         | violet |
-| Cookies, tile/adder MCP server, Settings › Certificates                               | amber  |
-| Orchestration, fitur History, adder section, Settings › About & shortcuts             | orange |
-| Settings (sidebar dan judul), fitur Capture, Settings › Data & history                | rose   |
-| Fitur Copy as code, panel "No account needed"                                         | slate  |
+| Place                                                                                     | Color  |
+| ----------------------------------------------------------------------------------------- | ------ |
+| Home, "New collection" action, Requests feature, HTTP request tile/adder                  | blue   |
+| Environments, Scripts and tests feature                                                   | green  |
+| Import, Docs, Import action, Environments feature, WebSocket tile/adder, Settings › Proxy | teal   |
+| History, Catalog, Join action, Team and Appearance features, Settings › Appearance        | violet |
+| Cookies, MCP server tile/adder, Settings › Certificates                                   | amber  |
+| Orchestration, History feature, section adder, Settings › About & shortcuts               | orange |
+| Settings (sidebar and title), Capture feature, Settings › Data & history                  | rose   |
+| Copy as code feature, "No account needed" panel                                           | slate  |
 
-Satu tempat selalu satu warna: ikon sidebar dan ikon judul halamannya sama (`NavIcon`). Warna ikon tidak membawa arti status; status tetap memakai token semantik dan teks.
+One place always has one color: the sidebar icon and its page title icon are the same (`NavIcon`). Icon colors carry no status meaning; status still uses the semantic tokens and text.
 
-### Token pendukung
+### Supporting tokens
 
-- Titik status: `--dot-ok` (environment aktif, segmen lulus Run), `--dot-err` (segmen gagal), `--dot-off` (Globals). Di pemilih environment hanya environment yang aktif yang hijau; environment lain dan "No environment" abu-abu.
-- Bayangan: `--shadow-card`, `--shadow-raise`, `--shadow-segment` (segmen terpilih), `--shadow-pop` (popover, tooltip, picker), `--shadow-dialog`; backdrop dialog `--backdrop`.
+- Status dots: `--dot-ok` (active environment, passed Run segment), `--dot-err` (failed segment), `--dot-off` (Globals). In the environment picker only the active environment is green; other environments and "No environment" are gray.
+- Shadows: `--shadow-card`, `--shadow-raise`, `--shadow-segment` (selected segment), `--shadow-pop` (popovers, tooltips, pickers), `--shadow-dialog`; dialog backdrop `--backdrop`.
 - Syntax highlight: `--code-property`, `--code-keyword`, `--code-function`, `--code-string`, `--code-number`, `--code-atom`, `--code-comment`, `--code-punctuation`, `--code-active-line`.
-- Pengecualian satu-satunya: gambar Capture (`src/lib/capture/render.ts`) punya palet terang dan gelap sendiri, karena gambarnya dipakai di luar aplikasi.
+- The only exception: Capture images (`src/lib/capture/render.ts`) have their own light and dark palettes, because the images are used outside the app.
 
-Warna baru ditambahkan sebagai token di `src/app.css` untuk ketiga tema lebih dulu, bukan sebagai hex di komponen. Jalankan pemeriksaan kontras setelah mengubah nilai.
+New colors are added first as tokens in `src/app.css` for all three themes, not as hex values in components. Run a contrast check after changing a value.
 
-## 3. Tipografi
+## 3. Typography
 
-**Font**
+**Fonts**
 
-- UI: `--font-ui`, default **Geist Variable** (`@fontsource-variable/geist`, dibundel), fallback Segoe UI.
-- Kode: `--font-code`, default **Geist Mono Variable** (`@fontsource-variable/geist-mono`, dibundel), fallback Cascadia Code dan Consolas.
-- Emoji: `--font-emoji` (Segoe UI Emoji, lalu Apple/Noto Color Emoji); dipakai lewat utilitas `.emoji`.
-- Font dibundel bersama aplikasi; tidak ada font dari internet (CSP ketat).
-- Pengguna bisa mengganti font (Settings › Appearance), termasuk mengimpor font sendiri, jadi jangan bergantung pada metrik satu font tertentu.
+- UI: `--font-ui`, default **Geist Variable** (`@fontsource-variable/geist`, bundled), fallback Segoe UI.
+- Code: `--font-code`, default **Geist Mono Variable** (`@fontsource-variable/geist-mono`, bundled), fallback Cascadia Code and Consolas.
+- Emoji: `--font-emoji` (Segoe UI Emoji, then Apple/Noto Color Emoji); applied through the `.emoji` utility.
+- Fonts are bundled with the app; no fonts are loaded from the internet (strict CSP).
+- Users can change the fonts (Settings › Appearance), including importing their own, so do not depend on the metrics of any one font.
 
-**Ukuran yang bisa diatur pengguna**
+**User-adjustable sizes**
 
-- Ukuran UI (11-20, default 14) diterapkan sebagai **zoom jendela** (`uiFontSize / 14`). Komponen menulis ukuran dalam px pada basis 14px, lalu semuanya ikut membesar.
-- Kode diatur terpisah: `--font-size-code` (default 13, rentang 10-24), `--code-line-height` (1.6, rentang 1.2-2.2), `--code-ligatures`.
+- The UI size (11-20, default 14) is applied as **window zoom** (`uiFontSize / 14`). Components write sizes in px on a 14px base, and everything scales along with it.
+- Code is set separately: `--font-size-code` (default 13, range 10-24), `--code-line-height` (1.6, range 1.2-2.2), `--code-ligatures`.
 
-**Skala**
+**Scale**
 
-| Ukuran / berat                      | Dipakai untuk                                                                      |
-| ----------------------------------- | ---------------------------------------------------------------------------------- |
-| 34px / 600, letter-spacing −0.025em | Judul Home                                                                         |
-| 26px / 600, letter-spacing −0.01em  | Judul view dan nama collection (h1)                                                |
-| 20px / 600                          | "Add your first request", nama request di mode fokus                               |
-| 18px / 600                          | Judul dialog New collection                                                        |
-| 17px / 600                          | Nama request di kartu, judul ConfirmDialog, "What you can do"                      |
-| 16px / 600                          | Judul dialog dan panel halaman (Import)                                            |
-| 15px / 600                          | Judul panel collection (Variables, Auth, Team, History, Export), brand, judul tile |
-| 14px                                | Teks dasar dan input                                                               |
-| 13px                                | Ukuran kerja paling umum: tombol, tab, tabel, isi panel, banner                    |
-| 12px                                | Metadata, chip, hint, judul grup sidebar, URL dan nomor di baris                   |
-| 11px                                | Cap method di baris request, `kbd` daftar shortcut                                 |
+| Size / weight                       | Used for                                                                             |
+| ----------------------------------- | ------------------------------------------------------------------------------------ |
+| 34px / 600, letter-spacing −0.025em | Home title                                                                           |
+| 26px / 600, letter-spacing −0.01em  | View titles and collection name (h1)                                                 |
+| 20px / 600                          | "Add your first request", request name in focus mode                                 |
+| 18px / 600                          | New collection dialog title                                                          |
+| 17px / 600                          | Request name on the card, ConfirmDialog title, "What you can do"                     |
+| 16px / 600                          | Dialog and page panel titles (Import)                                                |
+| 15px / 600                          | Collection panel titles (Variables, Auth, Team, History, Export), brand, tile titles |
+| 14px                                | Base text and inputs                                                                 |
+| 13px                                | The most common working size: buttons, tabs, tables, panel content, banners          |
+| 12px                                | Metadata, chips, hints, sidebar group titles, URLs and numbers in rows               |
+| 11px                                | Method stamps in request rows, `kbd` in the shortcut list                            |
 
-**Berat dan gaya**
+**Weight and style**
 
-- 400 untuk isi, 500 untuk label dan state aktif, 600 untuk judul, tombol utama, chip, dan cap method. 700 praktis tidak dipakai.
-- Monospace (`.mono` atau `--font-code`) untuk URL, alamat repository, path, nilai di diff, kode, **nomor langkah** (`01`, `02`), jumlah di sidebar, durasi, dan kode status.
-- Teks yang tidak muat: satu baris dengan ellipsis (nama, URL); `overflow-wrap: anywhere` untuk path atau alamat yang harus terbaca utuh.
+- 400 for body text, 500 for labels and active states, 600 for titles, primary buttons, chips, and method stamps. 700 is practically unused.
+- Monospace (`.mono` or `--font-code`) for URLs, repository addresses, paths, values in diffs, code, **step numbers** (`01`, `02`), counts in the sidebar, durations, and status codes.
+- Text that does not fit: one line with an ellipsis (names, URLs); `overflow-wrap: anywhere` for paths or addresses that must be readable in full.
 
-## 4. Spasi, ukuran, dan layout
+## 4. Spacing, sizing, and layout
 
-**Skala jarak (px):** 2 · 4 · 6 · 8 · 10 · 12 · 14 · 16 · 18, ditambah 20 / 24 / 28 / 40 untuk tingkat halaman. Gap yang paling sering dipakai: 10, 12, dan 8.
+**Spacing scale (px):** 2 · 4 · 6 · 8 · 10 · 12 · 14 · 16 · 18, plus 20 / 24 / 28 / 40 at page level. The most used gaps: 10, 12, and 8.
 
-**Kerangka**
+**Shell**
 
-- Konten utama: padding `28px 24px 48px` (`20px 16px 40px` di bawah 900px), gap antarbagian 14px. Lebar maksimal 1080px, 1400px mulai jendela 1800px, dan 1720px mulai 2400px (mode fokus: 1180 / 1560 / 1880px), supaya monitor besar terpakai untuk request dan response berdampingan.
-- Sidebar: lebar tetap 264px, padding `20px 14px`, selalu di samping konten (tidak pernah turun baris). Sidebar menempel (`position: sticky`, setinggi jendela) dan punya scroll sendiri.
-- Header kartu/panel: padding `14px 16px`; isi panel 16px; header dan footer dialog `14px 18px` (dialog New collection `16px 22px`).
+- Main content: padding `28px 24px 48px` (`20px 16px 40px` below 900px), 14px gap between sections. Max width 1080px, 1400px from a 1800px window, and 1720px from 2400px (focus mode: 1180 / 1560 / 1880px), so large monitors are used for request and response side by side.
+- Sidebar: fixed width 264px, padding `20px 14px`, always beside the content (never wraps below it). The sidebar sticks (`position: sticky`, full window height) and has its own scroll.
+- Card/panel header: padding `14px 16px`; panel content 16px; dialog header and footer `14px 18px` (New collection dialog `16px 22px`).
 
-**Tinggi kontrol**
+**Control heights**
 
-| Tinggi  | Dipakai untuk                                                         |
-| ------- | --------------------------------------------------------------------- |
-| 46px    | Tombol adder (garis putus-putus), URL field dan Send di mode fokus    |
-| 44px    | Tile ikon collection di header                                        |
-| 42px    | URL field dan tombol Send                                             |
-| 38-40px | Input form, tombol ikon di dialog New collection, tombol emoji picker |
-| 36px    | Tombol di dialog dan panel halaman                                    |
-| 34px    | Tombol ikon di toolbar collection (34×34), input nama request         |
-| 32px    | Tombol di panel collection, icon button                               |
-| 28-30px | Sel tabel, select kecil, tombol "+" sidebar, tombol kecil picker      |
-| 22px    | Kotak emoji collection di sidebar                                     |
+| Height  | Used for                                                                    |
+| ------- | --------------------------------------------------------------------------- |
+| 46px    | Adder buttons (dashed border), URL field and Send in focus mode             |
+| 44px    | Collection icon tile in the header                                          |
+| 42px    | URL field and Send button                                                   |
+| 38-40px | Form inputs, icon buttons in the New collection dialog, emoji picker button |
+| 36px    | Buttons in dialogs and page panels                                          |
+| 34px    | Icon buttons in the collection toolbar (34×34), request name input          |
+| 32px    | Buttons in collection panels, icon buttons                                  |
+| 28-30px | Table cells, small selects, sidebar "+" button, small picker buttons        |
+| 22px    | Collection emoji box in the sidebar                                         |
 
-**Responsif**
+**Responsive**
 
-- Jendela didukung dari ukuran minimum aplikasi (720×520) sampai 4K. Di dalam konten, utamakan `flex-wrap` dengan `flex-basis` (mis. `flex: 1 1 280px`) supaya elemen turun baris saat jendela sempit.
-- Media query hanya untuk kerangka: di bawah **900px** sidebar menjadi **rel ikon 64px** (nama item tetap untuk pembaca layar dan muncul sebagai tooltip), dan lebar konten bertambah pada 1800px dan 2400px.
-- Kartu request memakai **container query** (`container-type: inline-size`): bila kartu lebih sempit dari 640px, nama request mendapat baris sendiri dan tombol header pindah ke baris kedua.
-- Dialog adalah kolom flex dengan `max-height: calc(100vh - 32px)`: header dan footer (tombol aksi) selalu terlihat, hanya isi di tengah yang digulir atau menyusut. Jangan menaruh tombol aksi di dalam area yang digulir.
-- Anak flex yang berisi teks panjang (`nowrap` + ellipsis) wajib diberi `min-width: 0`, termasuk panel di dalam dialog yang `display: flex`; tanpa itu teks melebarkan wadahnya.
-- Dialog: `width: min(<N>px, calc(100vw - 32px))` dan `max-height: calc(100vh - 48px)` dengan isi yang bisa di-scroll. Lebar yang dipakai: 420 (konfirmasi), 580 (New collection), 760 (Copy as code), 860 (konflik), 920 (riwayat), 1180 (Capture). Popover: `min(372px, calc(100vw - 32px))`.
-- Tabel lebar dibungkus `overflow-x: auto` dan diberi `min-width`.
+- Windows are supported from the app's minimum size (720×520) up to 4K. Inside the content, prefer `flex-wrap` with `flex-basis` (e.g. `flex: 1 1 280px`) so elements wrap when the window is narrow.
+- Media queries are only for the shell: below **900px** the sidebar becomes a **64px icon rail** (item names stay for screen readers and show as tooltips), and the content width grows at 1800px and 2400px.
+- The request card uses a **container query** (`container-type: inline-size`): when the card is narrower than 640px, the request name gets its own row and the header buttons move to a second row.
+- Dialogs are flex columns with `max-height: calc(100vh - 32px)`: the header and footer (action buttons) are always visible, and only the content in the middle scrolls or shrinks. Never put action buttons inside the scrolling area.
+- Flex children that hold long text (`nowrap` + ellipsis) must get `min-width: 0`, including panels inside dialogs that are `display: flex`; without it the text widens its container.
+- Dialogs: `width: min(<N>px, calc(100vw - 32px))` and `max-height: calc(100vh - 48px)` with scrollable content. Widths in use: 420 (confirmation), 580 (New collection), 760 (Copy as code), 860 (conflict), 920 (history), 1180 (Capture). Popovers: `min(372px, calc(100vw - 32px))`.
+- Wide tables are wrapped in `overflow-x: auto` and given a `min-width`.
 
-## 5. Radius dan elevasi
+## 5. Radius and elevation
 
-| Radius               | Dipakai untuk                                                        |
-| -------------------- | -------------------------------------------------------------------- |
-| `--radius-sm` (6px)  | Icon button, segmen, cap method, kotak emoji sidebar, `kbd`          |
-| `--radius-md` (8px)  | Tombol, input, URL field, banner, kotak status, item sidebar         |
-| `--radius-lg` (12px) | Kartu, baris request, panel, dialog, tile, adder, tile ikon, popover |
-| 999px                | Chip status, bar mode fokus                                          |
-| 50%                  | Titik status                                                         |
-| 18px                 | Kartu di mode fokus                                                  |
+| Radius               | Used for                                                                  |
+| -------------------- | ------------------------------------------------------------------------- |
+| `--radius-sm` (6px)  | Icon buttons, segments, method stamps, sidebar emoji box, `kbd`           |
+| `--radius-md` (8px)  | Buttons, inputs, URL field, banners, status box, sidebar items            |
+| `--radius-lg` (12px) | Cards, request rows, panels, dialogs, tiles, adders, icon tiles, popovers |
+| 999px                | Status chips, focus mode bar                                              |
+| 50%                  | Status dots                                                               |
+| 18px                 | Card in focus mode                                                        |
 
-| Bayangan                                             | Dipakai untuk                    |
-| ---------------------------------------------------- | -------------------------------- |
-| `--shadow-raise` (`0 1px 2px` α 0.06)                | Item sidebar aktif ("terangkat") |
-| `--shadow-card` (`0 1px 2px` + `0 12px 32px` α 0.08) | Kartu request terbuka            |
-| `0 24px 64px` α 0.28                                 | Dialog                           |
-| `0 16px 40px` α 0.18                                 | Picker emoji                     |
-| `0 12px 32px` α 0.14                                 | Popover autocomplete             |
-| `0 10px 40px` α 0.1                                  | Kartu mode fokus                 |
-| `0 1px 2px` α 0.1                                    | Segmen terpilih                  |
+| Shadow                                               | Used for                       |
+| ---------------------------------------------------- | ------------------------------ |
+| `--shadow-raise` (`0 1px 2px` α 0.06)                | Active sidebar item ("raised") |
+| `--shadow-card` (`0 1px 2px` + `0 12px 32px` α 0.08) | Open request card              |
+| `0 24px 64px` α 0.28                                 | Dialogs                        |
+| `0 16px 40px` α 0.18                                 | Emoji picker                   |
+| `0 12px 32px` α 0.14                                 | Autocomplete popover           |
+| `0 10px 40px` α 0.1                                  | Focus mode card                |
+| `0 1px 2px` α 0.1                                    | Selected segment               |
 
-## 6. Ikon
+## 6. Icons
 
-- **Ikon judul berwarna**: ikon sidebar, judul halaman, navigasi Settings, tile Home, tile collection kosong, dan tombol "Add …" memakai warna `--hue-*` (bagian 2). Ikon aksi kecil (toolbar, ikon kartu) tetap netral supaya warna tidak berebut perhatian.
-- **Ikon antarmuka**: inline SVG, tanpa library ikon. `viewBox="0 0 24 24"`, umumnya 16px (14px di tombol kecil, 18-20px di tile, 28px di dropzone). `fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round`. Selalu `aria-hidden="true"`; tombol yang hanya berisi ikon wajib punya `aria-label` (+ `title` bila perlu penjelasan).
-- **Logo**: `branding/codestamp-logo.svg` (logo 3a), ditampilkan 28px sebagai `<img alt="">` di samping nama "Codestamp". Kotak tinta `#111318` bersudut bulat berisi kurung kurawal putih, garis pemisah `#4a505c`, perangko merah `#d1432b`, dan tiga garis alamat putih. Warnanya tetap di semua tema karena logo yang sama menjadi ikon aplikasi (`src-tauri/icons`, dibuat ulang dengan `npx tauri icon branding/codestamp-logo.svg`).
-- **Ikon collection**: emoji, lihat bagian 7. Emoji tidak dipakai sebagai ikon antarmuka di tempat lain.
+- **Colored title icons**: sidebar icons, page titles, Settings navigation, Home tiles, empty collection tiles, and "Add …" buttons use the `--hue-*` colors (section 2). Small action icons (toolbar, card icons) stay neutral so colors do not compete for attention.
+- **Interface icons**: inline SVG, no icon library. `viewBox="0 0 24 24"`, usually 16px (14px in small buttons, 18-20px in tiles, 28px in the dropzone). `fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round`. Always `aria-hidden="true"`; icon-only buttons must have an `aria-label` (+ `title` when it needs an explanation).
+- **Logo**: `branding/codestamp-logo.svg` (logo 3a), shown at 28px as `<img alt="">` next to the name "Codestamp". A rounded `#111318` ink square holding white curly braces, a `#4a505c` divider line, a red `#d1432b` postage stamp, and three white address lines. Its colors stay the same in every theme because the same logo is the app icon (`src-tauri/icons`, regenerated with `npx tauri icon branding/codestamp-logo.svg`).
+- **README banner**: `branding/banner-light.svg` and `branding/banner-dark.svg` (1280×360), shown through `<picture>` so GitHub picks the one for its theme. Logo, name, tagline, and a collection section with four request rows drawn with the stamp and status chip tokens of the matching theme. Geist and Geist Mono are embedded as data URIs; their license is in `branding/OFL-Geist.txt`. The version badge under it is static, so update it with every release.
+- **README reason images**: `branding/why/<name>-light.svg` and `-dark.svg` (760×400), one per card in the two-column "Why Codestamp" table, shown at 380px. Text in them is at least 21px so it stays readable at half size. They draw real app parts (request rows, stamps, the `codestamp-cli` output format) with the tokens of the matching theme, and embed a Geist subset as WOFF.
+- **Collection icons**: emoji, see section 7. Emoji are not used as interface icons anywhere else.
 
-## 7. Komponen
+## 7. Components
 
-### Tombol
+### Buttons
 
-| Varian                       | Gaya                                                                                                    | Dipakai untuk                                                                                 |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Primary (`.primary`)         | Latar `--accent` (tinta), teks `--on-accent`, 600, tanpa border                                         | Satu aksi utama di dialog atau panel: Save, Share, Create, Duplicate                          |
-| Send (`.send`)               | Latar warna method yang dipilih (`--method-<tone>`, WebSocket `--method-ws`), teks putih, 600           | Mengirim request di kartu; semua kombinasi lolos kontras 4,5:1                                |
-| Secondary (`.secondary`)     | Latar surface, border `--border-strong`                                                                 | Aksi pendamping di dialog/halaman: Cancel, Later, Choose another file                         |
-| Quiet (`.quiet`)             | Latar surface, border `--border`, teks `--text-2`, 13px                                                 | Aksi bertulisan di panel dan halaman                                                          |
-| Ikon toolbar (`IconButton`)  | 34×34, border `--border`, ikon 16px, tooltip; titik status opsional di pojok; varian `round` 40px bulat | Toolbar header collection, kepala section (Add …, Duplicate, Remove), tombol tambahan di Home |
-| Danger                       | Konfirmasi: latar `--err`, teks putih. Pemicu: `.quiet.danger`, merah saat hover                        | Delete, Stop syncing                                                                          |
-| Link (`.link`, `.go`)        | Transparan, tinta 500; `.go` ("Open … →") bergaris bawah saat hover                                     | Aksi ringan inline: Dismiss, Resolve, Copy, Open … →                                          |
-| Icon (`.icon`)               | 32×32, transparan, hover `--surface-sunken`                                                             | Aksi kartu: Copy as code, History, Duplicate, Capture, Focus, Delete, Collapse                |
-| Tool (`.tool`)               | Ikon + teks, border `--border-strong`                                                                   | Aksi di mode fokus (Capture)                                                                  |
-| Adder (`.adder`)             | Tinggi 46px, border 1.5px dashed `--border-strong`, hover tinta                                         | Add request, Add WebSocket, Add section                                                       |
-| Tile (`.tile`)               | Kartu besar berlatar surface: ikon, judul 15px, deskripsi 13px; tanpa latar tinta                       | Aksi cepat di collection kosong                                                               |
-| Pill utama Home (`.primary`) | Pill 40px, latar `--text`, teks `--surface`, 600; hover `--text-2`                                      | Satu aksi utama tile Home yang dipilih                                                        |
+| Variant                     | Style                                                                                                             | Used for                                                                                    |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Primary (`.primary`)        | Background `--accent` (ink), text `--on-accent`, 600, no border                                                   | One main action in a dialog or panel: Save, Share, Create, Duplicate                        |
+| Send (`.send`)              | Background in the selected method's color (`--method-<tone>`, WebSocket `--method-ws`), white text, 600           | Sending a request from the card; every combination passes 4.5:1 contrast                    |
+| Secondary (`.secondary`)    | Surface background, border `--border-strong`                                                                      | Companion actions in dialogs/pages: Cancel, Later, Choose another file                      |
+| Quiet (`.quiet`)            | Surface background, border `--border`, text `--text-2`, 13px                                                      | Text-labeled actions in panels and pages                                                    |
+| Toolbar icon (`IconButton`) | 34×34, border `--border`, 16px icon, tooltip; optional status dot in the corner; `round` variant is a 40px circle | Collection header toolbar, section header (Add …, Duplicate, Remove), extra buttons on Home |
+| Danger                      | Confirmation: background `--err`, white text. Trigger: `.quiet.danger`, red on hover                              | Delete, Stop syncing                                                                        |
+| Link (`.link`, `.go`)       | Transparent, ink 500; `.go` ("Open … →") is underlined on hover                                                   | Light inline actions: Dismiss, Resolve, Copy, Open … →                                      |
+| Icon (`.icon`)              | 32×32, transparent, hover `--surface-sunken`                                                                      | Card actions: Copy as code, History, Duplicate, Capture, Focus, Delete, Collapse            |
+| Tool (`.tool`)              | Icon + text, border `--border-strong`                                                                             | Actions in focus mode (Capture)                                                             |
+| Adder (`.adder`)            | Height 46px, 1.5px dashed border `--border-strong`, ink on hover                                                  | Add request, Add WebSocket, Add section                                                     |
+| Tile (`.tile`)              | Large card on a surface background: icon, 15px title, 13px description; no ink background                         | Quick actions in an empty collection                                                        |
+| Home main pill (`.primary`) | 40px pill, background `--text`, text `--surface`, 600; hover `--text-2`                                           | The one main action of the selected Home tile                                               |
 
-- Disabled: latar `--surface-sunken` dengan teks/ikon `--text-muted` (di dialog lama: opacity 0.6, Send: 0.7). Jelaskan alasannya di tooltip atau `title` (mis. "Run all · add an HTTP request first").
-- **Penanda "sudah diklik"**: setiap tombol yang membuka panel atau dialog memakai `aria-expanded` (plus `aria-haspopup="dialog"` untuk dialog) dan tampil **tertekan** selama yang dibukanya masih terbuka: border/garis `--text` dan latar `--accent-soft`. Berlaku untuk Variables/Auth/Team/Duplicate/Delete di toolbar collection, tombol "+" sidebar, tombol utama Home yang membuka New collection, tombol Duplicate section, dan ikon Copy as code/History/Duplicate/Capture/Delete di kartu. Jangan memakai latar tinta untuk penanda ini.
-- Semua tombol memberi umpan balik saat ditekan (`:active`), termasuk aksi sekali jalan seperti Duplicate dan Export.
-- Saat sibuk, label berubah menjadi kata kerja + "…": "Saving…", "Syncing…", "Creating…", "Joining…".
-- Maksimal satu primary per area. Aksi destruktif tidak pernah primary dan selalu lewat ConfirmDialog.
+- Disabled: background `--surface-sunken` with `--text-muted` text/icon (in older dialogs: opacity 0.6, Send: 0.7). Explain the reason in the tooltip or `title` (e.g. "Run all · add an HTTP request first").
+- **"Already clicked" marker**: every button that opens a panel or dialog uses `aria-expanded` (plus `aria-haspopup="dialog"` for dialogs) and appears **pressed** while what it opened is still open: `--text` border/line and `--accent-soft` background. This applies to Variables/Auth/Team/Duplicate/Delete in the collection toolbar, the sidebar "+" button, the Home main button that opens New collection, the Duplicate section button, and the Copy as code/History/Duplicate/Capture/Delete icons on the card. Do not use an ink background for this marker.
+- Every button gives feedback when pressed (`:active`), including one-shot actions such as Duplicate and Export.
+- While busy, the label changes to a verb + "…": "Saving…", "Syncing…", "Creating…", "Joining…".
+- At most one primary per area. Destructive actions are never primary and always go through ConfirmDialog.
 
-### Input
+### Inputs
 
-- **Field form**: tinggi 38-40px, padding `0 12px`, border `--border-strong`, radius md. Label di atas input (13px, `--text-2`, gap 6px), hint 12px muted di bawah. Saat fokus, border `--focus`. Nilai tidak valid: `aria-invalid="true"`, border dan hint berwarna `--err`.
-- **URL field**: grup 42px berisi dropdown method (warna dan latar cap method-nya, garis kanan) dan input. `:focus-within` mengubah border grup ke `--focus`.
-- **Dropdown** (`Dropdown`): pengganti semua `<select>` bawaan, yang daftarnya tidak bisa diberi gaya dan tidak mengikuti tema. Tombol menampilkan pilihan, chevron, dan bila ada, titik status atau warna (method, transport MCP). Saat terbuka atau fokus keyboard, tepinya biru: border `--focus` plus cincin 1px (di URL field, cincin 2px ke dalam). Daftarnya popover (surface, border, radius md, `--shadow-pop`, maks 320px): item aktif `--accent-soft`, item terpilih tebal dengan centang biru. Membuka ke atas bila tidak muat di bawah, tertutup saat klik di luar, scroll, atau resize. Saat menampilkan pilihan aktif, hanya daftarnya yang digulir (bukan `scrollIntoView`), supaya dialog yang memuatnya tidak ikut bergeser dan menutup daftar itu. Keyboard: panah/Enter/Spasi membuka, panah/Home/End berpindah, Enter memilih, ketik huruf untuk melompat, Escape menutup tanpa memilih (tidak ikut menutup dialog atau mode fokus). Varian: `field` (40px, lebar penuh), `compact` (34px), `cell` (30px, tepi muncul saat hover), `chip` (30px, 12px), `method` (di URL field).
-- **Edit di tempat** (`EditableText`, nama request, sel tabel): border transparan, muncul `--border` saat hover, lalu `--focus` dengan latar putih saat fokus.
-- **Input variabel** (`VariableInput`): autocomplete setelah `{{` dalam popover (surface, radius md, bayangan popover, item aktif `--accent-soft`). Baris "Resolves to …" 12px di bawah URL, berwarna warn bila ada variabel yang kosong.
-- **Secret** (`SecretInput`): nilai tampil sebagai `••••••••` sampai tombol Show ditekan.
-- **Textarea kode**: latar `--surface-muted` dengan font kode.
+- **Form field**: height 38-40px, padding `0 12px`, border `--border-strong`, radius md. Label above the input (13px, `--text-2`, gap 6px), 12px muted hint below. On focus, border `--focus`. Invalid value: `aria-invalid="true"`, border and hint in `--err`.
+- **URL field**: a 42px group containing the method dropdown (in its method stamp's color and background, with a border on the right) and the input. `:focus-within` changes the group border to `--focus`.
+- **Dropdown** (`Dropdown`): replaces every native `<select>`, whose list cannot be styled and does not follow the theme. The button shows the current choice, a chevron, and, when present, a status dot or color (method, MCP transport). When open or focused by keyboard, its edge is blue: `--focus` border plus a 1px ring (in the URL field, a 2px inset ring). The list is a popover (surface, border, radius md, `--shadow-pop`, max 320px): active item `--accent-soft`, selected item bold with a blue check mark. It opens upward when it does not fit below, and closes on an outside click, scroll, or resize. When showing the active option, only the list scrolls (not `scrollIntoView`), so the dialog that contains it does not shift and close the list. Keyboard: arrows/Enter/Space open it, arrows/Home/End move, Enter selects, typing a letter jumps, Escape closes without selecting (and does not also close the dialog or focus mode). Variants: `field` (40px, full width), `compact` (34px), `cell` (30px, edge appears on hover), `chip` (30px, 12px), `method` (in the URL field).
+- **Edit in place** (`EditableText`, request name, table cells): transparent border, `--border` appears on hover, then `--focus` with a white background on focus.
+- **Variable input** (`VariableInput`): autocomplete after `{{` in a popover (surface, radius md, popover shadow, active item `--accent-soft`). A 12px "Resolves to …" line below the URL, in the warn color when a variable is empty.
+- **Secret** (`SecretInput`): the value shows as `••••••••` until the Show button is pressed.
+- **Code textarea**: `--surface-muted` background with the code font.
 
-### Segmented control, pilihan, dan tab
+### Segmented control, choices, and tabs
 
-- Segmented: wadah `--surface-sunken`, padding 3px, radius md; segmen aktif berlatar putih, bayangan `0 1px 2px`, berat 500. Pakai `aria-pressed`.
-- Jenis body: None, JSON, XML, HTML, Text, URL-encoded, Form data, Binary. JSON, XML, dan HTML punya highlight dan Beautify. XML yang rusak memberi hint `--warn` "Line N, column M: …" di bawah editor.
-- **Kartu pilihan** (radio, mis. "How do you want to start?"): `<fieldset>` + `<legend>`; tiap pilihan `<label>` berisi radio native, kotak ikon 32px, judul 500, deskripsi 13px. Terpilih: border `--text`, latar `--surface-muted`.
-- Pilihan yang panjang (lebih dari ±5) memakai `Dropdown`, bukan kartu radio, supaya panel tidak memanjang. Contoh: **Auth type** di tab Auth, dengan keterangan pilihan (mis. header yang ditambahkan) 12px muted di sampingnya.
-- Tab: teks 13px muted, padding `10px 2px`, jarak 16px; tab aktif teks `--text`, 500, garis bawah 2px `--text` (bukan warna). Baris tab punya garis bawah `--border-soft` dan bisa di-scroll horizontal. Jumlah ditulis di label: "Cookies · 1".
+- Segmented: `--surface-sunken` container, 3px padding, radius md; the active segment has a white background, shadow `0 1px 2px`, weight 500. Use `aria-pressed`.
+- Body types: None, JSON, XML, HTML, Text, URL-encoded, Form data, Binary. JSON, XML, and HTML have highlighting and Beautify. Broken XML shows a `--warn` hint "Line N, column M: …" below the editor.
+- **Choice cards** (radio, e.g. "How do you want to start?"): `<fieldset>` + `<legend>`; each option is a `<label>` containing a native radio, a 32px icon box, a 500 title, and a 13px description. Selected: border `--text`, background `--surface-muted`.
+- Long option lists (more than about 5) use `Dropdown`, not radio cards, so the panel does not grow too tall. Example: **Auth type** in the Auth tab, with a 12px muted note about the option (e.g. the header that gets added) beside it.
+- Tabs: 13px muted text, padding `10px 2px`, 16px spacing; the active tab has `--text` text, weight 500, and a 2px `--text` underline (not a color). The tab row has a `--border-soft` bottom border and can scroll horizontally. Counts go in the label: "Cookies · 1".
 
-### Chip, cap method, dan titik status
+### Chips, method stamps, and status dots
 
-- **Chip**: pill, padding `2px 8px`, 12px 600, latar `--surface-sunken`. `.ok` dan `.err` memakai pasangan semantik. Contoh: kode status di baris request (mono), "Tests 3/4", "Created just now".
-- **Cap method** (`.stamp`): `padding: 2px 7px`, border 1px, radius sm, font kode 11px 600, `letter-spacing: 0.04em`, warna dari tiga token tone-nya. Dipakai di baris request; select method di kartu memakai warna + latar yang sama.
-- **Titik**: lingkaran 8px. Environment aktif hijau, Globals abu, status sinkron mengikuti tone (ok / warn / err).
+- **Chip**: pill, padding `2px 8px`, 12px 600, `--surface-sunken` background. `.ok` and `.err` use the semantic pairs. Examples: the status code in a request row (mono), "Tests 3/4", "Created just now".
+- **Method stamp** (`.stamp`): `padding: 2px 7px`, 1px border, radius sm, 11px 600 code font, `letter-spacing: 0.04em`, colors from its tone's three tokens. Used in request rows; the method select on the card uses the same color + background.
+- **Dot**: 8px circle. The active environment is green, Globals is gray, and sync status follows the tone (ok / warn / err).
 
-### Toolbar ikon dan tooltip (`IconButton`)
+### Icon toolbar and tooltips (`IconButton`)
 
-- Header collection memakai satu baris tombol ikon dalam `role="group"` ("Collection actions"), dipisah garis vertikal per kelompok: **Run all** | **Variables, Auth, Collaboration, Mock server, History** | **Duplicate, Export, Delete**. Variables sampai History dan Export membuka panelnya sebagai dialog di atas halaman (lihat Panel collection).
-- Setiap tombol: 34×34, radius md, border `--border`, ikon 16px; hover border `--border-strong`; ditekan `--surface-sunken`; terbuka (`aria-expanded`) border `--text` + latar `--accent-soft`; Delete memerah saat hover.
-- **Tooltip** = label tombol (sekaligus `aria-label`): kotak putih kecil di bawah tombol (border `--border`, radius sm, bayangan `0 4px 12px` α 0.12, 12px 500), muncul saat hover dan saat fokus keyboard (bukan setelah klik mouse). Tombol paling kanan memakai `align="end"` dan tombol paling kiri `align="start"` supaya tooltip tidak terpotong tepi jendela.
-- `placement="above"` membuka tooltip di atas tombol, untuk tombol di tepi bawah jendela (status bar). `current` memberi `aria-current="page"` dan tampilan tertekan (latar `--accent-soft`) pada tombol yang membuka halaman yang sedang terbuka.
-- **Shortcut tidak pernah tampil di layar**: tidak di tooltip, label tombol, placeholder, petunjuk, menu, maupun `title`. Shortcut tetap bekerja; daftarnya hanya ada di Settings › About & shortcuts (`ShortcutList`). Untuk pembaca layar, shortcut ditulis di `aria-keyshortcuts`, bukan di `aria-label`.
-- Status ringkas pindah ke label dan **titik 7px** di pojok tombol: Auth terpasang (titik `--text-2`), status sinkron Team (ok/busy/warn/err). Label lengkapnya ada di tooltip ("Team · synced", "Auth · on").
-- **Kepala section** memakai pola yang sama (`role="group"`): satu tombol ikon per jenis request dengan ikon berwarna `data-hue` (Add request, Add WebSocket, Add GraphQL, Add gRPC, Add MCP server, Add SOAP), garis pemisah, lalu Duplicate section dan Remove section (merah saat hover). Daftar jenisnya dari `ADDABLE_KINDS` (`lib/request/kind-icons.ts`), sama dengan adder, tile collection kosong, dan Home.
+- The collection header uses one row of icon buttons in a `role="group"` ("Collection actions"), with a vertical line between groups: **Run all** | **Variables, Auth, Collaboration, Mock server, History** | **Duplicate, Export, Delete**. Variables through History, and Export, open their panel as a dialog above the page (see Collection panel).
+- Each button: 34×34, radius md, border `--border`, 16px icon; hover border `--border-strong`; pressed `--surface-sunken`; open (`aria-expanded`) border `--text` + `--accent-soft` background; Delete turns red on hover.
+- **Tooltip** = the button label (also its `aria-label`): a small white box below the button (border `--border`, radius sm, shadow `0 4px 12px` α 0.12, 12px 500), shown on hover and on keyboard focus (not after a mouse click). The rightmost button uses `align="end"` and the leftmost button uses `align="start"` so the tooltip is not cut off by the window edge.
+- `placement="above"` opens the tooltip above the button, for buttons at the bottom edge of the window (status bar). `current` sets `aria-current="page"` and a pressed look (`--accent-soft` background) on the button that opens the page currently shown.
+- **Shortcuts never appear on screen**: not in tooltips, button labels, placeholders, hints, menus, or `title`. Shortcuts still work; the only list of them is in Settings › About & shortcuts (`ShortcutList`). For screen readers, shortcuts go in `aria-keyshortcuts`, not in `aria-label`.
+- Short status moves into the label and a **7px dot** in the button corner: Auth set (`--text-2` dot), Team sync status (ok/busy/warn/err). The full label is in the tooltip ("Team · synced", "Auth · on").
+- The **section header** uses the same pattern (`role="group"`): one icon button per request type with a `data-hue` colored icon (Add request, Add WebSocket, Add GraphQL, Add gRPC, Add MCP server, Add SOAP), a divider line, then Duplicate section and Remove section (red on hover). The list of types comes from `ADDABLE_KINDS` (`lib/request/kind-icons.ts`), the same source as the adder, the empty collection tiles, and Home.
 
-### Ikon collection (emoji)
+### Collection icon (emoji)
 
-- Setiap collection punya emoji. **Otomatis dari nama** selama pengguna belum memilih: kata kunci di nama dicocokkan ke aturan (payment/billing → 💳, shop/cart/order → 🛒, user/account → 👤, auth/login/token → 🔐, tool/admin/internal → 🛠️, test/qa → 🧪, dan ±20 aturan lain). Bila tidak ada yang cocok, hash nama memilih dari kumpulan tetap (📮 🚀 🧭 🧩 🌱 🔭 🪐 🦊 🐙 🌊 🎯 🧰 📦 🛰️ 🍀 🔮), jadi nama yang sama selalu mendapat emoji yang sama.
-- Pilihan pengguna disimpan di database (`collections.icon`; `NULL` = otomatis) dan **menang** atas yang otomatis. Mengganti nama hanya mengubah emoji yang otomatis.
-- Di collection tim, pilihan itu ikut tersinkron lewat `collection.json` (kunci `icon`, tidak ditulis selama otomatis; format repository 2), dan konfliknya tampil sebagai "Collection icon".
-- Katalog (58 emoji), aturan, dan kumpulan cadangan hanya ada di **Rust** (`src-tauri/src/storage/icons.rs`): katalog itu sekaligus whitelist; emoji lain ditolak. UI mengambil katalog lewat `collection_icons` dan saran lewat `suggest_collection_icon`.
-- Tampilan: kotak 22px (`--surface-sunken`, radius sm, emoji 14px) di sidebar; tile 44px (border `--border`, radius lg, emoji 24px) di samping judul collection; tombol 40px di sebelah kolom nama pada dialog New collection.
+- Every collection has an emoji. It is **picked automatically from the name** until the user chooses one: keywords in the name are matched against rules (payment/billing → 💳, shop/cart/order → 🛒, user/account → 👤, auth/login/token → 🔐, tool/admin/internal → 🛠️, test/qa → 🧪, and about 20 other rules). When nothing matches, a hash of the name picks from a fixed set (📮 🚀 🧭 🧩 🌱 🔭 🪐 🦊 🐙 🌊 🎯 🧰 📦 🛰️ 🍀 🔮), so the same name always gets the same emoji.
+- The user's choice is stored in the database (`collections.icon`; `NULL` = automatic) and **wins** over the automatic one. Renaming only changes an automatic emoji.
+- In a team collection, that choice also syncs through `collection.json` (key `icon`, not written while automatic; repository format 2), and its conflicts show as "Collection icon".
+- The catalog (58 emoji), the rules, and the fallback set exist only in **Rust** (`src-tauri/src/storage/icons.rs`): the catalog is also the whitelist; any other emoji is rejected. The UI gets the catalog through `collection_icons` and suggestions through `suggest_collection_icon`.
+- Display: a 22px box (`--surface-sunken`, radius sm, 14px emoji) in the sidebar; a 44px tile (border `--border`, radius lg, 24px emoji) next to the collection title; a 40px button next to the name field in the New collection dialog.
 
-### Picker emoji (`EmojiPicker`)
+### Emoji picker (`EmojiPicker`)
 
-- Popover di bawah pemicunya (`role="dialog"`, `aria-label="Collection icon"`), lebar 372px, radius lg, bayangan picker.
-- Isi: kolom cari (fokus otomatis; mencocokkan kata kunci emoji), baris **Suggested for “nama”** (6 emoji dari aturan yang cocok), grid **All** 8 kolom (tombol 38px, `aria-label` = nama emoji, terpilih: border `--text` + latar sunken), lalu footer: status ("Automatic: picked from the name" / "Chosen by you"), **Shuffle**, dan **Use automatic** (nonaktif bila sudah otomatis).
-- Memilih emoji di grid langsung menyimpan dan menutup; Shuffle menyimpan tanpa menutup. Escape dan klik di luar menutup picker saja (tidak menutup dialog atau mode fokus di belakangnya).
+- A popover below its trigger (`role="dialog"`, `aria-label="Collection icon"`), 372px wide, radius lg, picker shadow.
+- Contents: a search field (focused automatically; matches emoji keywords), a **Suggested for “name”** row (6 emoji from the matching rules), an **All** grid with 8 columns (38px buttons, `aria-label` = emoji name, selected: border `--text` + sunken background), then the footer: status ("Automatic: picked from the name" / "Chosen by you"), **Shuffle**, and **Use automatic** (disabled when already automatic).
+- Picking an emoji in the grid saves and closes right away; Shuffle saves without closing. Escape and an outside click close only the picker (not the dialog or focus mode behind it).
 
-### Layar pembuka (`index.html`)
+### Launch screen (`index.html`)
 
-- Jendela dibuka di tengah layar (`center()` di Rust).
-- Ditulis langsung di `index.html`, jadi tampil sebelum script aplikasi jalan. Gayanya ada di `src/launch.css`, **bukan** `<style>` inline: style inline mendapat hash di CSP saat build, dan browser lalu menolak semua style yang disuntikkan belakangan (CodeMirror, atribut `style`). Latarnya `--bg` tema yang tersimpan: Rust membuka jendela tersembunyi, memberi jendela dan webview warna `--bg` itu (`paint_background`), memasang `data-theme` lewat _initialization script_ (`theme_script`), lalu menampilkan jendela. Tidak ada kilatan putih.
-- Logo 84px di tengah, dikelilingi persegi bulat 104px (garis 3px, radius 25px): jalur `--border` dan satu ruas `--text` (22% keliling) yang berputar 1,4 detik per putaran selama aplikasi memuat.
-- Aplikasi memberi tanda siap setelah daftar collection termuat (`finishLaunch` di `lib/dom/launch.ts`). Layar pembuka tampil minimal 0,5 detik sejak jendela terbuka, supaya start yang cepat tidak berkedip.
-- Perpindahan: layar pembuka memudar 320ms dan logonya membesar ke 108% (260ms), sementara aplikasi masuk dari skala 96,5% dengan blur 6px dan opacity 0 (460ms, `cubic-bezier(0.16, 1, 0.3, 1)`). Hanya awal animasi yang ditahan, sehingga setelahnya `#app` tidak menyimpan transform atau filter yang bisa menggeser popover `position: fixed`. Layar pembuka dihapus dari DOM sesudahnya.
-- `prefers-reduced-motion: reduce`: ruas tidak berputar (jalur berdenyut opacity), dan perpindahan hanya fade 150ms.
-- Reload jendela (Ctrl+R) memakai tema yang dipilih di sesi itu (`sessionStorage` `codestamp.theme`), bukan tema saat aplikasi dibuka.
-- Template peninjauannya ada di `branding/templates/launch-and-access.html`.
+- The window opens in the center of the screen (`center()` in Rust).
+- Written directly in `index.html`, so it shows before the app script runs. Its styles are in `src/launch.css`, **not** an inline `<style>`: inline styles get a hash in the CSP at build time, and the browser then rejects every style injected later (CodeMirror, `style` attributes). Its background is the `--bg` of the saved theme: Rust opens the window hidden, gives the window and the webview that `--bg` color (`paint_background`), sets `data-theme` through an _initialization script_ (`theme_script`), then shows the window. There is no white flash.
+- An 84px logo in the center, surrounded by a 104px rounded square (3px line, radius 25px): a `--border` track and one `--text` segment (22% of the perimeter) that spins at 1.4 seconds per turn while the app loads.
+- The app signals that it is ready after the collection list has loaded (`finishLaunch` in `lib/dom/launch.ts`). The launch screen shows for at least 0.5 seconds from when the window opens, so a fast start does not flicker.
+- Transition: the launch screen fades out over 320ms and its logo grows to 108% (260ms), while the app enters from 96.5% scale with a 6px blur and opacity 0 (460ms, `cubic-bezier(0.16, 1, 0.3, 1)`). Only the start of the animation is held, so afterwards `#app` keeps no transform or filter that could shift `position: fixed` popovers. The launch screen is removed from the DOM afterwards.
+- `prefers-reduced-motion: reduce`: the segment does not spin (the track pulses in opacity), and the transition is only a 150ms fade.
+- Reloading the window (Ctrl+R) uses the theme picked in that session (`sessionStorage` `codestamp.theme`), not the theme from when the app opened.
+- Its review template is in `branding/templates/launch-and-access.html`.
 
 ### Title bar (`TitleBar`)
 
-- Menggantikan title bar Windows (`decorations: false`). Tinggi `--titlebar-height` (36px), latar `--bg`, garis bawah `--border`. Sidebar ada tepat di bawahnya.
-- Jendela sendiri tidak pernah digulir (`html, body { overflow: hidden }`), karena scrollbar jendela akan memanjang sampai ke samping tombol Minimize, Maximize, dan Close.
-  - `#app` adalah kolom flex setinggi jendela: title bar (`flex: none`), lalu `.scroller` (`flex: 1; overflow-y: auto; position: relative`) yang menggulir semua konten. Scrollbar-nya mulai tepat di bawah title bar. `position: relative` wajib: tanpa itu, elemen `position: absolute` di dalamnya (label `visually-hidden`) memanjangkan jendela, dan `scrollIntoView` ikut menggeser title bar ke atas.
-  - `.shell` di dalamnya mengisi area itu (`min-height: 100%`). Elemen yang menempel di dalam konten memakai `top` relatif ke `.scroller` (sidebar `top: 0`, indeks Docs `top: 16px`), dan target gulir memakai `scroll-margin-top: 16px`.
-- Kiri: dua `IconButton` varian `quiet` (32×28, tanpa border, hover `--accent-soft`): **Menu** (`aria-haspopup="menu"`, tertekan selama menu terbuka) dan **Collapse/Expand sidebar** (`align="start"`, supaya tooltip-nya mulai dari tepi tombol dan tidak terpotong tepi kiri jendela). Keduanya `keepFocus`: klik mouse tidak memindahkan fokus keyboard, supaya perintah Edit dari menu mengenai kolom yang sedang diedit.
-- Tengah: area kosong `data-tauri-drag-region` untuk menggeser jendela; double-click untuk maximize/restore.
-- Kanan: Minimize, Maximize/Restore, dan Close, digambar seperti tombol caption Windows 11 (46px, ikon garis 1px 10×10, hover `--accent-soft`). Close saat hover memakai merah Windows `--window-close-bg` dengan teks putih (5,66:1).
-- Menu memakai menu native Windows (`@tauri-apps/api/menu`), sehingga keyboard, aksesibilitas, dan perintah Edit ditangani Windows. Modul menunya dimuat saat pertama dibuka. Hanya item yang benar-benar bekerja yang ditampilkan. Item menu tidak menulis accelerator; shortcut-nya tetap bekerja.
-- Fokus keyboard: cincin `--focus` seperti tombol lain. Di tombol jendela yang menempel ke tepi, offset-nya ke dalam (`-2px`).
+- Replaces the Windows title bar (`decorations: false`). Height `--titlebar-height` (36px), background `--bg`, bottom border `--border`. The sidebar sits directly below it.
+- The window itself never scrolls (`html, body { overflow: hidden }`), because a window scrollbar would run up beside the Minimize, Maximize, and Close buttons.
+  - `#app` is a flex column as tall as the window: the title bar (`flex: none`), then `.scroller` (`flex: 1; overflow-y: auto; position: relative`), which scrolls all the content. Its scrollbar starts right below the title bar. `position: relative` is required: without it, `position: absolute` elements inside (`visually-hidden` labels) stretch the window, and `scrollIntoView` also pushes the title bar up.
+  - `.shell` inside it fills that area (`min-height: 100%`). Sticky elements inside the content use `top` relative to `.scroller` (sidebar `top: 0`, Docs index `top: 16px`), and scroll targets use `scroll-margin-top: 16px`.
+- Left: two `IconButton`s with the `quiet` variant (32×28, no border, hover `--accent-soft`): **Menu** (`aria-haspopup="menu"`, pressed while the menu is open) and **Collapse/Expand sidebar** (`align="start"`, so its tooltip starts at the button edge and is not cut off by the left edge of the window). Both use `keepFocus`: a mouse click does not move keyboard focus, so Edit commands from the menu apply to the field being edited.
+- Center: an empty `data-tauri-drag-region` area for moving the window; double-click to maximize/restore.
+- Right: Minimize, Maximize/Restore, and Close, drawn like Windows 11 caption buttons (46px, 1px line icons at 10×10, hover `--accent-soft`). Close on hover uses the Windows red `--window-close-bg` with white text (5.66:1).
+- The menu uses the native Windows menu (`@tauri-apps/api/menu`), so Windows handles the keyboard, accessibility, and Edit commands. The menu module loads the first time the menu opens. Only items that actually work are shown. Menu items do not list accelerators; their shortcuts still work.
+- Keyboard focus: a `--focus` ring like other buttons. On window buttons that touch the edge, the ring offset is inward (`-2px`).
 
 ### Sidebar
 
-- Brand (logo + "Codestamp"), item **Home**, grup **Collections** dengan tombol "+" (`aria-label="New collection"`), daftar collection (emoji, nama, jumlah mono), lalu grup **Tools** (Orchestration, Catalog, Docs, Git changes) yang didorong ke paling bawah sidebar (`margin-top: auto`; saat daftar collection panjang, Tools tepat di bawahnya). Tiap grup berupa `role="group"` dengan `aria-label` judulnya. Settings, Recently deleted, Cookies, dan Environments ada di status bar; Import dibuka dari "+" (New collection), Home, Menu › File, dan Quick search; History ada di tiap collection.
-- Judul **Tools** bisa diklik untuk melipat grupnya (`FoldButton` dengan teks, `aria-expanded`, chevron ke kanan saat terlipat). Lipatan diingat per perangkat (`localStorage` `codestamp.foldedNavGroups`). Rel ikon selalu menampilkan semua item.
-- Rel ikon 64px (class `rail`): dipakai di bawah 900px, dan saat pengguna menciutkan sidebar. Logo, tombol cari, ikon tiap item, dan garis pemisah antargrup; judul grup dan jumlah disembunyikan, nama item hanya untuk pembaca layar dan tooltip.
-- **Tooltip rel**: nama item muncul di kanan ikon saat hover atau fokus keyboard (`:focus-visible`), dengan gaya tooltip `IconButton` (surface, border, radius sm, `--shadow-pop`, 12px 500), tengahnya sejajar tengah item. Tooltip ini `position: fixed` di luar `nav`, karena sidebar yang bisa di-scroll akan memotongnya; hilang saat pointer keluar, fokus pindah, atau sidebar di-scroll. Nama collection yang panjang dibungkus (maks 280px), tidak dipotong. Tombol "+" memakai tooltip yang sama di sidebar penuh. Tooltip hanya tampil di tata letak tempat ia muncul, jadi melebarkan atau menciutkan sidebar saat fokus masih di item menghapusnya. Item rel tidak memakai `title`, supaya tidak ada dua tooltip.
-- Item aktif "terangkat": latar `--surface`, border `--border`, `--shadow-raise`, berat 500. Hover: latar `--surface-sunken`.
-- Tanpa collection: teks muted "No collections yet."
+- Brand (logo + "Codestamp"), the **Home** item, the **Collections** group with a "+" button (`aria-label="New collection"`), the collection list (emoji, name, mono count), then the **Tools** group (Orchestration, Catalog, Docs, Git changes), pushed to the bottom of the sidebar (`margin-top: auto`; when the collection list is long, Tools sits right below it). Each group is a `role="group"` with its title as the `aria-label`. Settings, Recently deleted, Cookies, and Environments are in the status bar; Import opens from "+" (New collection), Home, Menu › File, and Quick search; History is in each collection.
+- The **Tools** title can be clicked to fold its group (`FoldButton` with text, `aria-expanded`, chevron pointing right when folded). The folded state is remembered per device (`localStorage` `codestamp.foldedNavGroups`). The icon rail always shows every item.
+- The 64px icon rail (class `rail`): used below 900px, and when the user collapses the sidebar. It shows the logo, the search button, an icon for each item, and divider lines between groups; group titles and counts are hidden, and item names are only for screen readers and the tooltip.
+- **Rail tooltip**: the item name appears to the right of the icon on hover or keyboard focus (`:focus-visible`), with the `IconButton` tooltip style (surface, border, radius sm, `--shadow-pop`, 12px 500), its center aligned with the center of the item. This tooltip is `position: fixed` outside `nav`, because the scrollable sidebar would clip it; it disappears when the pointer leaves, focus moves, or the sidebar scrolls. Long collection names wrap (max 280px) instead of being truncated. The "+" button uses the same tooltip in the full sidebar. The tooltip only shows in the layout where it appeared, so expanding or collapsing the sidebar while focus is still on the item removes it. Rail items do not use `title`, so there are never two tooltips.
+- The active item is "raised": background `--surface`, border `--border`, `--shadow-raise`, weight 500. Hover: background `--surface-sunken`.
+- No collections: muted text "No collections yet."
 
 ### Status bar (`StatusBar`)
 
-- Garis memanjang selebar jendela di paling bawah, di bawah sidebar dan konten (seperti status bar Bruno). Tinggi `--statusbar-height` (30px), latar `--bg`, garis atas `--border`. Tinggi sidebar, indeks Docs, Git changes, dan Home dikurangi tinggi ini.
-- Kiri: empat `IconButton` `quiet` dengan ikon 15px satu warna (`currentColor`), urut **Settings** (gerigi), **Recently deleted**, **Cookies**, **Environments**. Tooltip di atas tombol (`placement="above"`; yang pertama `align="start"`). Tombol halaman yang terbuka memakai `current` (tertekan, `aria-current="page"`).
-- Kanan: versi Codestamp yang sedang berjalan ("v0.3.3", 12px `--text-muted`, angka tabular) dari `getVersion()`.
-- `<footer aria-label="Status bar">` dengan grup `role="group"` "Settings and data". Disembunyikan selama mode fokus, seperti sidebar.
-- Bisa diciutkan ke rel ikon (tombol di title bar, View › Collapse sidebar, atau Ctrl+B), bukan disembunyikan, supaya navigasi selalu terlihat. Pilihannya diingat di `localStorage` perangkat ini; tanpa storage, toggle tetap bekerja selama aplikasi terbuka. Di bawah 900px tombolnya nonaktif dengan tooltip "Widen the window to expand the sidebar".
+- A strip across the full width of the window at the very bottom, below the sidebar and the content (like the Bruno status bar). Height `--statusbar-height` (30px), background `--bg`, top border `--border`. The heights of the sidebar, the Docs index, Git changes, and Home subtract this height.
+- Left: four `quiet` `IconButton`s with single-color 15px icons (`currentColor`), in order **Settings** (gear), **Recently deleted**, **Cookies**, **Environments**. Tooltips sit above the button (`placement="above"`; the first one uses `align="start"`). The button for the open page uses `current` (pressed, `aria-current="page"`).
+- Right: the running Codestamp version ("v0.3.3", 12px `--text-muted`, tabular figures) from `getVersion()`.
+- `<footer aria-label="Status bar">` with a `role="group"` group "Settings and data". Hidden during focus mode, like the sidebar.
+- Can be collapsed to the icon rail (button in the title bar, View › Collapse sidebar, or Ctrl+B) rather than hidden, so navigation is always visible. The choice is remembered in this device's `localStorage`; without storage, the toggle still works while the app is open. Below 900px the button is disabled with the tooltip "Widen the window to expand the sidebar".
 
 ### Home
 
-- Tampil saat dipilih dari sidebar, dan otomatis bila belum ada collection. Bentuknya **hub**, mengisi tinggi jendela, dengan isi dari `lib/home/hub.ts`.
-- **Baris atas**: tab pill (`role="tab"`) Start, Requests, Testing, Workspace di wadah surface ber-border; tab aktif `--accent-soft`. Di kanan, collection tujuan ("Collection **nama**" atau "No collection yet").
-- **Tile**: tombol 72px, radius lg, latar `--hue-bg`, ikon 30px `--hue`, nama di tooltip. Di belakangnya radio native (`aria-label` = nama tile), jadi panah keyboard berfungsi. Terpilih: border `--hue` plus cincin 2px `--hue` berjarak 3px, sedikit membesar.
-- **Panel (stage)**: surface, border, radius lg, min 340px, isi rata bawah-kiri. Ikon tile digambar besar (220px, garis 1, opacity 0.16) di kanan atas, dan disembunyikan bila panel di bawah 900px (container query) agar tidak berada di belakang teks. Isinya: fakta singkat 13px berwarna `--hue`, judul 34px/600, deskripsi 15px `--text-2`, pill contoh (bila lebih dari satu perintah), kotak perintah (`$` muted, kode mono, tombol Copy), lalu pill utama dan tombol ikon bulat tambahan. Status salin 12px (`role="status"`).
-- **Tooltip tile**: nama tile muncul hanya saat hover pada tile yang **belum** dipilih. Tile terpilih sudah tampil sebagai judul panel, dan karena tile itu sedikit membesar, tooltip-nya akan tertutup panel.
-- **Gerak** (semua mati bila `prefers-reduced-motion`):
-  - satu pill `--accent-soft` bergeser ke tab terpilih (280ms, mengikuti posisi tab lewat `ResizeObserver`);
-  - tile bagian baru masuk naik 10px satu per satu (jeda 45ms);
-  - teks panel naik 8px baris demi baris (fakta, judul, deskripsi; jeda 50ms), lalu pill contoh dan kotak perintah;
-  - ikon besar muncul dari skala 0.82 dan rotasi −8° dalam 480ms.
-  - Animasi memakai properti `translate` / `scale` / `rotate` terpisah supaya tidak bentrok dengan `transform` tile terpilih.
-- **Keyboard**: ←/→ memilih tile (di tab: pindah bagian), Enter menjalankan tombol utama, 1-4 memilih bagian. Hanya aktif bila fokus ada di halaman atau di dalam Home, dan tidak saat dialog terbuka. Tidak ada baris petunjuk tombol di bawah panel.
-- Tombol utama mengikuti keadaan: "Add GraphQL to Shop API", "Run Shop API", atau "Create a collection first" bila belum ada collection.
-- Hanya fitur yang benar-benar ada yang boleh ditampilkan. Tidak ada login/akun di Codestamp; teamwork masuk lewat Git.
+- Shown when picked from the sidebar, and automatically when there is no collection yet. It is a **hub** that fills the window height, with content from `lib/home/hub.ts`.
+- **Top row**: pill tabs (`role="tab"`) Start, Requests, Testing, Workspace in a bordered surface container; the active tab is `--accent-soft`. On the right, the target collection ("Collection **name**" or "No collection yet").
+- **Tiles**: 72px buttons, radius lg, background `--hue-bg`, 30px `--hue` icon, name in the tooltip. Behind them are native radios (`aria-label` = tile name), so the keyboard arrows work. Selected: `--hue` border plus a 2px `--hue` ring at a 3px offset, slightly enlarged.
+- **Panel (stage)**: surface, border, radius lg, min 340px, content aligned to the bottom left. The tile icon is drawn large (220px, line width 1, opacity 0.16) at the top right, and hidden when the panel is below 900px (container query) so it does not sit behind the text. Contents: a short 13px fact in `--hue`, a 34px/600 title, a 15px `--text-2` description, example pills (when there is more than one command), a command box (muted `$`, mono code, Copy button), then the main pill and extra round icon buttons. Copy status is 12px (`role="status"`).
+- **Tile tooltip**: the tile name appears only on hover over a tile that is **not** selected. The selected tile already shows as the panel title, and because that tile is slightly enlarged, its tooltip would be covered by the panel.
+- **Motion** (all off with `prefers-reduced-motion`):
+  - one `--accent-soft` pill slides to the selected tab (280ms, following the tab position through `ResizeObserver`);
+  - the tiles of a new section rise in by 10px one at a time (45ms delay);
+  - the panel text rises 8px line by line (fact, title, description; 50ms delay), then the example pills and the command box;
+  - the large icon appears from scale 0.82 and rotation −8° over 480ms.
+  - The animations use the separate `translate` / `scale` / `rotate` properties so they do not clash with the selected tile's `transform`.
+- **Keyboard**: ←/→ selects a tile (on the tabs: changes section), Enter runs the main button, 1-4 selects a section. Only active when focus is on the page or inside Home, and not while a dialog is open. There is no key hint line below the panel.
+- The main button follows the state: "Add GraphQL to Shop API", "Run Shop API", or "Create a collection first" when there is no collection yet.
+- Only features that actually exist may be shown. Codestamp has no login or accounts; teamwork comes in through Git.
 
-### Dialog Duplicate
+### Duplicate dialog
 
-- Setiap duplikat (collection, section, request) lewat dialog dulu, tidak langsung menyalin. Lebar 460px; judul "Duplicate collection/section/request", subjudul "Make a copy of “nama”".
-- Kolom **Name of the copy** terisi "nama copy" (dipendekkan agar muat 120 karakter) dan langsung terseleksi. Validasi langsung: wajib diisi, maksimal 120 karakter, dan tidak boleh sama (tanpa membedakan huruf besar/kecil) dengan nama tetangganya: collection lain, section lain di collection yang sama, atau request lain di collection yang sama. Pesan salah tampil di bawah kolom dan tombol Duplicate nonaktif sampai beres. Rust memeriksa nama lagi (`clean_name`).
-- Kotak info menjelaskan apa yang ikut tersalin. Enter = Duplicate, Escape = batal.
+- Every duplicate (collection, section, request) goes through a dialog first instead of copying immediately. Width 460px; title "Duplicate collection/section/request", subtitle "Make a copy of “name”".
+- The **Name of the copy** field is prefilled with "name copy" (shortened to fit 120 characters) and selected right away. Live validation: required, at most 120 characters, and must not match (case-insensitively) the name of a sibling: another collection, another section in the same collection, or another request in the same collection. The error message shows below the field, and the Duplicate button stays disabled until it is fixed. Rust checks the name again (`clean_name`).
+- An info box explains what gets copied. Enter = Duplicate, Escape = cancel.
 
-### Dialog New collection
+### New collection dialog
 
-- Dibuka dari "+" di sidebar dan tombol di Home (dengan pilihan awal sesuai tile: New collection, Import, Join).
-- Kartu pilihan "How do you want to start?": **Empty collection** (Name wajib, tombol ikon emoji di sebelahnya, Base URL opsional yang disimpan sebagai variabel collection `{{baseUrl}}`), **Import from Postman** (tombol "Choose a file…" lalu pratinjau di halaman Import), **Join a team collection** (alamat repository + nama/email Git).
-- Base URL divalidasi di UI (harus `http://` atau `https://`) dan diperiksa lagi di Rust; nama dan ikon juga diperiksa di Rust.
+- Opened from the "+" in the sidebar and from the button on Home (with the initial choice matching the tile: New collection, Import, Join).
+- "How do you want to start?" choice cards: **Empty collection** (Name required, with an emoji icon button next to it, and an optional Base URL saved as the collection variable `{{baseUrl}}`), **Import from Postman** ("Choose a file…" button, then a preview on the Import page), **Join a team collection** (repository address + Git name/email).
+- The Base URL is validated in the UI (must be `http://` or `https://`) and checked again in Rust; the name and icon are also checked in Rust.
 
-### Collection kosong (`CollectionStart`)
+### Empty collection (`CollectionStart`)
 
-- Menggantikan adder saat collection belum punya request. Meta header berbunyi "No requests yet · saved automatically", plus chip "Created just now" untuk collection yang baru dibuat.
-- Panel **Add your first request** dengan satu tile per jenis request (HTTP, WebSocket, GraphQL, gRPC, MCP server, SOAP) dan Paste a cURL command (→ halaman Import dengan collection ini sudah terpilih), lalu kartu **Also ready in this collection**: variabel `{{baseUrl}}` (bila ada), Sections, dan Work with your team.
+- Replaces the adder when the collection has no requests yet. The header meta reads "No requests yet · saved automatically", plus a "Created just now" chip for a newly created collection.
+- An **Add your first request** panel with one tile per request type (HTTP, WebSocket, GraphQL, gRPC, MCP server, SOAP) and Paste a cURL command (→ the Import page with this collection already selected), then an **Also ready in this collection** card: the `{{baseUrl}}` variable (when present), Sections, and Work with your team.
 
-### Kartu request (terbuka)
+### Request card (open)
 
-- Border 1px `--border-strong`, radius lg, `--shadow-card`.
-- Header: badge langkah (26px, bulat, latar tinta), nama 17px yang bisa diedit, status simpan 12px muted ("Saved"; merah bila gagal), lalu icon button.
-- Baris target: URL field dan tombol Send berwarna method yang dipilih (ikut berubah saat method diganti). Panel request dan response bisa bertumpuk (dipisah garis putus-putus) atau berdampingan (`flex-wrap`, basis 420px).
-- Kartu yang dibuka dari luar daftar (Quick search, panel History, Catalog, Docs, Orchestration, Run all, Import) digulir ke atas area konten dengan `revealElement` (`scroll-margin-top: 16px`) dan menerima fokus (`tabindex="-1"`). Kartu yang dibuka dari barisnya sendiri tidak menggulir halaman.
+- 1px `--border-strong` border, radius lg, `--shadow-card`.
+- Header: step badge (26px, round, ink background), editable 17px name, 12px muted save status ("Saved"; red when saving fails), then icon buttons.
+- Target row: the URL field and a Send button in the selected method's color (it changes when the method changes). The request and response panels can stack (separated by a dashed line) or sit side by side (`flex-wrap`, 420px basis).
+- A card opened from outside the list (Quick search, History panel, Catalog, Docs, Orchestration, Run all, Import) is scrolled to the top of the content area with `revealElement` (`scroll-margin-top: 16px`) and receives focus (`tabindex="-1"`). A card opened from its own row does not scroll the page.
 
-### Baris request (tertutup)
+### Request row (closed)
 
-- Tombol selebar penuh, grid `24px 64px 1fr auto`, padding `12px 16px`, border `--border`, radius lg.
-- Isi: nomor langkah mono muted (`01`), cap method, nama (500) dan URL (mono 12px muted), lalu durasi mono muted + chip kode status (atau "Not run yet").
-- Target drop ditandai `box-shadow: 0 -3px 0 var(--accent)`. Bisa diseret, atau dipindah dengan Alt+↑/↓.
+- Full-width button, grid `24px 64px 1fr auto`, padding `12px 16px`, border `--border`, radius lg.
+- Contents: muted mono step number (`01`), method stamp, name (500) and URL (mono 12px muted), then muted mono duration + status code chip (or "Not run yet").
+- The drop target is marked with `box-shadow: 0 -3px 0 var(--accent)`. Rows can be dragged, or moved with Alt+↑/↓.
 
-### Kepala section
+### Section header
 
-Tombol lipat (chevron, `aria-expanded`), handle titik-titik untuk drag, nama `EditableText` 14px 700 `--text` (lebih tegas dari baris request di bawahnya), jumlah request 12px muted, lalu link aksi di kanan.
+Fold button (chevron, `aria-expanded`), dotted drag handle, `EditableText` name at 14px 700 `--text` (stronger than the request rows below it), 12px muted request count, then action links on the right.
 
-- **Melipat section** menyembunyikan request-nya supaya daftar ringkas; jumlahnya tetap terlihat dan nomor langkah request lain tidak berubah. Chevron menunjuk ke kanan saat terlipat.
-- Status lipat disimpan per perangkat (`localStorage`, hanya id section) dan tidak ikut sinkron tim. Chevron lipat di collection, Docs, dan sidebar adalah satu komponen (`FoldButton`), dan semua lipatan disimpan lewat `RememberedIds`.
-- Section terbuka sendiri saat salah satu request-nya dibuka (dari History, duplikat, Run) atau saat request dipindah ke dalamnya dengan Alt+↑/↓. Saat terlipat, request bisa diseret ke kepala section-nya.
+- **Folding a section** hides its requests to keep the list compact; the count stays visible and the step numbers of the other requests do not change. The chevron points right when folded.
+- The fold state is stored per device (`localStorage`, section ids only) and is not part of team sync. The fold chevrons in collections, Docs, and the sidebar are one component (`FoldButton`), and all fold states are stored through `RememberedIds`.
+- A section opens on its own when one of its requests is opened (from History, a duplicate, Run) or when a request is moved into it with Alt+↑/↓. While a section is folded, requests can be dragged onto its section header.
 
-### Panel collection (Variables, Auth, Collaboration, Mock server, History, Export)
+### Collection panel (Variables, Auth, Collaboration, Mock server, History, Export)
 
-- Dibuka sebagai dialog modal di atas halaman (`PanelDialog`), seperti Quick search: `<dialog>` dengan `showModal()`, lebar `min(880px, 100vw - 32px)`, margin atas 10vh, tinggi maksimal `90vh - 16px`, radius 14px, `--shadow-dialog`, latar `--backdrop` tanpa blur. Muncul naik 10px dari skala 0,98 sambil memudar (240 ms, kurva yang sama dengan Quick search dan tile Home; dimatikan oleh `prefers-reduced-motion`). Halaman di belakangnya tidak bergeser.
-- Tombol di header collection tetap memakai `aria-expanded` dan tampil tertekan selama dialognya terbuka. Escape, klik di latar, atau Close menutupnya; panel yang bisa diedit menanyakan dulu bila ada perubahan yang belum disimpan.
-- Isi dialog di-scroll di dalamnya, dan kepala panel (judul, aksi, Close) tetap di atas (`position: sticky`). Dialog konfirmasi dan dialog lain yang dibuka dari panel tampil di atasnya.
-- Header `14px 16px` berisi judul 15px, deskripsi 13px muted, dan tombol aksi, dipisah garis `--border-soft`. Bingkai panel sendiri (border, radius) dihapus di dalam dialog karena dialognya yang menjadi kartu.
-- Ctrl+S di Variables dan Auth menyimpan selama fokus keyboard ada di dalam dialog panel itu, bukan di dialog lain yang terbuka di atasnya.
-- Panel yang bisa diedit memakai `CollectionPanel`: tombol Save/Saved, konfirmasi buang perubahan, dan _leave guard_ yang mencegah pindah collection selama masih ada edit.
-- Collaboration: akun ditampilkan sebagai baris `dl` (_Signs in as_ hanya untuk https, _Your changes as_), dengan tombol secondary **Change account** di bawahnya. Form akunnya menggantikan kedua baris itu di dalam kotak bergaris `--border-soft` (radius md, padding 14px, judul h3 13px "Account for “nama”"), lalu Cancel dan Save di kanan.
-- Settings › Git accounts: satu `.panel` dengan judul, hint, dan tombol Add account di kanan. Form tambah berada di kotak bergaris `--border-soft`. Tiap akun berupa baris grid (nama mono + host, chip, tombol) dipisah garis `--border-soft`; di bawah 560px (container query) isinya bertumpuk. Chip memakai pasangan semantik dan selalu bertulisan: jumlah collection (accent-soft), _Signed in_ (ok), _Sign-in needed_ (warn), _Check failed_ (err), _Offline_ (sunken).
-- Git changes: bar atas (Dropdown collection, chip warn untuk perubahan lokal dan commit belum di-push, teks muted waktu sinkron, tombol secondary), lalu tab bergaris bawah (`role="tablist"`, panah kiri/kanan berpindah tab, tab aktif bergaris `--accent` 2px). Panel tab adalah kotak surface radius lg. Bila ada collection bersama, halaman setinggi jendela (`height` dari `--titlebar-height` dan padding `main` `--main-pad-top`/`--main-pad-bottom`, minimal 480px): judul, bar, dan tab tetap di tempat, panel yang di-scroll. Di atas 760px (container query) daftar commit dan detailnya berdampingan 2:3, masing-masing dengan area scroll sendiri (padding 4px agar cincin fokus tidak terpotong); di bawahnya panel di-scroll utuh. Titik commit 10px `--accent`; merge berupa lingkaran 2px. Chip perubahan file: _Added_ (ok), _Updated_ (accent-soft), _Removed_ (err).
-- `FieldChanges` adalah tabel tiga kolom (Field, sebelum, sesudah) dengan nilai mono di kotak `--surface-muted`, dipakai dialog riwayat request dan detail commit.
-- Share ke repository yang sudah berisi: kotak `--warn-bg` bergaris `--warn-line` (radius md, padding 14px) dengan judul h3 13px, penjelasan, daftar file mono 12px di kotak `--surface` (tinggi maksimal 180px, bisa digulir), lalu Cancel dan tombol merah "Replace files and share" (`--err` dengan teks `--on-accent`, sama seperti tombol aksi ConfirmDialog).
-- Status _sign in_ (err) di panel membawa tombol secondary **Sign in** di dalam kotak status (posisi yang sama dengan Resolve), hanya untuk alamat `https://`. Selama Git menunggu login, tombolnya nonaktif bertuliskan "Signing in…". Penolakan tampil di `.error` panel.
-- Status _not synced_ (warn) tampil di header dan panel selama ada perubahan tersimpan yang belum dikirim dengan Sync now. Tidak ada sinkron otomatis.
-- **Access groups** (`AccessSection`) ada di bawah teks undangan, dipisah garis `--border-soft`: judul h3 13px, hint 13px muted, lalu baris `dl` _This device_ berisi fingerprint mono 12px (`XXXX-XXXX-XXXX-XXXX`) dengan link Copy. Baris itu baru muncul setelah collection punya grup, karena membacanya membuat kunci perangkat.
-  - Tiap grup berupa kotak bergaris `--border-soft` (radius md, padding 14px): nama h4 13px 600 dan chip bertulisan _You are a member_ (ok), _No access_ (sunken), atau _Locked, needs a check_ (warn). Di bawahnya teks 12px muted "Holds token, apiKey (Staging)." dan daftar anggota (nama, email muted, fingerprint mono, tombol kecil Remove atau Leave).
-  - _Asking for access_ (h5) mendaftar permintaan dengan fingerprint-nya. Anggota mendapat petunjuk 12px untuk mencocokkan fingerprint lewat chat atau telepon, lalu tombol Decline (kecil) dan Grant (secondary). Permintaan perangkat ini sendiri bertombol Withdraw.
-  - Grup yang gagal diperiksa menampilkan kotak `--warn-bg` dengan alasannya dan tombol secondary **Repair group** bila perangkat ini pernah memeriksa versi sebelumnya sebagai anggota.
-  - Setiap aksi langsung menjalankan Sync now. Remove meminta konfirmasi (ConfirmDialog) yang menjelaskan bahwa nilai yang sudah dilihat tetap diketahui orang itu, lalu kotak `--ok-bg` mendaftar variabel yang perlu diganti di sumbernya.
-  - Form **New group** (label, input 32px, tombol secondary Create group) ada di bawah daftar grup.
-- `AccountFields` dipakai di Share, form akun, dan kedua form Join. Kolom _Git account (optional)_ hanya muncul untuk alamat `https://`; kata "(optional)" memakai `--text-muted`. Hint 12px di bawahnya menjelaskan arti kolom kosong.
+- Opened as a modal dialog above the page (`PanelDialog`), like Quick search: `<dialog>` with `showModal()`, width `min(880px, 100vw - 32px)`, top margin 10vh, max height `90vh - 16px`, radius 14px, `--shadow-dialog`, `--backdrop` background with no blur. It rises 10px from scale 0.98 while fading in (240 ms, the same curve as Quick search and the Home tiles; turned off by `prefers-reduced-motion`). The page behind it does not shift.
+- The button in the collection header still uses `aria-expanded` and appears pressed while its dialog is open. Escape, a click on the backdrop, or Close closes it; editable panels ask first when there are unsaved changes.
+- The dialog content scrolls inside it, and the panel head (title, actions, Close) stays at the top (`position: sticky`). Confirmation dialogs and other dialogs opened from the panel show above it.
+- The `14px 16px` header holds a 15px title, a 13px muted description, and action buttons, separated by a `--border-soft` line. The panel's own frame (border, radius) is removed inside the dialog because the dialog itself acts as the card.
+- Ctrl+S in Variables and Auth saves while keyboard focus is inside that panel's dialog, not in another dialog open above it.
+- Editable panels use `CollectionPanel`: a Save/Saved button, a discard-changes confirmation, and a _leave guard_ that prevents switching collections while there are still edits.
+- Collaboration: the account is shown as `dl` rows (_Signs in as_ for https only, _Your changes as_), with a secondary **Change account** button below them. The account form replaces those two rows inside a box bordered with `--border-soft` (radius md, padding 14px, 13px h3 title "Account for “name”"), then Cancel and Save on the right.
+- Settings › Git accounts: one `.panel` with a title, a hint, and an Add account button on the right. The add form sits in a box bordered with `--border-soft`. Each account is a grid row (mono name + host, chip, buttons) separated by `--border-soft` lines; below 560px (container query) its content stacks. Chips use the semantic pairs and always carry text: collection count (accent-soft), _Signed in_ (ok), _Sign-in needed_ (warn), _Check failed_ (err), _Offline_ (sunken).
+- Git changes: a top bar (collection Dropdown, warn chips for local changes and unpushed commits, muted sync time text, secondary button), then underlined tabs (`role="tablist"`, left/right arrows switch tabs, the active tab has a 2px `--accent` underline). The tab panel is a surface box with radius lg. When there is a shared collection, the page is as tall as the window (`height` from `--titlebar-height` and the `main` padding `--main-pad-top`/`--main-pad-bottom`, at least 480px): the title, bar, and tabs stay in place, and the panel scrolls. Above 760px (container query) the commit list and its details sit side by side at 2:3, each with its own scroll area (4px padding so the focus ring is not clipped); below that, the panel scrolls as a whole. Commit dot 10px `--accent`; a merge is a 2px circle. File change chips: _Added_ (ok), _Updated_ (accent-soft), _Removed_ (err).
+- `FieldChanges` is a three-column table (Field, before, after) with mono values in `--surface-muted` boxes, used by the request history dialog and the commit details.
+- Sharing to a repository that already has content: a `--warn-bg` box bordered with `--warn-line` (radius md, padding 14px) with a 13px h3 title, an explanation, a 12px mono file list in a `--surface` box (max height 180px, scrollable), then Cancel and a red "Replace files and share" button (`--err` with `--on-accent` text, the same as the ConfirmDialog action button).
+- The _sign in_ status (err) in the panel carries a secondary **Sign in** button inside the status box (the same position as Resolve), only for `https://` addresses. While Git waits for sign-in, the button is disabled and reads "Signing in…". A rejection shows in the panel's `.error`.
+- The _not synced_ status (warn) shows in the header and the panel while there are saved changes that have not been sent with Sync now. There is no automatic sync.
+- **Access groups** (`AccessSection`) sit below the invitation text, separated by a `--border-soft` line: a 13px h3 title, a 13px muted hint, then a `dl` row _This device_ with a 12px mono fingerprint (`XXXX-XXXX-XXXX-XXXX`) and a Copy link. That row only appears once the collection has a group, because reading it creates the device key.
+  - Each group is a box bordered with `--border-soft` (radius md, padding 14px): a 13px 600 h4 name and a text chip _You are a member_ (ok), _No access_ (sunken), or _Locked, needs a check_ (warn). Below that, 12px muted text "Holds token, apiKey (Staging)." and the member list (name, muted email, mono fingerprint, small Remove or Leave button).
+  - _Asking for access_ (h5) lists requests with their fingerprints. Members get a 12px hint to match the fingerprint over chat or phone, then a Decline (small) and a Grant (secondary) button. This device's own request has a Withdraw button.
+  - A group that fails its check shows a `--warn-bg` box with the reason, and a secondary **Repair group** button if this device has checked an earlier version as a member.
+  - Every action runs Sync now right away. Remove asks for confirmation (ConfirmDialog), explaining that values already seen stay known to that person, then an `--ok-bg` box lists the variables that need to be changed at their source.
+  - The **New group** form (label, 32px input, secondary Create group button) sits below the group list.
+- `AccountFields` is used in Share, the account form, and both Join forms. The _Git account (optional)_ field only appears for `https://` addresses; the word "(optional)" uses `--text-muted`. A 12px hint below it explains what an empty field means.
 
-### Halaman Import
+### Import page
 
-- Judul **Import** (ikon `import`, teal) dan penjelasan yang menyebut bahwa Export ada di tiap collection. Panel: kartu dengan `flex: 1 1 400px`, padding 18px, gap 14px, judul h2 16px, hint 12px muted.
-- Isinya: file (Codestamp, Collection v2.0/v2.1, environment, OpenAPI, Swagger, WSDL), Paste cURL, dan Join a shared collection. Pratinjau file Codestamp menambah statistik _environments_ bila ada.
+- Title **Import** (`import` icon, teal) and an explanation that mentions Export is in each collection. Panels: cards with `flex: 1 1 400px`, padding 18px, gap 14px, 16px h2 title, 12px muted hint.
+- Contents: file (Codestamp, Collection v2.0/v2.1, environment, OpenAPI, Swagger, WSDL), Paste cURL, and Join a shared collection. The preview of a Codestamp file adds an _environments_ stat when present.
 
-### Panel collection: Export dan History (`ViewPanel`)
+### Collection panel: Export and History (`ViewPanel`)
 
-- Cangkang bersama `ViewPanel` di dalam `PanelDialog`: kepala berisi judul 15px/600, deskripsi 13px muted, aksi opsional, dan tombol **Close**; isi dengan padding 16px dan gap 12px.
-- **Export** (`CollectionExport`): `Dropdown` **Format** (varian `field`, maks 520px) berisi _Codestamp_, _Postman Collection v2.1_, dan _Docs as Markdown_, dengan keterangan pilihan 12px muted di bawahnya (seperti Auth type). Tombol utama **Export…** membuka dialog simpan. Hasil (`ExportOutcome`): kotak `--ok-bg` "Exported to <path mono>" dengan catatan `--text-2` (nilai secret dikosongkan, grup akses tidak ikut), atau kotak `--err` bila gagal. Environment diekspor dari halaman Environments.
-- **History** (`CollectionHistory`): hanya request yang dikirim dari collection itu, terbaru dulu. Aksi **Clear history** (quiet, merah saat hover, ConfirmDialog; nonaktif saat filter aktif atau daftar kosong) hanya menghapus history collection itu. Kolom cari (36px, border biru saat fokus) dan pill status (All, 2xx, 3xx, 4xx, 5xx, Failed). Daftar per hari (h3 13px) dalam area scroll maks 420px: jam, method mono berwarna, nama + URL mono, chip status, durasi · ukuran, **Open** (membuka kartu request dan menggulir ke sana) atau **Save to collection** bila request-nya sudah tidak ada, dan ✕. Kosong: "Nothing sent from this collection yet." / "No requests match." Settings › Data & history tetap menghapus semua history.
-- Tile History di Home membuka panel History collection yang terakhir dibuka ("Open History of …"), atau "Create a collection first".
-- File Codestamp: `{"codestamp": "collection", "files": {…}}`, berisi file repository Collaboration di bawah path-nya. Secret dan nilai restricted dikosongkan, path file lokal tidak ikut, grup akses tidak ikut. Saat diimpor, semua bagian mendapat id baru, jadi file bisa diimpor di samping collection asalnya.
+- The shared `ViewPanel` shell inside `PanelDialog`: a head with a 15px/600 title, a 13px muted description, optional actions, and a **Close** button; a body with 16px padding and a 12px gap.
+- **Export** (`CollectionExport`): a **Format** `Dropdown` (`field` variant, max 520px) with _Codestamp_, _Postman Collection v2.1_, and _Docs as Markdown_, with a 12px muted note about the option below it (like Auth type). The main **Export…** button opens the save dialog. Result (`ExportOutcome`): an `--ok-bg` box "Exported to" followed by the path in mono with a `--text-2` note (secret values are emptied, access groups are not included), or an `--err` box on failure. Environments are exported from the Environments page.
+- **History** (`CollectionHistory`): only requests sent from that collection, newest first. The **Clear history** action (quiet, red on hover, ConfirmDialog; disabled while a filter is active or the list is empty) only deletes that collection's history. A search field (36px, blue border on focus) and status pills (All, 2xx, 3xx, 4xx, 5xx, Failed). The list is grouped by day (13px h3) in a scroll area of max 420px: time, colored mono method, name + mono URL, status chip, duration · size, **Open** (opens the request card and scrolls to it) or **Save to collection** when the request no longer exists, and ✕. Empty: "Nothing sent from this collection yet." / "No requests match." Settings › Data & history still deletes all history.
+- The History tile on Home opens the History panel of the last opened collection ("Open History of …"), or "Create a collection first".
+- Codestamp file: `{"codestamp": "collection", "files": {…}}`, containing the Collaboration repository files under their paths. Secrets and restricted values are emptied, local file paths are not included, and access groups are not included. On import, every part gets a new id, so the file can be imported next to its original collection.
 
 ### Dialog
 
-- `<dialog>` native dibuka dengan `showModal()`, `aria-labelledby` menunjuk ke judul. Escape memicu `oncancel`, yang memanggil fungsi penutup komponen.
-- Struktur: header (judul 16-18px, deskripsi 13px muted, tombol ✕ 32px), isi yang bisa di-scroll, lalu footer (status/catatan di kiri; aksi di kanan, secondary lalu primary). Antarbagian dipisah garis `--border-soft`.
-- ConfirmDialog: lebar 420px, judul berupa pertanyaan ("Delete?", "Stop syncing?"), pesan yang menjelaskan akibat, lalu Cancel dan tombol merah berlabel aksinya.
+- A native `<dialog>` opened with `showModal()`, with `aria-labelledby` pointing to the title. Escape fires `oncancel`, which calls the component's close function.
+- Structure: header (16-18px title, 13px muted description, 32px ✕ button), a scrollable body, then the footer (status/notes on the left; actions on the right, secondary then primary). Sections are separated by `--border-soft` lines.
+- ConfirmDialog: 420px wide, a title phrased as a question ("Delete?", "Stop syncing?"), a message explaining the consequence, then Cancel and a red button labeled with the action.
 
 ### Copy as code (`CodeDialog`, `lib/request/codegen/`)
 
-- Dialog 760px: header (judul "Copy “nama” as code", ✕), baris pilihan, penampil kode (`CodeEditor` read-only, tinggi bisa diubah), dan footer (keterangan di kiri, _Copy_ di kanan).
-- Baris pilihan: dua kolom berlabel 12px/500 muted, **Language** dan **Values**, masing-masing `Dropdown` varian `field`. Grid `repeat(auto-fit, minmax(200px, 1fr))`, jadi di jendela sempit keduanya bertumpuk, bukan memanjang ke kanan.
-- _Language_ diingat per perangkat (`localStorage` `codestamp.codeLanguage`). _Values_ selalu mulai dari **Environment variables**; _Filled in (shows secrets)_ tidak pernah diingat.
-- Keterangan footer mengikuti _Values_: "Reads BASE_URL, TOKEN from environment variables.", "Variables stay as {{name}}.", atau "Values are filled in as they would be sent now.", selalu ditutup "Pre-request scripts are not run."
-- Kode yang dihasilkan selalu bersusun sama, dipisah baris kosong: import, nilai dari environment (hanya yang dipakai), URL dan query, header, body, kirim, lalu cetak status dan body. Satu pasangan query, header, atau field per baris. Indentasi mengikuti bahasanya (Go memakai tab; Python, PHP, Java, Kotlin, C#, Swift, Rust, dan PowerShell 4 spasi; JavaScript, Dart, Ruby, cURL, dan HTTPie 2 spasi).
-- Nama: `{{baseUrl}}` menjadi environment variable `BASE_URL`, variabel lokal `baseUrl` (atau `base_url` di Python, Ruby, dan Rust). Nama yang bentrok dengan kata kunci atau nama lokal generator (`url`, `body`, `headers`, …) mendapat akhiran `Value`. Environment variable yang sudah dipakai sistem (`USER`, `PATH`, `HOME`, …) mendapat akhiran `_VALUE`.
-- Urutan _Language_: cURL, HTTPie, PowerShell, JavaScript fetch, JavaScript axios, Python requests, PHP Guzzle, Go net/http, Java HttpClient, Kotlin OkHttp, C# HttpClient, Dart http, Swift URLSession, Ruby Net::HTTP, Rust reqwest. Label selalu "bahasa + library", supaya jelas apa yang perlu dipasang.
+- A 760px dialog: header (title "Copy “name” as code", ✕), an options row, a code viewer (read-only `CodeEditor`, resizable height), and a footer (note on the left, _Copy_ on the right).
+- Options row: two columns with 12px/500 muted labels, **Language** and **Values**, each a `Dropdown` with the `field` variant. Grid `repeat(auto-fit, minmax(200px, 1fr))`, so in a narrow window they stack instead of stretching to the right.
+- _Language_ is remembered per device (`localStorage` `codestamp.codeLanguage`). _Values_ always starts at **Environment variables**; _Filled in (shows secrets)_ is never remembered.
+- The footer note follows _Values_: "Reads BASE_URL, TOKEN from environment variables.", "Variables stay as {{name}}.", or "Values are filled in as they would be sent now.", always ending with "Pre-request scripts are not run."
+- The generated code always has the same layout, separated by blank lines: imports, values from the environment (only the ones used), URL and query, headers, body, send, then print the status and body. One query pair, header, or field per line. Indentation follows the language (Go uses tabs; Python, PHP, Java, Kotlin, C#, Swift, Rust, and PowerShell use 4 spaces; JavaScript, Dart, Ruby, cURL, and HTTPie use 2 spaces).
+- Names: `{{baseUrl}}` becomes the environment variable `BASE_URL` and the local variable `baseUrl` (or `base_url` in Python, Ruby, and Rust). Names that clash with keywords or the generator's local names (`url`, `body`, `headers`, …) get the suffix `Value`. Environment variables the system already uses (`USER`, `PATH`, `HOME`, …) get the suffix `_VALUE`.
+- _Language_ order: cURL, HTTPie, PowerShell, JavaScript fetch, JavaScript axios, Python requests, PHP Guzzle, Go net/http, Java HttpClient, Kotlin OkHttp, C# HttpClient, Dart http, Swift URLSession, Ruby Net::HTTP, Rust reqwest. Labels are always "language + library", so it is clear what needs to be installed.
 
 ### Banner
 
-- Ditampilkan di puncak konten lewat `notices`. Satu pesan pada satu waktu, dengan tombol Dismiss. Pesan info boleh membawa satu tombol aksi sebelum Dismiss, misalnya _Open variables_ yang membuka panel Variables collection terkait, _Undo_ setelah menghapus collection atau request, dan _Open_ setelah memulihkannya dari Recently deleted.
+- Shown at the top of the content through `notices`. One message at a time, with a Dismiss button. An info message may carry one action button before Dismiss, for example _Open variables_, which opens the related collection's Variables panel, _Undo_ after deleting a collection or request, and _Open_ after restoring one from Recently deleted.
 
 ### Recently deleted
 
-- Collection dan request yang dihapus disimpan 30 hari (`deleted_items`, skema 26) sebagai salinan baris database apa adanya: section, request, example, environment milik collection, variabel (secret tetap terenkripsi vault), info Catalog, hasil Run, tautan Collaboration, grup akses, dan token sign-in. Langkah Orchestration dan History yang menunjuk ke item itu disambungkan lagi saat pulih.
-- Dialog hapus berkata "You can restore it from Recently deleted for 30 days." (bukan "cannot be undone"). Setelah dihapus, banner info "“Nama” was deleted. It stays in Recently deleted for 30 days." dengan tombol **Undo**, yang memulihkan dan membuka item itu.
-- Halaman **Recently deleted** (ikon tempat sampah, hue `slate`, di status bar, Menu › Go, Quick search, dan Home): judul + penjelasan, tombol quiet **Delete all** (merah saat hover, dengan ConfirmDialog). Daftar seperti History: chip _Collection_/_Request_, nama 500, baris muted (jumlah request, "In “Collection”", atau penjelasan bahwa collection-nya juga terhapus sehingga Restore membuat collection baru bernama sama), "Deleted … · N days left", tombol **Restore** (secondary kecil), dan tombol ✕ "Delete … for good" dengan ConfirmDialog. Kosong: "Nothing deleted in the last 30 days."
-- Request kembali ke section-nya bila section itu masih ada; bila tidak, ke luar section. Collection yang pernah dibagikan kembali tersambung ke repository-nya, dan clone-nya dibangun ulang dari commit tersinkron terakhir.
-- Error: `--err-bg` / `--err`, tepi `--err-line`, `role="alert"`.
-- Info: `--accent-soft` / `--accent-text`, `role="status"`. Contoh: rekan tim menghapus request yang sedang terbuka, atau Sync now membawa akses ke grup yang diminta perangkat ini ("Mate gave this device access to Ops. Its restricted values are ready to use.").
-- Banner update (`UpdateBanner`) berdiri sendiri di atas banner `notices`, dengan warna info yang sama: teks versi, lalu tombol teks _What's new_ (bila ada catatan), _Update and restart_, dan _Later_. Selama mengunduh, tombol diganti persentase dan `<progress>` 6px (isi `--accent` di atas `--surface`). Gagal: warna error, `role="alert"`, tombol _Try again_ dan _Later_.
+- Deleted collections and requests are kept for 30 days (`deleted_items`, schema 26) as unchanged copies of their database rows: sections, requests, examples, environments owned by the collection, variables (secrets stay vault-encrypted), Catalog info, Run results, Collaboration links, access groups, and sign-in tokens. Orchestration steps and History entries that point to the item are reconnected when it is restored.
+- The delete dialog says "You can restore it from Recently deleted for 30 days." (not "cannot be undone"). After the delete, an info banner reads "“Name” was deleted. It stays in Recently deleted for 30 days." with an **Undo** button, which restores the item and opens it.
+- **Recently deleted** page (trash icon, hue `slate`, in the status bar, Menu › Go, Quick search, and Home): title + explanation, a quiet **Delete all** button (red on hover, with ConfirmDialog). The list works like History: _Collection_/_Request_ chip, name 500, a muted line (request count, "In “Collection”", or a note that its collection was deleted too, so Restore creates a new collection with the same name), "Deleted … · N days left", a **Restore** button (small secondary), and a ✕ button "Delete … for good" with ConfirmDialog. Empty: "Nothing deleted in the last 30 days."
+- A request goes back to its section if that section still exists; if not, it goes outside any section. A collection that was shared reconnects to its repository, and its clone is rebuilt from the last synced commit.
+- Error: `--err-bg` / `--err`, border `--err-line`, `role="alert"`.
+- Info: `--accent-soft` / `--accent-text`, `role="status"`. Examples: a teammate deletes the request that is open, or Sync now brings access to a group this device asked for ("Mate gave this device access to Ops. Its restricted values are ready to use.").
+- The update banner (`UpdateBanner`) stands on its own above the `notices` banner, with the same info colors: version text, then a _What's new_ text button (when there are notes), _Update and restart_, and _Later_. While downloading, the buttons are replaced by a percentage and a 6px `<progress>` (fill `--accent` over `--surface`). On failure: error colors, `role="alert"`, _Try again_ and _Later_ buttons.
 
-### Kotak status inline
+### Inline status box
 
-- Kotak radius md, padding `10px 14px`, 13px, dengan pasangan latar/teks semantik. Contoh: hasil export (ok), konflik menunggu (warn), status sinkron di panel Collaboration (ok/warn/err dengan titik).
-- Error form: latar `--err-bg`, padding `10px 12px`, `role="alert"`.
+- A box with radius md, padding `10px 14px`, 13px, with a semantic background/text pair. Examples: export result (ok), pending conflicts (warn), sync status in the Collaboration panel (ok/warn/err with a dot).
+- Form error: `--err-bg` background, padding `10px 12px`, `role="alert"`.
 
-### Tabel key-value
+### Key-value table
 
-- 13px, header 500 muted, baris dipisah `--border-soft`, sel setinggi 30px.
-- Baris nonaktif: teks muted dan dicoret.
-- Baris file: tombol bergaris putus-putus berisi nama file.
-- Variabel collection yang diganti environment aktif: catatan 12px `--warn` di bawah nama ("Replaced by “DEV”"), bukan warna saja.
-- Kolom Type di tabel variabel (lebar 150px) berisi Text, Secret, dan _Restricted: nama grup_ untuk tiap grup yang bisa dipakai perangkat ini. Nilai restricted tetap secret di perangkat dan dikirim terenkripsi untuk grupnya.
-- Baris yang dibatasi ke grup yang bukan milik perangkat ini terkunci: nama read-only, sel nilai berisi teks 12px muted "Restricted to Ops. Ask a member for access in Collaboration.", kolom Type bertulisan _Restricted: Ops_, dan tidak ada tombol hapus. Preview URL menulis nama seperti itu sebagai `{{opsKey}} (restricted to Ops)`, bukan sekadar tidak terdefinisi.
+- 13px, header 500 muted, rows separated by `--border-soft`, cells 30px tall.
+- Disabled row: muted, struck-through text.
+- File row: a dashed-border button holding the file name.
+- A collection variable replaced by the active environment: a 12px `--warn` note under the name ("Replaced by “DEV”"), not color alone.
+- The Type column in the variables table (150px wide) holds Text, Secret, and _Restricted: group name_ for each group this device can use. Restricted values stay secret on the device and are sent encrypted for their group.
+- A row restricted to a group this device does not belong to is locked: read-only name, the value cell holds 12px muted text "Restricted to Ops. Ask a member for access in Collaboration.", the Type column reads _Restricted: Ops_, and there is no delete button. The URL preview writes such a name as `{{opsKey}} (restricted to Ops)`, not simply as undefined.
 
-### Halaman Environments
+### Environments page
 
-- Daftar di kiri dikelompokkan dengan judul grup 12px muted: _On this device_, lalu satu grup per collection (emoji + nama).
-- Di bawah nama environment ada Dropdown **Belongs to** (_This device only_ atau collection) dengan hint 12px muted yang menjelaskan akibatnya: hanya di perangkat ini, dibagikan lewat Git saat Sync now (secret tetap di tiap perangkat), atau ikut saat collection dibagikan.
+- The list on the left is grouped under 12px muted group titles: _On this device_, then one group per collection (emoji + name).
+- Under the environment name is a **Belongs to** Dropdown (_This device only_ or a collection) with a 12px muted hint that explains the effect: only on this device, shared through Git on Sync now (secrets stay on each device), or carried along when the collection is shared.
 
-### Dropzone dan target drop
+### Dropzone and drop target
 
-- Garis 1.5px dashed `--border-strong`. Saat hover atau aktif: border tinta dan latar `--accent-soft`.
-- Target drop di daftar: latar `--accent-soft` dengan outline 1.5px dashed tinta.
+- Border 1.5px dashed `--border-strong`. On hover or when active: ink border and `--accent-soft` background.
+- Drop target in a list: `--accent-soft` background with a 1.5px dashed ink outline.
 
-### Editor kode
+### Code editor
 
-CodeMirror dengan latar transparan di dalam bingkai `--surface-muted` (border dan radius md). Gutter tanpa garis, baris aktif `--code-active-line`, seleksi `--accent-soft`, warna sintaks dari token `--code-*`.
+CodeMirror with a transparent background inside a `--surface-muted` frame (border and radius md). The gutter has no border, active line `--code-active-line`, selection `--accent-soft`, syntax colors from the `--code-*` tokens.
 
-- Mengikuti Settings › Editor: indentasi (None sebagai bawaan, 2 spasi, 4 spasi, Tab; juga dipakai Beautify), tutup kurung/kutip otomatis, dan bungkus baris panjang. Berubah langsung tanpa membuka ulang kartu. Dengan None, Enter mulai dari kolom 0 dan Tab memindah fokus ke kontrol berikutnya.
-- Editor body, pesan WebSocket, dan argumen MCP mewarnai `{{variabel}}` seperti kolom input.
-- **Find** (`editor/search.ts`, Ctrl+F): panel di atas editor, latar `--surface-muted` dengan garis bawah `--border-soft`. Isinya kolom mono 28px (border `--border-strong`), jumlah temuan 12px muted dengan angka tabular ("3 of 12", "No matches", atau "Invalid pattern" dengan warna `--err`), tombol ikon 28px Previous/Next, toggle mono `Aa` `ab` `.*` (`aria-pressed`; menyala dengan `--accent-soft` dan cincin `--border-strong`), lalu Close.
-  - Klik tombol tidak memindahkan fokus dari kolom.
-  - Semua temuan berlatar `--warn-bg` dengan garis `--warn-line`, dan temuan yang dipilih diberi bingkai 2px `--warn`, jadi tetap terlihat tanpa membedakan warna.
-  - Selama ada kartu yang terbuka, Ctrl+F di luar editor (dari mana pun di halaman collection) membuka find di body response (`data-find`), tidak memunculkan kolom cari browser di pojok atas jendela.
+- Follows Settings › Editor: indentation (None by default, 2 spaces, 4 spaces, Tab; also used by Beautify), auto-closing brackets/quotes, and wrapping of long lines. Changes apply at once without reopening the card. With None, Enter starts at column 0 and Tab moves focus to the next control.
+- The body editor, WebSocket messages, and MCP arguments color `{{variable}}` the same way input fields do.
+- **Find** (`editor/search.ts`, Ctrl+F): a panel above the editor, `--surface-muted` background with a `--border-soft` bottom border. It holds a 28px mono field (border `--border-strong`), a 12px muted match count with tabular numbers ("3 of 12", "No matches", or "Invalid pattern" in `--err`), 28px Previous/Next icon buttons, the mono toggles `Aa` `ab` `.*` (`aria-pressed`; lit with `--accent-soft` and a `--border-strong` ring), then Close.
+  - Clicking a button does not move focus out of the field.
+  - Every match has a `--warn-bg` background with a `--warn-line` border, and the selected match gets a 2px `--warn` frame, so it stays visible without telling colors apart.
+  - While a card is open, Ctrl+F outside the editor (from anywhere on the collection page) opens find in the response body (`data-find`), instead of bringing up the browser's search field in the top corner of the window.
 
 ### Settings
 
-- Navigasi bagian di kiri (200px, sticky): Appearance, Editor, Requests, Proxy, SSL/TLS, Data & history, About & shortcuts. Bagian aktif terangkat seperti item sidebar.
-- Isi bagian berupa panel (surface, border, radius lg). Kelas bersama (`.panel`, `.field`, `.input`, `.check`, `.button`, `.primary`, `.segmented`, `.error`, `.status`) didefinisikan sekali di `SettingsView` dengan `:global`.
-- Editor, Requests, dan Data & history tersimpan otomatis 400 ms setelah perubahan terakhir; Rust memeriksa nilainya, dan pesan salah tampil di panel. Proxy punya tombol Save karena alamat dan password diketik bertahap.
-- Verifikasi sertifikat server tidak bisa dimatikan; panel Requests menjelaskannya dan mengarahkan ke SSL/TLS (versi TLS minimum, CA certificate, client certificate).
-- Tindakan yang tidak bisa dibatalkan (Clear history, Restore from backup, Remove certificate) lewat dialog konfirmasi.
-- About › Updates: kalimat status (versi baru, atau `.status` hijau "You have the latest version"), catatan rilis sebagai teks biasa di kotak `--surface-muted` (tinggi maksimal 240px, bisa digulir), lalu _Update and restart_ (`.primary`) dan _Check for updates_ (`.button`).
+- Section navigation on the left (200px, sticky): Appearance, Editor, Requests, Proxy, SSL/TLS, Data & history, About & shortcuts. The active section is raised like a sidebar item.
+- Section content is a panel (surface, border, radius lg). Shared classes (`.panel`, `.field`, `.input`, `.check`, `.button`, `.primary`, `.segmented`, `.error`, `.status`) are defined once in `SettingsView` with `:global`.
+- Editor, Requests, and Data & history save automatically 400 ms after the last change; Rust checks the values, and error messages show in the panel. Proxy has a Save button because the address and password are typed in gradually.
+- Server certificate verification cannot be turned off; the Requests panel explains this and points to SSL/TLS (minimum TLS version, CA certificate, client certificate).
+- Actions that cannot be undone (Clear history, Restore from backup, Remove certificate) go through a confirmation dialog.
+- About › Updates: a status sentence (a new version, or a green `.status` "You have the latest version"), release notes as plain text in a `--surface-muted` box (max height 240px, scrollable), then _Update and restart_ (`.primary`) and _Check for updates_ (`.button`).
 
-### Pemilih tema (`ThemePicker`)
+### Theme picker (`ThemePicker`)
 
-Grid kartu (min 150px). Tiap kartu berisi pratinjau mini yang memakai `data-theme` tema itu sendiri (sidebar, baris GET dengan Send, baris POST dengan `{{baseUrl}}`), nama, dan keterangan. System menampilkan Light dan Dark berdampingan dan keterangan "Now Dark/Light". Kartu terpilih: border dan cincin `--text`. Di belakangnya radio biasa, jadi panah keyboard berfungsi.
+A grid of cards (min 150px). Each card holds a mini preview that uses that theme's own `data-theme` (sidebar, a GET row with Send, a POST row with `{{baseUrl}}`), a name, and a caption. System shows Light and Dark side by side with the caption "Now Dark/Light". Selected card: `--text` border and ring. Plain radio buttons sit underneath, so the keyboard arrows work.
 
-### Kartu MCP
+### MCP card
 
-- Target: pilihan transport (STDIO/HTTP, warna cap `mcp`, terkunci selama terhubung), lalu perintah (`npx -y …`) atau URL server, lalu tombol Connect/Disconnect berwarna `--method-mcp`.
-- Panel kiri: info server (nama, versi, versi MCP, instructions), tab Tools/Prompts/Resources dengan jumlahnya, tab Headers (HTTP) atau Environment (STDIO), dan tab Paste config untuk menempel konfigurasi `{"mcpServers": …}` dari klien lain.
-- Item terpilih memakai latar `--method-mcp-bg` dan garis `--method-mcp-line`. Memilih item mengisi argumen dari skema (`default`, lalu nilai kosong sesuai tipe).
-- Argumen JSON di editor kode; tombol Run tool / Get prompt / Read resource nonaktif sampai argumennya objek JSON.
-- Panel kanan: tab Result (chip Result, Tool error, atau Error kode; tampilan terbaca per blok konten, atau Raw JSON) dan tab Messages (log JSON-RPC: ↑ terkirim, ↓ diterima, stderr dan logging server, info, error).
-- Tool, prompt, atau resource yang dipilih tersimpan bersama request (dan ikut sinkron tim), argumennya di body.
+- Target: a transport choice (STDIO/HTTP, `mcp` stamp color, locked while connected), then the command (`npx -y …`) or server URL, then a Connect/Disconnect button colored `--method-mcp`.
+- Left panel: server info (name, version, MCP version, instructions), Tools/Prompts/Resources tabs with their counts, a Headers tab (HTTP) or Environment tab (STDIO), and a Paste config tab for pasting a `{"mcpServers": …}` config from another client.
+- The selected item uses a `--method-mcp-bg` background and a `--method-mcp-line` border. Selecting an item fills the arguments from the schema (`default`, then an empty value that matches the type).
+- JSON arguments go in the code editor; the Run tool / Get prompt / Read resource button stays disabled until the arguments are a JSON object.
+- Right panel: a Result tab (a Result, Tool error, or Error code chip; a readable view per content block, or Raw JSON) and a Messages tab (JSON-RPC log: ↑ sent, ↓ received, server stderr and logging, info, error).
+- The selected tool, prompt, or resource is saved with the request (and syncs with the team), with its arguments in the body.
 
 ### Quick search (`QuickSearch`)
 
-- `Ctrl+Space` atau tombol cari di sidebar (tombolnya hanya bertuliskan "Search"). `<dialog>` modal di sepertiga atas layar yang turun 10px dari skala 0,98 sambil memudar (240 ms, `cubic-bezier(0.2, 0.7, 0.2, 1)`, kurva yang sama dengan tile Home), dengan latar `--backdrop` yang memudar 200 ms. Hanya opacity dan transform yang bergerak, jadi animasinya berjalan di compositor. Latar **tidak** di-blur: blur selebar jendela menggambar ulang seluruh aplikasi di tiap frame dan membuat pembukaan terasa berat. Animasi dimatikan oleh `prefers-reduced-motion`.
-- Tidak ada petunjuk `kbd` (Tab, Esc, panah, Enter) di kolom maupun footer; footer hanya berisi contoh path atau pesan error.
-- Satu kolom besar (16px). Saat yang diketik adalah awal sebuah path API, sisa path yang cocok tampil samar di belakang teks dan `Tab` melengkapinya.
-- Hasil dikelompokkan (request, collection, halaman Settings) dengan cap method, nama, URL mono, dan lokasi muted; bagian yang cocok ditebalkan dengan warna `--accent-text`. Panah atas/bawah memilih, `Enter` membuka, `Esc` menutup.
-- Grup **Docs**: collection (emoji), section (ikon Docs), dan request (cap method) yang nama atau deskripsinya cocok. Detailnya berupa potongan deskripsi, atau "Request docs" bila yang cocok namanya. Saat halaman Docs terbuka, grup ini tampil paling atas.
+- `Ctrl+Space` or the search button in the sidebar (the button reads only "Search"). A modal `<dialog>` in the top third of the screen that drops 10px from scale 0.98 while fading in (240 ms, `cubic-bezier(0.2, 0.7, 0.2, 1)`, the same curve as the Home tiles), with a `--backdrop` background that fades in over 200 ms. Only opacity and transform move, so the animation runs on the compositor. The backdrop is **not** blurred: a window-wide blur repaints the whole app on every frame and makes opening feel heavy. `prefers-reduced-motion` turns the animation off.
+- No `kbd` hints (Tab, Esc, arrows, Enter) in the field or the footer; the footer holds only a sample path or an error message.
+- One large field (16px). When the typed text is the start of an API path, the rest of the matching path shows faintly behind the text and `Tab` completes it.
+- Results are grouped (requests, collections, Settings pages) with a method stamp, name, mono URL, and muted location; the matching part is bold in `--accent-text`. Up/down arrows select, `Enter` opens, `Esc` closes.
+- **Docs** group: collections (emoji), sections (Docs icon), and requests (method stamp) whose name or description matches. The detail is a description excerpt, or "Request docs" when the name is what matched. When the Docs page is open, this group comes first.
 
-### Kartu GraphQL
+### GraphQL card
 
-- Cap `GQL` (tone `gql`) di depan endpoint; Send berwarna `--method-gql`.
-- Tab Query berisi editor query (highlight + autocomplete dari schema) dan editor variabel JSON di bawahnya. Tombol _Fetch schema_ / _Fetch again_ dengan jumlah tipe yang dimuat; popup autocomplete memakai token tooltip editor.
+- `GQL` stamp (tone `gql`) in front of the endpoint; Send is colored `--method-gql`.
+- The Query tab holds the query editor (highlighting + autocomplete from the schema) and a JSON variables editor below it. A _Fetch schema_ / _Fetch again_ button with the number of loaded types; the autocomplete popup uses the editor tooltip tokens.
 
-### Kartu SOAP (`SoapPanel`)
+### SOAP card (`SoapPanel`)
 
-- Cap `SOAP` (tone `soap`) di depan endpoint; tombol **Send** biasa (selalu POST). Tab pertama bernama **Envelope**.
-- Isi tab Envelope:
-  - Baris WSDL: kolom URL (atau nama file bila dari _Choose file…_, path lengkap tidak ditampilkan, dengan link _Use a URL_), tombol _Choose file…_ dan _Load WSDL_ / _Reload WSDL_. Enter di kolom URL juga memuat.
-  - Error memuat tampil sebagai kotak `--err`. Peringatan (import yang tidak terbaca) tampil sebagai daftar `--warn`, maksimal 3 baris plus "…and N more".
-  - Dropdown **Operation** (`Operasi · Binding · SOAP 1.1`), segmented **SOAP version** (1.1 / 1.2), dan kolom **SOAPAction**.
-  - Di bawahnya dokumentasi operasi (atau petunjuk singkat) dan link _Reset the envelope to the sample_. Editor XML memakai `BodyEditor` dengan `fixedMode` (tanpa pilihan jenis body).
-- Memilih operasi mengisi versi, action, endpoint (bila kosong), nama (bila masih bawaan atau nama operasi sebelumnya), dan envelope (bila kosong atau masih sama dengan contoh sebelumnya). Tulisan pengguna tidak pernah ditimpa diam-diam.
-- Response XML dirapikan. SOAP Fault menambah chip merah _SOAP Fault_ dan kotak error `kode: alasan`.
+- `SOAP` stamp (tone `soap`) in front of the endpoint; a regular **Send** button (always POST). The first tab is named **Envelope**.
+- Envelope tab contents:
+  - WSDL row: a URL field (or the file name when it came from _Choose file…_, without the full path, with a _Use a URL_ link), the _Choose file…_ and _Load WSDL_ / _Reload WSDL_ buttons. Enter in the URL field also loads.
+  - A load error shows as an `--err` box. Warnings (imports that could not be read) show as a `--warn` list, at most 3 lines plus "…and N more".
+  - An **Operation** Dropdown (`Operation · Binding · SOAP 1.1`), a **SOAP version** segmented control (1.1 / 1.2), and a **SOAPAction** field.
+  - Below them, the operation's documentation (or a short hint) and a _Reset the envelope to the sample_ link. The XML editor uses `BodyEditor` with `fixedMode` (no body type choice).
+- Selecting an operation fills the version, action, endpoint (when empty), name (when it is still the default or the previous operation's name), and envelope (when empty or still the same as the previous sample). The user's text is never overwritten silently.
+- The XML response is pretty-printed. A SOAP Fault adds a red _SOAP Fault_ chip and a `code: reason` error box.
 
-### Kartu gRPC (`GrpcPanel`, `GrpcReplyPanel`)
+### gRPC card (`GrpcPanel`, `GrpcReplyPanel`)
 
-- Cap `gRPC` (tone `grpc`) di depan alamat `grpc://` / `grpcs://`; tombol utama berlabel **Invoke**, nonaktif sampai method dipilih.
-- Baris sumber: segmented _Server reflection_ / _.proto file_, tombol file (nama file saja, path lengkap tidak ditampilkan), lalu _Load services_ di kanan.
-- Dropdown method (mono) berisi `package.Service/Method · unary / server stream / client stream / bidirectional stream`.
-- Tab Message (editor JSON dengan petunjuk sesuai jenis stream), Metadata (tabel key-value), dan Auth (tanpa Digest dan AWS, yang tidak berlaku untuk gRPC).
-- Panel balasan: chip status gRPC (`0 OK` hijau, lainnya merah), durasi dan jumlah pesan, pesan status sebagai kotak error, lalu tab Messages (satu pesan di editor read-only; stream sebagai daftar bernomor), Headers, dan Trailers.
+- `gRPC` stamp (tone `grpc`) in front of the `grpc://` / `grpcs://` address; the main button is labeled **Invoke** and stays disabled until a method is selected.
+- Source row: a _Server reflection_ / _.proto file_ segmented control, a file button (file name only, the full path is not shown), then _Load services_ on the right.
+- The method Dropdown (mono) lists `package.Service/Method · unary / server stream / client stream / bidirectional stream`.
+- Message tab (JSON editor with a hint that matches the stream type), Metadata (key-value table), and Auth (without Digest and AWS, which do not apply to gRPC).
+- Reply panel: a gRPC status chip (`0 OK` green, others red), duration and message count, the status message as an error box, then the Messages tab (one message in a read-only editor; streams as a numbered list), Headers, and Trailers.
 
-### Examples dan mock server
+### Examples and mock server
 
-- Tab _Examples_ di kartu request: daftar example (nama `EditableText`, chip status, editor body), dengan tombol _Save as example_ di panel response.
-- Panel _Mock server_ (toolbar collection, titik status saat berjalan): kolom port (kosong = otomatis), Start/Stop, alamat yang bisa disalin, dan log permintaan (jam, chip status, method dan path, nama example yang menjawab atau "no matching example").
+- _Examples_ tab on the request card: a list of examples (`EditableText` name, status chip, body editor), with a _Save as example_ button in the response panel.
+- _Mock server_ panel (collection toolbar, status dot while running): a port field (empty = automatic), Start/Stop, a copyable address, and a request log (time, status chip, method and path, the name of the example that answered or "no matching example").
 
 ### Event stream (SSE)
 
-- Tab body berganti menjadi _Events · n_. Kepala stream: titik hijau berdenyut + "Streaming · n events" + tombol Stop; setelah selesai "Stream ended", atau pesan error merah bila putus.
-- Tiap event: jam mono, nama event (bila bukan `message`), id, lalu data (JSON dirapikan) dalam blok mono.
+- The body tab becomes _Events · n_. Stream header: a pulsing green dot + "Streaming · n events" + a Stop button; when finished, "Stream ended", or a red error message if the connection drops.
+- Each event: mono time, event name (when it is not `message`), id, then the data (JSON pretty-printed) in a mono block.
 
 ### Orchestration (`FlowsView`, `FlowEditor`, `FlowMap`, `FlowStepCard`)
 
-- Halaman dua kolom: daftar flow (200px, item aktif seperti item sidebar) dan editor. Header editor: nama `EditableText` (title), status simpan, tombol **Run flow** (latar tinta; berubah menjadi Stop merah bergaris saat berjalan), dan Delete flow.
-- **Kartu peta** (`section` "Flow map", surface, border, radius lg): baris atas berisi label _Environment_ dan pemilih environment di kiri, ringkasan run di kanan (`role="status"`, plus catatan berhenti `--err`). Di bawahnya peta langkah (`FlowMap`).
-- **Peta langkah**: grid dengan kolom Start dan End selebar `--edge` (80px), kolom Add step selebar `--add` (52px), dan kolom langkah yang berbagi sisa lebar sama rata (`minmax(120px, 1fr)`). Empat langkah (692px) muat tanpa gulir di jendela 1280px, juga saat halaman punya scrollbar; di lebar minimum itu cap DELETE masih muat di node. Bila tidak muat, hanya peta yang digulir ke samping, dan node terpilih digeser ke dalam pandangan tanpa menggulir halaman.
-  - `<ol aria-label="Steps from start to end">` memakai subgrid. Garis 1.5px `--border-strong` membentang dari tengah kolom Start ke tengah kolom End, dengan chevron di depan setiap titik. Setiap titik berada di tengah kolomnya.
-  - **Add step**: `IconButton` bulat dengan "+" (tooltip dan nama "Add step", `aria-haspopup="dialog"`), di antara langkah terakhir dan End.
-  - Node langkah adalah tombol (radius lg, surface, border `--border`): baris atas penanda status 14px, nomor mono 11px, `MethodStamp` ukuran `sm` (jarak 5px); lalu nama 13px/500 (terpotong elipsis) dan hasil singkat mono 11px (kode · waktu; `--ok`/`--err`). Gagal bergaris `--err-line`, dilewati bergaris putus-putus. Node terpilih: border `--text`, `--shadow-raise`, `aria-current="step"`. Panah kiri/kanan berpindah node dan memindahkan fokus.
-  - End: pill dengan bendera; hijau `--ok` bila semua lulus, merah `--err` bila ada yang gagal. Latar tint-nya ditumpuk di atas `--surface` agar garis tidak tembus di tema gelap.
-- **Garis nilai** (di atas node, hanya untuk langkah terpilih, `aria-hidden`): satu baris per nilai, dari tengah kolom asal ke tengah kolom tujuan, garis 1.5px dengan sudut atas melengkung 10px dan chevron di setiap langkah yang memakai nilai itu. Label `FlowValueChip` (`{{nama}}`, mono, pill) di tengah atas, berlatar surface. Warna: `--text-muted` sebelum run, `--ok` setelah diteruskan, `--err` putus-putus dan dicoret bila tidak ditemukan.
-  - Nilai yang diterima: setiap `{{nama}}` yang dikirim request langkah itu (`StepRequest.variables`) dari langkah terakhir sebelumnya yang meneruskan nama itu, sama seperti saat run. Nilai yang diteruskan: ke setiap langkah sesudahnya yang mengirim nama itu, sampai ada langkah lain yang meneruskan nama yang sama. Satu sumber: `lib/flow/lineage.ts`.
-- **Garis berhenti**: setelah run yang berhenti karena langkah gagal, garis `--err` putus-putus di bawah node dari tengah langkah itu sampai tengah End, dengan label "Stopped at step N". Karena kolom ujung lebarnya tetap, margin kirinya dihitung dari lebar kolom langkah saja: `(100% - --add - --edge) / (2 × jumlah kolom langkah)`.
-- **Detail langkah** (`FlowStepCard`, selalu terbuka, hanya untuk langkah terpilih): header berisi penanda status (`FlowStepMark`: lingkaran kosong; putus-putus = dilewati; berputar `--focus` = berjalan; centang `--ok`; silang `--err`), nomor mono, `MethodStamp`, nama dan "collection · URL", hasil lengkap, lalu Move left / Move right dan Remove. Kartu gagal bergaris `--err-line`.
-  - Isi: baris _Uses_ (chip nilai + "from step N", hanya bila ada), baris pengaturan (_If this step fails_, Change request, Open request), tab Checks / Pass on / Response, aturan sebagai baris dropdown + input mono, dan kotak _Last run_ (`--surface-muted`) dengan ✓/✗ per check dan test.
-  - Langkah yang dihapus digantikan tetangganya; flow tanpa langkah hanya menampilkan peta (Start, Add step, End).
-- Pemilih request (`FlowStepPicker`): dialog dengan kolom cari dan daftar request HTTP/GraphQL dari semua collection (cap method, nama, URL, collection).
+- A two-column page: the flow list (200px, active item like a sidebar item) and the editor. Editor header: `EditableText` name (title), save status, a **Run flow** button (ink background; turns into a red outlined Stop while running), and Delete flow.
+- **Map card** (`section` "Flow map", surface, border, radius lg): the top row holds the _Environment_ label and the environment picker on the left, and the run summary on the right (`role="status"`, plus a `--err` stop note). Below it is the step map (`FlowMap`).
+- **Step map**: a grid with Start and End columns `--edge` wide (80px), an Add step column `--add` wide (52px), and step columns that share the remaining width equally (`minmax(120px, 1fr)`). Four steps (692px) fit without scrolling in a 1280px window, also when the page has a scrollbar; at that minimum width a DELETE stamp still fits in a node. When they do not fit, only the map scrolls sideways, and the selected node is scrolled into view without scrolling the page.
+  - `<ol aria-label="Steps from start to end">` uses subgrid. A 1.5px `--border-strong` line runs from the center of the Start column to the center of the End column, with a chevron in front of every point. Each point sits in the center of its column.
+  - **Add step**: a round `IconButton` with "+" (tooltip and name "Add step", `aria-haspopup="dialog"`), between the last step and End.
+  - A step node is a button (radius lg, surface, border `--border`): a top row with a 14px status mark, an 11px mono number, and a `MethodStamp` at size `sm` (5px gap); then the name at 13px/500 (truncated with an ellipsis) and a short 11px mono result (code · time; `--ok`/`--err`). A failed node has an `--err-line` border, a skipped one a dashed border. Selected node: `--text` border, `--shadow-raise`, `aria-current="step"`. Left/right arrows move between nodes and move focus.
+  - End: a pill with a flag; green `--ok` when everything passes, red `--err` when something fails. Its tint background is layered over `--surface` so the line does not show through in dark themes.
+- **Value lines** (above the nodes, only for the selected step, `aria-hidden`): one line per value, from the center of the source column to the center of the target column, a 1.5px line with top corners rounded at 10px and a chevron at every step that uses that value. A `FlowValueChip` label (`{{name}}`, mono, pill) sits at the top center, on a surface background. Colors: `--text-muted` before a run, `--ok` after the value is passed on, `--err` dashed and struck through when it is not found.
+  - Values received: every `{{name}}` that the step's request sends (`StepRequest.variables`), from the last earlier step that passes that name on, the same as during a run. Values passed on: to every later step that sends that name, until another step passes on the same name. Single source: `lib/flow/lineage.ts`.
+- **Stop line**: after a run that stopped because a step failed, a dashed `--err` line below the nodes from the center of that step to the center of End, with the label "Stopped at step N". Because the end columns have a fixed width, its left margin is computed from the step column width only: `(100% - --add - --edge) / (2 × number of step columns)`.
+- **Step detail** (`FlowStepCard`, always open, only for the selected step): the header holds the status mark (`FlowStepMark`: empty circle; dashed = skipped; spinning `--focus` = running; `--ok` check; `--err` cross), mono number, `MethodStamp`, the name and "collection · URL", the full result, then Move left / Move right and Remove. A failed card has an `--err-line` border.
+  - Content: a _Uses_ row (value chips + "from step N", only when there are any), a settings row (_If this step fails_, Change request, Open request), Checks / Pass on / Response tabs, rules as rows of a dropdown + mono input, and a _Last run_ box (`--surface-muted`) with ✓/✗ per check and test.
+  - A removed step is replaced by its neighbor; a flow with no steps shows only the map (Start, Add step, End).
+- Request picker (`FlowStepPicker`): a dialog with a search field and a list of HTTP/GraphQL requests from all collections (method stamp, name, URL, collection).
 
 ### Catalog (`CatalogView`, `components/catalog/`)
 
-- **Daftar** (`CatalogList`): judul dengan `NavIcon` catalog, deskripsi, tombol Refresh. Empat `StatTile` (label 13px muted, angka 26px/600, catatan 12px; catatan berwarna `--err`/`--warn` hanya saat angkanya buruk, misalnya error naik). Lalu kolom cari, `Dropdown` tag (hanya bila ada tag), dan pill status kesehatan seperti filter History.
-- Tabel dalam kartu (surface, border, radius lg) dengan `container-type: inline-size`: di bawah 760px kolom p95, Owner, dan Last activity disembunyikan dan owner pindah ke baris kecil di bawah nama. Header kolom yang bisa diurutkan adalah tombol dengan panah; `th` memakai `aria-sort`. Nama API adalah tombol yang membuka halamannya.
-- **`HealthChip`**: pill dengan skor mono dan label (Healthy / Needs attention / Critical / No data) memakai pasangan semantik ok / warn / err; No data netral. Warna selalu ditemani teks.
-- **Halaman API** (`CatalogApi`): link "All APIs", tile emoji 44px, nama h1, chip kesehatan, owner, tag (pill bergaris), lalu Edit owner and tags (`aria-expanded`, membuka `InfoForm` inline), Run all, Open collection. Tab bergaya tab kartu request: Overview, Runtime, Tests, Quality · jumlah aturan yang gagal.
-- **Overview**: skor 48px, lalu tiga baris bagian (nama + bobot, meter 8px dengan track `--surface-sunken` dan isi ok/warn/err, nilai + label). Penjelasan bobot dan ambang di bawahnya. Kartu "What it holds" (`<dl>`) dan "Used in Orchestration".
-- **Grafik** (`TrafficChart`): kolom bertumpuk per hari (lebar maks 24px, ujung atas radius 4px, celah 2px antarsegmen), abu `--text-muted` untuk request yang dijawab dan `--err` untuk error, selalu di posisi yang sama dalam tumpukan. Legenda di atas, garis bantu 1px `--border-soft`, tooltip saat hover, dan tombol **Show as table** sebagai pengganti untuk keyboard dan pembaca layar. Di tema Dark pemisahan warna untuk buta warna hanya 7,5, jadi celah, posisi, dan legenda wajib tetap ada.
-- **Quality** (`RuleList`): kartu per aturan dengan tanda ✓/✗ bulat (ok/err), judul, chip Error/Warning, deskripsi, "N of M fail"; temuan sebagai daftar (cap method, nama request sebagai tombol, detail muted), lima pertama lalu "Show all N".
-- Loading, kosong, dan gagal selalu punya teks: "Loading the catalog…", "No APIs yet" dengan tombol Create a collection, "No API matches these filters." dengan Clear filters, dan kotak `--err` dengan Try again.
+- **List** (`CatalogList`): a title with the catalog `NavIcon`, description, Refresh button. Four `StatTile`s (13px muted label, 26px/600 number, 12px note; the note is colored `--err`/`--warn` only when the number is bad, for example rising errors). Then a search field, a tag `Dropdown` (only when there are tags), and health status pills like the History filters.
+- A table inside a card (surface, border, radius lg) with `container-type: inline-size`: below 760px the p95, Owner, and Last activity columns are hidden and the owner moves to a small line under the name. Sortable column headers are buttons with an arrow; `th` uses `aria-sort`. The API name is a button that opens its page.
+- **`HealthChip`**: a pill with a mono score and a label (Healthy / Needs attention / Critical / No data) using the semantic ok / warn / err pairs; No data is neutral. Color always comes with text.
+- **API page** (`CatalogApi`): an "All APIs" link, 44px emoji tile, h1 name, health chip, owner, tags (outlined pills), then Edit owner and tags (`aria-expanded`, opens an inline `InfoForm`), Run all, Open collection. Tabs styled like the request card tabs: Overview, Runtime, Tests, Quality · number of failing rules.
+- **Overview**: a 48px score, then three rows, one per score part (name + weight, an 8px meter with a `--surface-sunken` track and an ok/warn/err fill, value + label). An explanation of the weights and thresholds sits below them. "What it holds" (`<dl>`) and "Used in Orchestration" cards.
+- **Chart** (`TrafficChart`): stacked columns per day (max width 24px, 4px radius on the top end, 2px gap between segments), gray `--text-muted` for answered requests and `--err` for errors, always in the same position in the stack. A legend on top, 1px `--border-soft` gridlines, a tooltip on hover, and a **Show as table** button as the alternative for keyboard and screen reader users. In the Dark theme the color separation for color blindness is only 7.5, so the gaps, positions, and legend must stay.
+- **Quality** (`RuleList`): a card per rule with a round ✓/✗ mark (ok/err), title, Error/Warning chip, description, "N of M fail"; findings as a list (method stamp, request name as a button, muted detail), the first five, then "Show all N".
+- Loading, empty, and failed states always have text: "Loading the catalog…", "No APIs yet" with a Create a collection button, "No API matches these filters." with Clear filters, and an `--err` box with Try again.
 
 ### Docs (`DocsView`, `components/docs/`)
 
-- **Indeks + satu dokumen**: di kiri ada indeks (280px), di kanan hanya satu dokumen. Tombol **Save as Markdown** ada di kanan atas, dan hasilnya tampil sebagai kotak `--ok` berisi path, atau `--err`.
-  - Hanya satu dokumen yang digambar, jadi collection dengan ratusan request tetap ringan.
-- **Indeks** (`nav` "Docs index"):
-  - Isinya dari atas: `Dropdown` collection (varian `field`, emoji + nama), kolom **Search docs** (gaya kolom cari Catalog: ikon kaca pembesar, border `--border`, biru saat fokus; Ctrl+F di halaman Docs), dan baris jumlah 12px muted ("321 requests" + petunjuk `Ctrl` `F`, atau "3 of 321 requests").
-  - Di bawahnya: **Overview**, request di luar section, lalu tiap section (chevron `FoldButton`, nama 600 + jumlah mono) dengan request-nya menjorok 18px (`IndexEntry`: cap method kecil + nama).
-  - Section **mulai terlipat**, supaya indeks collection besar tetap pendek. Chevron (Enter/Space) membuka atau melipatnya; memilih section, membuka request lewat Previous/Next, atau hasil Quick search membuka section-nya. Section yang dibuka diingat per perangkat (`localStorage` `codestamp.openDocsSections`). Selama mencari, semua section menampilkan hasilnya dan chevron nonaktif.
-  - Item terpilih tampil seperti item aktif sidebar (latar `--surface`, cincin 1px `--border`, `aria-current="page"`). Panah atas/bawah berpindah item dan langsung menampilkannya.
-  - Dari lebar 700px (container query), indeks menempel di bawah title bar dan punya scroll sendiri setinggi jendela. Di bawah 700px, indeks ada di atas dokumen dengan daftar maksimal 260px.
-  - Tanpa hasil: kotak bergaris putus-putus berisi teks dan tombol Clear search.
-- **Overview**: kartu collection (tile emoji 44px, nama 22px/600, jumlah request dan section) dan deskripsinya, lalu baris Auth.
-  - **Variables** dilipat di `<details>` ("Variables" + jumlah) berisi tabel Name/Value mono. Secret ditulis "Secret, set on each device", dan nilai yang namanya mirip kredensial (token, password, key) disamarkan lewat `documentedValue`, sama seperti di Save as Markdown.
-  - Daftar **Sections** (nama + jumlah request) membuka section-nya.
-- **Section**: kartu dengan judul 22px, jumlah request, deskripsi, dan daftar request (cap method, nama, URL mono muted) yang membuka dokumen request.
-- **Request** (`RequestDoc`): cap method, nama 16px/600, tombol **Open request**, URL mono, deskripsi, fakta (Auth, method gRPC, operasi SOAP, transport MCP), tabel `DocTable` (Path variables, Query parameters, Headers/Metadata, Body form) dengan nilai kredensial tertulis disamarkan lewat `documentedValue`, blok body `<pre>` (maks 320px, scroll), dan example di `<details>` dengan chip status.
-  - Di bawahnya ada tombol **← Previous** dan **Next →** (nama request di bawah petunjuk 12px muted) yang mengikuti urutan indeks.
-- Hasil Docs dari Quick search memilih item itu, lalu menggulir dan memfokuskan dokumennya (`scroll-margin-top: 16px`).
-- **Deskripsi** (`DescriptionBlock`): kosong menampilkan "No description for … yet." + link "Add a description"; terisi menampilkan Markdown + link "Edit description". Mode edit: segmented Write/Preview, hitungan karakter mono (merah bila lebih dari 20.000), textarea mono (`--surface-muted`, border biru saat fokus), pesan salah `role="alert"`, petunjuk `Ctrl Enter`/`Esc`, lalu Cancel (secondary) dan Save (primary tinta). Hanya satu deskripsi yang diedit sekaligus.
-- **Markdown** (`Markdown`, `MarkdownNodes`): digambar node demi node dari mdast, tanpa HTML mentah. Heading Markdown digeser di bawah heading halaman (`headingOffset`), kode inline `--surface-sunken`, blok kode `--surface-muted` bergaris, tabel bergaris `--border` dengan header `--surface-muted`, kutipan bergaris kiri netral. Link http/https bergaris bawah dan dibuka di browser; link lain hanya teks bergaris titik; gambar ditulis "Image: alt"; HTML mentah tampil sebagai kode.
+- **Index + one document**: the index on the left (280px), only one document on the right. The **Save as Markdown** button sits at the top right, and its result shows as an `--ok` box with the path, or `--err`.
+  - Only one document is rendered, so a collection with hundreds of requests stays light.
+- **Index** (`nav` "Docs index"):
+  - Contents from the top: a collection `Dropdown` (`field` variant, emoji + name), a **Search docs** field (Catalog search field style: magnifier icon, `--border` border, blue on focus; Ctrl+F on the Docs page), and a 12px muted count line ("321 requests" + a `Ctrl` `F` hint, or "3 of 321 requests").
+  - Below that: **Overview**, requests outside any section, then each section (`FoldButton` chevron, name 600 + mono count) with its requests indented 18px (`IndexEntry`: small method stamp + name).
+  - Sections **start folded**, so the index of a large collection stays short. The chevron (Enter/Space) opens or folds a section; selecting a section, opening a request through Previous/Next, or a Quick search result opens its section. Open sections are remembered per device (`localStorage` `codestamp.openDocsSections`). While searching, every section shows its results and the chevron is disabled.
+  - The selected item looks like an active sidebar item (`--surface` background, 1px `--border` ring, `aria-current="page"`). Up/down arrows move between items and show them right away.
+  - From 700px wide (container query), the index sticks below the title bar and has its own window-height scroll. Below 700px, the index sits above the document with a list of at most 260px.
+  - No results: a dashed box with text and a Clear search button.
+- **Overview**: the collection card (44px emoji tile, 22px/600 name, request and section counts) and its description, then the Auth row.
+  - **Variables** are folded in a `<details>` ("Variables" + count) that holds a mono Name/Value table. A secret is written "Secret, set on each device", and values whose names look like credentials (token, password, key) are masked through `documentedValue`, the same as in Save as Markdown.
+  - The **Sections** list (name + request count) opens the chosen section.
+- **Section**: a card with a 22px title, request count, description, and a list of requests (method stamp, name, muted mono URL) that opens the request document.
+- **Request** (`RequestDoc`): method stamp, 16px/600 name, an **Open request** button, mono URL, description, facts (Auth, gRPC method, SOAP operation, MCP transport), `DocTable` tables (Path variables, Query parameters, Headers/Metadata, Body form) with written credential values masked through `documentedValue`, a `<pre>` body block (max 320px, scroll), and examples in `<details>` with a status chip.
+  - Below it are **← Previous** and **Next →** buttons (request name under a 12px muted hint) that follow the index order.
+- A Docs result from Quick search selects that item, then scrolls to its document and focuses it (`scroll-margin-top: 16px`).
+- **Description** (`DescriptionBlock`): when empty it shows "No description for … yet." + an "Add a description" link; when filled it shows the Markdown + an "Edit description" link. Edit mode: a Write/Preview segmented control, a mono character count (red when over 20,000), a mono textarea (`--surface-muted`, blue border on focus), an error message with `role="alert"`, a `Ctrl Enter`/`Esc` hint, then Cancel (secondary) and Save (ink primary). Only one description is edited at a time.
+- **Markdown** (`Markdown`, `MarkdownNodes`): rendered node by node from mdast, with no raw HTML. Markdown headings are shifted below the page heading (`headingOffset`), inline code `--surface-sunken`, code blocks `--surface-muted` with a border, tables with a `--border` border and a `--surface-muted` header, quotes with a neutral left border. Links using http/https are underlined and open in the browser; other links are plain text with a dotted underline; images are written "Image: alt"; raw HTML shows as code.
 
-### Cap method (`MethodStamp`)
+### Method stamp (`MethodStamp`)
 
-Satu komponen untuk cap method/jenis request di baris request, Quick search, dan Orchestration: label dari `stampLabel()`, tone dari `stampTone()`, ukuran `md` (11px) atau `sm` (10px).
+One component for the method/request type stamp in the request row, Quick search, and Orchestration: label from `stampLabel()`, tone from `stampTone()`, size `md` (11px) or `sm` (10px).
 
 ### Path variables (`PathVariablesTable`)
 
-Tabel di atas Query parameters yang barisnya mengikuti segmen `:nama` di URL (nama tidak bisa diedit di tabel, nilai mendukung `{{variabel}}`). Hilang sendiri bila URL tidak punya path variable.
+A table above Query parameters whose rows follow the `:name` segments in the URL (names cannot be edited in the table, values support `{{variable}}`). It hides itself when the URL has no path variables.
 
-### Dialog persetujuan program (MCP)
+### Program approval dialog (MCP)
 
-Muncul sebelum server STDIO dijalankan pertama kali, dan setiap kali program, argumen, atau environment-nya berubah (termasuk dari sinkron tim atau variabel yang berubah). Menampilkan program, daftar argumen, dan nama environment (nilainya tidak). Tombol utama "Start program", Escape = batal.
+Appears before an STDIO server runs for the first time, and every time its program, arguments, or environment change (including through team sync or a changed variable). Shows the program, the argument list, and the environment names (not their values). Main button "Start program", Escape = cancel.
 
-### Mode fokus
+### Focus mode
 
-- Sidebar dan kartu lain disembunyikan; latar konten menjadi `--surface-sunken`.
-- Bar berbentuk pill di atas berisi judul, opsi "Hide secrets on screen", dan tombol Exit `Esc`.
-- Kartu lebih besar: radius 18px, URL field dan Send setinggi 46px.
+- The sidebar and other cards are hidden; the content background becomes `--surface-sunken`.
+- A pill-shaped bar at the top holds the title, a "Hide secrets on screen" option, and an Exit `Esc` button.
+- A larger card: radius 18px, URL field and Send 46px tall.
 
-## 8. State interaksi
+## 8. Interaction states
 
-| State          | Perlakuan                                                                                                                                                                          |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hover          | Tombol bergaris: border `--border-strong` (tile/ikon: `--text`). Tombol transparan: latar `--surface-sunken`                                                                       |
-| Fokus keyboard | Global `:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px }`. Input mengganti border ke `--focus`; outline hanya boleh dihapus bila border itu menggantikannya |
-| Terpilih/aktif | Item sidebar: terangkat (surface + border + `--shadow-raise`). Tombol yang membuka panel/dialog, selama terbuka: border `--text` dan latar `--accent-soft`                         |
-| Ditekan        | `:active`: latar `--surface-sunken` (tombol bergaris, tile) atau `--accent-soft` (tombol transparan, item sidebar)                                                                 |
-| Disabled       | `--surface-sunken` dengan `--text-muted`; `cursor: not-allowed` (global)                                                                                                           |
-| Sibuk          | Label kata kerja + "…"; `aria-busy` pada area response                                                                                                                             |
-| Gagal          | Teks atau latar `--err` dengan pesan yang bisa ditindaklanjuti                                                                                                                     |
+| State           | Treatment                                                                                                                                                                               |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hover           | Outlined button: `--border-strong` border (tile/icon: `--text`). Transparent button: `--surface-sunken` background                                                                      |
+| Keyboard focus  | Global `:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px }`. Inputs switch their border to `--focus`; the outline may be removed only when that border replaces it |
+| Selected/active | Sidebar item: raised (surface + border + `--shadow-raise`). A button that opens a panel/dialog, while it is open: `--text` border and `--accent-soft` background                        |
+| Pressed         | `:active`: `--surface-sunken` background (outlined buttons, tiles) or `--accent-soft` (transparent buttons, sidebar items)                                                              |
+| Disabled        | `--surface-sunken` with `--text-muted`; `cursor: not-allowed` (global)                                                                                                                  |
+| Busy            | Verb label + "…"; `aria-busy` on the response area                                                                                                                                      |
+| Failed          | `--err` text or background with a message the user can act on                                                                                                                           |
 
-## 9. Tulisan di UI
+## 9. UI text
 
-- Bahasa UI adalah **Inggris**; dokumentasi proyek berbahasa Indonesia.
-- **Sentence case** di semua label dan judul: "Add request", "Delete collection", "Sync now".
-- Tombol berupa kata kerja (+ objek bila perlu). Tombol konfirmasi menyebut aksinya ("Delete", "Stop syncing", "Discard"), bukan "OK".
-- Nama milik pengguna diapit kutip lengkung: “Login”. Proses yang berjalan memakai karakter elipsis tunggal "…".
-- Pesan konfirmasi menjelaskan akibatnya: "… will be deleted. This cannot be undone."
-- Pesan error menyebut apa yang terjadi dan apa yang bisa dilakukan, tanpa detail internal (path, query, stack trace), sesuai aturan keamanan proyek.
-- Bentuk tunggal/jamak harus tepat: "1 request", "2 requests".
-- Hint singkat (12-13px) di bawah judul panel atau kolom menjelaskan apa yang terjadi pada data, misalnya apa yang dibagikan ke tim, atau bahwa Base URL menjadi `{{baseUrl}}`.
-- Jangan menjanjikan fitur yang tidak ada (mis. akun/login); jelaskan cara yang sebenarnya (sign-in lewat Git).
-- Tanpa em dash (—) dan en dash (–), di UI maupun dokumen. Pemisah memakai titik dua atau titik ("status equals 200: got 201"). Rentang di UI ditulis "1 to 4"; di dokumen cukup tanda hubung (11-20 px).
-- Judul menyebut apa yang dilakukan layar itu ("Requests you sent", "Run requests in order"), bukan slogan ("Make it yours") atau klaim berlebihan ("Find anything", "Everything you sent").
-- Sebut pelakunya: "Codestamp keeps only what you typed", bukan "only what you typed is kept". Hindari kata kosong seperti _journey_, _seamless_, _powerful_, _effortless_.
+- The UI language is **English**, and so is the project documentation. `README.id.md` is the only document in Indonesian.
+- **Sentence case** in all labels and titles: "Add request", "Delete collection", "Sync now".
+- Buttons are verbs (+ an object when needed). Confirmation buttons name the action ("Delete", "Stop syncing", "Discard"), not "OK".
+- Names that belong to the user go in curly quotes: “Login”. Running processes use the single ellipsis character "…".
+- Confirmation messages explain the consequence: "… will be deleted. This cannot be undone."
+- Error messages say what happened and what the user can do, without internal details (paths, queries, stack traces), following the project's security rules.
+- Singular and plural forms must be correct: "1 request", "2 requests".
+- A short hint (12-13px) under a panel or field title explains what happens to the data, for example what is shared with the team, or that the Base URL becomes `{{baseUrl}}`.
+- Do not promise features that do not exist (e.g. accounts/login); describe how it really works (sign-in through Git).
+- No em dash (—) and en dash (–), in the UI or in documents. Separators use a colon or a period ("status equals 200: got 201"). Ranges in the UI are written "1 to 4"; in documents a hyphen is enough (11-20 px).
+- Titles say what the screen does ("Requests you sent", "Run requests in order"), not a slogan ("Make it yours") or an overclaim ("Find anything", "Everything you sent").
+- Name the actor: "Codestamp keeps only what you typed", not "only what you typed is kept". Avoid empty words such as _journey_, _seamless_, _powerful_, _effortless_.
 
-## 10. Aksesibilitas
+## 10. Accessibility
 
-- Utamakan elemen native: `<button>`, `<dialog>`, `<label>` yang membungkus atau menunjuk input, `<fieldset>`/`<legend>` untuk kelompok radio, `<table>`, `<dl>` untuk daftar shortcut.
-- Atribut ARIA:
-  - tombol ikon: `aria-label` (tombol emoji: "Change icon", atau keterangan ikon saat ini);
-  - toggle: `aria-pressed`; pemicu popover: `aria-haspopup="dialog"` + `aria-expanded`;
-  - panel buka/tutup: `aria-expanded`;
-  - area atau kelompok: `aria-label`, misalnya `section[aria-label="Team"]`.
-- Pengumuman: `role="alert"` untuk error, `role="status"` untuk kabar dan status.
+- Prefer native elements: `<button>`, `<dialog>`, a `<label>` that wraps or points to its input, `<fieldset>`/`<legend>` for radio groups, `<table>`, `<dl>` for the shortcut list.
+- ARIA attributes:
+  - icon buttons: `aria-label` (emoji button: "Change icon", or a description of the current icon);
+  - toggles: `aria-pressed`; popover triggers: `aria-haspopup="dialog"` + `aria-expanded`;
+  - panels that open and close: `aria-expanded`;
+  - areas or groups: `aria-label`, for example `section[aria-label="Team"]`.
+- Announcements: `role="alert"` for errors, `role="status"` for updates and status.
 - Keyboard:
-  - semua kontrol bisa dicapai dengan Tab;
-  - Escape menutup lapisan paling atas saja: picker emoji, lalu dialog, lalu mode fokus (kecuali saat kursor di editor kode);
-  - Alt+↑/↓ memindah request atau section, lalu fokus dikembalikan ke item yang dipindah.
-- `.visually-hidden` dipakai untuk input file tersembunyi dan teks khusus pembaca layar. Svelte membuang spasi di awal dan akhir isi elemen, jadi spasi pemisah ditulis di luar span: `Open request <span class="visually-hidden">{name}</span>`. Emoji dekoratif di sidebar diberi `aria-hidden="true"` karena nama collection sudah terbaca.
-- Warna tidak pernah menjadi satu-satunya penanda.
+  - every control can be reached with Tab;
+  - Escape closes only the topmost layer: the emoji picker, then the dialog, then focus mode (except when the cursor is in a code editor);
+  - Alt+↑/↓ moves a request or section, then focus returns to the moved item.
+- `.visually-hidden` is used for hidden file inputs and screen-reader-only text. Svelte strips leading and trailing whitespace from element content, so the separating space is written outside the span: `Open request <span class="visually-hidden">{name}</span>`. Decorative emojis in the sidebar get `aria-hidden="true"` because the collection name is already read out.
+- Color is never the only indicator.
 
-## 11. Privasi di layar
+## 11. On-screen privacy
 
-- Nilai secret selalu tampil sebagai `SECRET_MASK` (`••••••••`, dari `src/lib/privacy/secrets.ts`) sampai pengguna menekan Show.
-- Mode fokus dan Capture menyamarkan token dan cookie, dengan skema auth tetap terlihat (`Bearer ••••••••`).
-- Komponen baru yang menampilkan nilai sensitif wajib memakai helper tersebut, bukan logika penyamaran sendiri.
+- Secret values always show as `SECRET_MASK` (`••••••••`, from `src/lib/privacy/secrets.ts`) until the user presses Show.
+- Focus mode and Capture mask tokens and cookies, while the auth scheme stays visible (`Bearer ••••••••`).
+- New components that show sensitive values must use that helper, not their own masking logic.
 
-## 12. Checklist komponen baru
+## 12. New component checklist
 
-1. Warna, radius, dan bayangan diambil dari token. Tidak ada hex baru di komponen; warna method lewat `methodTone()`.
-2. Ukuran teks dari skala di bagian 3, ditulis dalam px pada basis 14px. Teks kode memakai `--font-size-code`.
-3. Tombol mengikuti varian di bagian 7: satu primary (tinta) per area, aksi destruktif lewat ConfirmDialog.
-4. Layout memakai flex-wrap dan flex-basis. Uji di jendela sempit (±600px) dan pada ukuran UI 20.
-5. Dialog memakai `<dialog>` native dengan lebar `min(N, calc(100vw - 32px))`, dan Escape menutupnya.
-6. Ikon antarmuka inline SVG sesuai bagian 6, dengan label. Emoji hanya untuk ikon collection, dan hanya dari katalog di Rust.
-7. Teks UI berbahasa Inggris, sentence case, dengan pesan error yang generik.
-8. Style ditulis di blok `<style>` komponen (ter-scope oleh Svelte). Hanya token dan utilitas global (`.mono`, `.emoji`, `.visually-hidden`) yang tinggal di `src/app.css`.
-9. `npm run check` dan `npm run lint` (svelte-check, ESLint, Prettier) lolos tanpa warning.
+1. Colors, radius, and shadows come from tokens. No new hex values in components; method colors go through `methodTone()`.
+2. Text sizes come from the scale in section 3, written in px on a 14px base. Code text uses `--font-size-code`.
+3. Buttons follow the variants in section 7: one primary (ink) per area, destructive actions through ConfirmDialog.
+4. Layout uses flex-wrap and flex-basis. Test in a narrow window (±600px) and at UI size 20.
+5. Dialogs use the native `<dialog>` with width `min(N, calc(100vw - 32px))`, and Escape closes them.
+6. Interface icons are inline SVG as described in section 6, with labels. Emojis only for collection icons, and only from the catalog in Rust.
+7. UI text is in English, sentence case, with generic error messages.
+8. Styles are written in the component's `<style>` block (scoped by Svelte). Only tokens and global utilities (`.mono`, `.emoji`, `.visually-hidden`) live in `src/app.css`.
+9. `npm run check` and `npm run lint` (svelte-check, ESLint, Prettier) pass without warnings.
 
-## 13. Lokasi file
+## 13. File locations
 
-| File                                            | Isi                                                 |
-| ----------------------------------------------- | --------------------------------------------------- |
-| `src/app.css`                                   | Token, reset, utilitas global                       |
-| `src/lib/appearance/presets.ts`                 | Preset font dan rentang ukuran                      |
-| `src/lib/request/methods.ts`                    | Tone dan warna method HTTP                          |
-| `src/lib/request/codegen/`                      | Generator Copy as code, satu file per bahasa        |
-| `src/lib/components/CodeDialog.svelte`          | Dialog Copy as code (Language, Values, kode)        |
-| `src/lib/format/status.ts`                      | Tone status HTTP                                    |
-| `src/lib/team/status.ts`                        | Tone dan teks status sinkron tim                    |
-| `src/lib/components/AccountFields.svelte`       | Kolom akun Git, nama, dan email untuk Collaboration |
-| `src/lib/editor/setup.ts`                       | Tema dan syntax highlight editor kode               |
-| `src/lib/capture/render.ts`                     | Palet gambar Capture (terang dan gelap)             |
-| `src/lib/privacy/secrets.ts`                    | Penyamaran nilai sensitif                           |
-| `src-tauri/src/storage/icons.rs`                | Katalog emoji, aturan otomatis, whitelist ikon      |
-| `src/lib/state/icons.ts`                        | Katalog emoji yang dimuat sekali dari Rust          |
-| `src/lib/components/EmojiPicker.svelte`         | Picker emoji collection                             |
-| `src/lib/components/IconButton.svelte`          | Tombol ikon dengan tooltip dan titik status         |
-| `src/lib/components/HomeView.svelte`            | Halaman Home                                        |
-| `src/lib/components/NewCollectionDialog.svelte` | Dialog New collection                               |
-| `src/lib/components/ChoiceCard.svelte`          | Kartu pilihan radio (ikon 32px, judul, deskripsi)   |
-| `src/lib/components/ImportView.svelte`          | Halaman Import                                      |
-| `src/lib/components/StatusBar.svelte`           | Status bar: Settings, data, dan versi               |
-| `src/lib/components/ViewPanel.svelte`           | Cangkang panel collection (judul, aksi, Close)      |
-| `src/lib/components/PanelDialog.svelte`         | Dialog modal untuk semua panel collection           |
-| `src/lib/components/CollectionExport.svelte`    | Panel Export collection dengan dropdown format      |
-| `src/lib/components/CollectionHistory.svelte`   | Panel History per collection                        |
-| `src/lib/components/ExportOutcome.svelte`       | Hasil export: path dan catatan, atau error          |
-| `src/lib/components/DeletedView.svelte`         | Halaman Recently deleted                            |
-| `src/lib/state/deleted.svelte.ts`               | Daftar Recently deleted, Undo, dan Restore          |
-| `src/lib/components/CollectionStart.svelte`     | Tampilan collection kosong                          |
-| `src/lib/components/ThemePicker.svelte`         | Pemilih tema dengan pratinjau                       |
-| `src/lib/components/Dropdown.svelte`            | Dropdown bergaya pengganti `<select>`               |
-| `src/lib/components/NavIcon.svelte`             | Ikon berwarna sidebar dan judul halaman             |
-| `src/lib/components/SettingsView.svelte`        | Kerangka Settings dan gaya panel bersama            |
-| `src/lib/components/settings/`                  | Panel tiap bagian Settings                          |
-| `src/lib/components/VariableText.svelte`        | Teks dengan `{{variabel}}` berwarna                 |
-| `src/lib/format/variables.ts`                   | Pola dan pemecah referensi variabel                 |
-| `src/lib/components/McpPanel.svelte`            | Isi kartu MCP (server, argumen, hasil, log)         |
-| `src/lib/components/McpApprovalDialog.svelte`   | Persetujuan sebelum program MCP dijalankan          |
-| `src/lib/components/QuickSearch.svelte`         | Quick search `Ctrl+Space`                           |
-| `src/lib/dom/reveal.ts`                         | Gulir ke elemen dan pindahkan fokus ke sana         |
-| `src/lib/search/`                               | Pencocokan dan pengelompokan hasil pencarian        |
-| `src/lib/editor/search.ts`                      | Find (Ctrl+F) di editor kode                        |
-| `src/lib/docs/filter.ts`                        | Saring dokumen dan daftar collection di Docs        |
-| `src/lib/components/GraphqlEditor.svelte`       | Query, variabel, dan schema GraphQL                 |
-| `src/lib/components/GrpcPanel.svelte`           | Sumber, method, pesan, metadata kartu gRPC          |
-| `src/lib/components/GrpcReplyPanel.svelte`      | Balasan gRPC (status, pesan, header, trailer)       |
-| `src/lib/components/SoapPanel.svelte`           | WSDL, operasi, versi dan SOAPAction kartu SOAP      |
-| `src/lib/components/ExamplesPanel.svelte`       | Tab Examples kartu request                          |
-| `src/lib/components/MockPanel.svelte`           | Panel mock server collection                        |
-| `src/lib/components/PathVariablesTable.svelte`  | Tabel path variable `:nama`                         |
-| `src/lib/components/OAuthFields.svelte`         | Pengaturan dan token OAuth 2.0                      |
-| `src/lib/components/FlowsView.svelte`           | Halaman Orchestration (daftar flow dan editor)      |
-| `src/lib/components/FlowEditor.svelte`          | Kartu peta dan detail langkah terpilih              |
-| `src/lib/components/FlowMap.svelte`             | Peta langkah, garis nilai, dan garis berhenti       |
-| `src/lib/components/FlowStepCard.svelte`        | Detail langkah (Uses, Checks, Pass on, Response)    |
-| `src/lib/components/FlowStepMark.svelte`        | Penanda status langkah                              |
-| `src/lib/components/FlowValueChip.svelte`       | Chip `{{nama}}` untuk nilai yang diteruskan         |
-| `src/lib/components/FlowStepPicker.svelte`      | Dialog pemilih request untuk langkah                |
-| `src/lib/components/MethodStamp.svelte`         | Cap method/jenis request                            |
-| `src/lib/components/CatalogView.svelte`         | Halaman Catalog (daftar atau satu API)              |
-| `src/lib/components/catalog/`                   | Daftar, halaman API, grafik, aturan, tile           |
-| `src/lib/catalog/present.ts`                    | Label, warna, format, filter, dan urutan API        |
-| `src/lib/components/DocsView.svelte`            | Halaman Docs (daftar collection dan dokumen)        |
-| `src/lib/components/docs/`                      | Deskripsi, Markdown, blok request, tabel            |
-| `src/lib/components/settings/TlsPanel.svelte`   | Settings › SSL/TLS (versi TLS dan sertifikat)       |
-| `branding/codestamp-logo.svg`                   | Logo aplikasi: sumber ikon dan logo sidebar         |
-| `branding/logo-samples/`                        | Sampel logo yang dibandingkan sebelum memilih 3a    |
+| File                                            | Contents                                                 |
+| ----------------------------------------------- | -------------------------------------------------------- |
+| `src/app.css`                                   | Tokens, reset, global utilities                          |
+| `src/lib/appearance/presets.ts`                 | Font presets and size ranges                             |
+| `src/lib/request/methods.ts`                    | HTTP method tones and colors                             |
+| `src/lib/request/codegen/`                      | Copy as code generators, one file per language           |
+| `src/lib/components/CodeDialog.svelte`          | Copy as code dialog (Language, Values, code)             |
+| `src/lib/format/status.ts`                      | HTTP status tones                                        |
+| `src/lib/team/status.ts`                        | Team sync status tones and text                          |
+| `src/lib/components/AccountFields.svelte`       | Git account, name, and email fields for Collaboration    |
+| `src/lib/editor/setup.ts`                       | Code editor theme and syntax highlighting                |
+| `src/lib/capture/render.ts`                     | Capture image palette (light and dark)                   |
+| `src/lib/privacy/secrets.ts`                    | Masking of sensitive values                              |
+| `src-tauri/src/storage/icons.rs`                | Emoji catalog, automatic rules, icon whitelist           |
+| `src/lib/state/icons.ts`                        | Emoji catalog loaded once from Rust                      |
+| `src/lib/components/EmojiPicker.svelte`         | Collection emoji picker                                  |
+| `src/lib/components/IconButton.svelte`          | Icon button with tooltip and status dot                  |
+| `src/lib/components/HomeView.svelte`            | Home page                                                |
+| `src/lib/components/NewCollectionDialog.svelte` | New collection dialog                                    |
+| `src/lib/components/ChoiceCard.svelte`          | Radio choice card (32px icon, title, description)        |
+| `src/lib/components/ImportView.svelte`          | Import page                                              |
+| `src/lib/components/StatusBar.svelte`           | Status bar: Settings, data, and version                  |
+| `src/lib/components/ViewPanel.svelte`           | Collection panel shell (title, actions, Close)           |
+| `src/lib/components/PanelDialog.svelte`         | Modal dialog for every collection panel                  |
+| `src/lib/components/CollectionExport.svelte`    | Export collection panel with a format dropdown           |
+| `src/lib/components/CollectionHistory.svelte`   | Per-collection History panel                             |
+| `src/lib/components/ExportOutcome.svelte`       | Export result: path and notes, or an error               |
+| `src/lib/components/DeletedView.svelte`         | Recently deleted page                                    |
+| `src/lib/state/deleted.svelte.ts`               | Recently deleted list, Undo, and Restore                 |
+| `src/lib/components/CollectionStart.svelte`     | Empty collection view                                    |
+| `src/lib/components/ThemePicker.svelte`         | Theme picker with previews                               |
+| `src/lib/components/Dropdown.svelte`            | Styled dropdown that replaces `<select>`                 |
+| `src/lib/components/NavIcon.svelte`             | Colored icons for the sidebar and page titles            |
+| `src/lib/components/SettingsView.svelte`        | Settings frame and shared panel styles                   |
+| `src/lib/components/settings/`                  | A panel for each Settings section                        |
+| `src/lib/components/VariableText.svelte`        | Text with colored `{{variable}}`                         |
+| `src/lib/format/variables.ts`                   | Variable reference pattern and parser                    |
+| `src/lib/components/McpPanel.svelte`            | MCP card content (server, arguments, result, log)        |
+| `src/lib/components/McpApprovalDialog.svelte`   | Approval before an MCP program runs                      |
+| `src/lib/components/QuickSearch.svelte`         | Quick search `Ctrl+Space`                                |
+| `src/lib/dom/reveal.ts`                         | Scroll to an element and move focus to it                |
+| `src/lib/search/`                               | Search result matching and grouping                      |
+| `src/lib/editor/search.ts`                      | Find (Ctrl+F) in the code editor                         |
+| `src/lib/docs/filter.ts`                        | Filtering of documents and the collection list in Docs   |
+| `src/lib/components/GraphqlEditor.svelte`       | GraphQL query, variables, and schema                     |
+| `src/lib/components/GrpcPanel.svelte`           | gRPC card source, method, message, metadata              |
+| `src/lib/components/GrpcReplyPanel.svelte`      | gRPC reply (status, messages, headers, trailers)         |
+| `src/lib/components/SoapPanel.svelte`           | SOAP card WSDL, operation, version, and SOAPAction       |
+| `src/lib/components/ExamplesPanel.svelte`       | Request card Examples tab                                |
+| `src/lib/components/MockPanel.svelte`           | Collection mock server panel                             |
+| `src/lib/components/PathVariablesTable.svelte`  | `:name` path variable table                              |
+| `src/lib/components/OAuthFields.svelte`         | OAuth 2.0 settings and tokens                            |
+| `src/lib/components/FlowsView.svelte`           | Orchestration page (flow list and editor)                |
+| `src/lib/components/FlowEditor.svelte`          | Map card and the selected step's detail                  |
+| `src/lib/components/FlowMap.svelte`             | Step map, value lines, and stop line                     |
+| `src/lib/components/FlowStepCard.svelte`        | Step detail (Uses, Checks, Pass on, Response)            |
+| `src/lib/components/FlowStepMark.svelte`        | Step status mark                                         |
+| `src/lib/components/FlowValueChip.svelte`       | `{{name}}` chip for values that are passed on            |
+| `src/lib/components/FlowStepPicker.svelte`      | Request picker dialog for steps                          |
+| `src/lib/components/MethodStamp.svelte`         | Method/request type stamp                                |
+| `src/lib/components/CatalogView.svelte`         | Catalog page (list or a single API)                      |
+| `src/lib/components/catalog/`                   | List, API page, chart, rules, tiles                      |
+| `src/lib/catalog/present.ts`                    | API labels, colors, formatting, filters, and sort order  |
+| `src/lib/components/DocsView.svelte`            | Docs page (collection list and document)                 |
+| `src/lib/components/docs/`                      | Description, Markdown, request block, tables             |
+| `src/lib/components/settings/TlsPanel.svelte`   | Settings › SSL/TLS (TLS version and certificates)        |
+| `branding/codestamp-logo.svg`                   | App logo: source for the icon and the sidebar logo       |
+| `branding/logo-samples/`                        | Logo samples compared before choosing 3a                 |
+| `branding/banner-light.svg`, `banner-dark.svg`  | README banner for GitHub light and dark mode             |
+| `branding/why/`                                 | README "Why Codestamp" images, light and dark            |
+| `branding/OFL-Geist.txt`                        | License of the Geist fonts embedded in the README images |

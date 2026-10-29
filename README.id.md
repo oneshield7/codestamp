@@ -1,8 +1,80 @@
-# Codestamp
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="branding/banner-dark.svg">
+    <img alt="Codestamp: desktop API client. No account, no cloud." src="branding/banner-light.svg" width="100%">
+  </picture>
+</p>
 
-[English](README.md) · **Bahasa Indonesia**
+<p align="center">
+  <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-007ec6"></a>
+  <a href="../../releases"><img alt="Release: v0.3.6" src="https://img.shields.io/badge/release-v0.3.6-007ec6"></a>
+  <img alt="Platform: Windows 10 and 11" src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078d6">
+</p>
 
-API client desktop yang ringan dan hemat RAM untuk HTTP, GraphQL, WebSocket, gRPC, dan MCP. Dibangun dengan **Tauri 2 + Rust** untuk inti jaringan dan **Svelte 5 + TypeScript** untuk UI, memakai webview bawaan Windows (WebView2).
+<p align="center"><a href="README.md">English</a> · <strong>Bahasa Indonesia</strong></p>
+
+API client desktop untuk HTTP, GraphQL, WebSocket, Server-Sent Events, gRPC, SOAP, dan MCP. Dibangun dengan **Tauri 2 + Rust** untuk inti jaringan dan **Svelte 5 + TypeScript** untuk UI. Aplikasi ini memakai webview bawaan Windows (WebView2), bukan browser yang dibundel, jadi installernya sekitar 6,5 MB.
+
+## Yang Harus Anda Tahu
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="branding/why/local-dark.svg">
+        <img alt="Komputer berisi codestamp.db, dengan kunci enkripsi di Windows Credential Manager" src="branding/why/local-light.svg" width="380">
+      </picture>
+      <h3>Collection tetap di komputer Anda</h3>
+      <p>Tidak ada akun dan tidak ada cloud. Request tersimpan di database SQLite lokal, dan Codestamp mengenkripsi nilai secret dengan kunci yang disimpan Windows di Credential Manager.</p>
+    </td>
+    <td width="50%" valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="branding/why/git-dark.svg">
+        <img alt="Dua perubahan pada field berbeda dari satu request, digabung tanpa konflik" src="branding/why/git-light.svg" width="380">
+      </picture>
+      <h3>Tim berbagi lewat Git</h3>
+      <p>Setiap request menjadi satu file di repository yang sudah dimiliki tim. Codestamp menggabungkan perubahan per field, jadi dua orang yang mengubah bagian berbeda dari satu request tidak mendapat konflik. Login tetap diurus credential manager Git.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="branding/why/secrets-dark.svg">
+        <img alt="Token tersamar yang tidak pernah ditulis oleh history, export, Copy as code, maupun grup akses" src="branding/why/secrets-light.svg" width="380">
+      </picture>
+      <h3>Secret tidak ikut dibagikan</h3>
+      <p>History menyimpan <code>{{token}}</code>, bukan nilainya, export mengosongkan secret, dan Copy as code membacanya dari environment variable. Nilai yang hanya boleh dilihat sebagian tim masuk ke grup akses, dan repository hanya menyimpan ciphertext-nya.</p>
+    </td>
+    <td width="50%" valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="branding/why/kinds-dark.svg">
+        <img alt="Satu collection berisi request POST, SOAP, gRPC, dan MCP sebagai langkah bernomor" src="branding/why/kinds-light.svg" width="380">
+      </picture>
+      <h3>Berbagai jenis request dalam satu collection</h3>
+      <p>Request HTTP, GraphQL, WebSocket, Server-Sent Events, gRPC, SOAP, dan MCP berada di notebook yang sama sebagai langkah bernomor.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="branding/why/postman-dark.svg">
+        <img alt="Collection Postman diimpor ke Codestamp lalu diekspor kembali" src="branding/why/postman-light.svg" width="380">
+      </picture>
+      <h3>Bawa collection Postman Anda</h3>
+      <p>Codestamp mengimpor file Postman Collection v2.0 dan v2.1 beserta environment-nya, script memakai API <code>pm.*</code> bergaya Postman, dan Anda bisa mengekspor kembali ke Postman Collection v2.1.</p>
+    </td>
+    <td width="50%" valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="branding/why/cli-dark.svg">
+        <img alt="Output codestamp-cli dengan langkah yang lolos dan gagal serta laporan JUnit" src="branding/why/cli-light.svg" width="380">
+      </picture>
+      <h3>Collection yang sama berjalan di CI</h3>
+      <p><code>codestamp-cli</code> menjalankan collection beserta script dan tesnya, menulis laporan JUnit atau JSON, dan keluar dengan kode 1 jika ada tes yang gagal.</p>
+    </td>
+  </tr>
+</table>
+
+Kodenya terbuka dengan lisensi Apache-2.0, jadi Anda bisa membaca cara Codestamp menangani secret sebelum mempercayakan secret Anda kepadanya.
 
 ## Status
 
@@ -547,7 +619,7 @@ Perintah ini membuild `codestamp-cli` lalu Codestamp; bundler Tauri menyertakan 
 
 - **Kompresi LZMA**: installer jauh lebih kecil daripada ukuran terpasang.
 - **Per pengguna, tanpa hak admin**: terpasang di `%LOCALAPPDATA%\Codestamp`, dengan shortcut di Start Menu (folder Codestamp) dan pilihan shortcut desktop.
-- **Bahasa Inggris dan Indonesia**: pemilih bahasa muncul di awal. Tauri belum punya terjemahan Indonesia untuk teks installernya, jadi terjemahan ada di `src-tauri/windows/Indonesian.nsh`.
+- **Bahasa Inggris saja**: installer dan uninstaller selalu berbahasa Inggris, tanpa dialog pilih bahasa, apa pun bahasa Windows-nya. Sampai versi 0.3.6 installer juga punya bahasa Indonesia.
 - **WebView2** diunduh dan dipasang diam-diam hanya bila belum ada (Windows 10/11 umumnya sudah punya).
 - **codestamp-cli** dipasang di `%LOCALAPPDATA%\Codestamp` bersama `codestamp-desktop.exe`, dan folder itu ditambahkan ke PATH pengguna (`src-tauri/windows/hooks.nsh`). Terminal yang dibuka setelah instalasi bisa langsung menjalankan `codestamp-cli`. Saat uninstall, folder itu dihapus lagi dari PATH. Entri PATH lain, termasuk yang memakai `%VARIABEL%`, tidak diubah.
 - Uninstall bisa sekalian menghapus data aplikasi (pilihan "Delete the application data"). Tanpa pilihan itu, data di `%APPDATA%\dev.codestamp.desktop` tetap ada untuk instalasi berikutnya.
@@ -683,7 +755,6 @@ src/                      UI (Svelte 5)
   lib/flow/rules.ts       Pilihan Checks dan Pass on yang valid, placeholder, nilai awal
 src-tauri/
   windows/hooks.nsh       Hook NSIS: menambah dan menghapus folder instalasi di PATH pengguna
-  windows/Indonesian.nsh  Terjemahan Indonesia untuk teks installer Tauri
   windows/sign.ps1        signCommand Tauri: menandatangani file dengan sertifikat CN=Codestamp
   windows/new-signing-certificate.ps1  Membuat sertifikat self-signed dan mengekspor codestamp.cer
 src-tauri/src/

@@ -2,6 +2,12 @@
 
 All notable changes to Codestamp are listed here. Versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+
+- The installer and uninstaller are in English only, whatever the Windows display language. The language selector and the Indonesian installer text were removed.
+
 ## [0.3.6] - 2026-10-29
 
 First public release.
@@ -28,4 +34,5 @@ First public release.
 
 Versions 0.1.0 to 0.3.4 were built before the repository was public. Their changes are described stage by stage, in Indonesian, in [`README.id.md`](README.id.md).
 
+[Unreleased]: ../../compare/v0.3.6...HEAD
 [0.3.6]: ../../releases/tag/v0.3.6

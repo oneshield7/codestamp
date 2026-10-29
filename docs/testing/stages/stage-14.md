@@ -1,12 +1,12 @@
-# Stage 14: Dropdown dan ikon berwarna
+# Stage 14: Dropdowns and colored icons
 
-Suite [`stage14-e2e.mjs`](../../../e2e/stage14-e2e.mjs) · 11 cek
+Suite [`stage14-e2e.mjs`](../../../e2e/stage14-e2e.mjs) · 11 checks
 
-Memeriksa dropdown bergaya (warna method, cincin fokus biru, navigasi keyboard) dan ikon berwarna di tema Light dan Dark Night. Membuat collection "E2E Dropdowns" lalu menghapusnya.
+Checks the styled dropdowns (method colors, blue focus ring, keyboard navigation) and colored icons in the Light and Dark Night themes. Creates the collection "E2E Dropdowns" and deletes it afterwards.
 
-## Alur
+## Flow
 
-### 1. Awal
+### 1. Setup
 
 - the method list opens with each method in its colour
 - an open list has a blue edge
@@ -22,4 +22,4 @@ Memeriksa dropdown bergaya (warna method, cincin fokus biru, navigasi keyboard) 
 
 ---
 
-Sebelumnya: [Tema, Settings, variabel berwarna, dan klien MCP](stage-13.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Wording, Quick search, dan simpan body response](stage-15.md)
+Previous: [Themes, Settings, colored variables, and the MCP client](stage-13.md) · [Stage list](../README.md#stage-list) · Next: [Wording, Quick search, and saving the response body](stage-15.md)

@@ -1,10 +1,10 @@
-# Suite end-to-end Codestamp
+# Codestamp end-to-end suites
 
-Skrip di folder ini menjalankan build release Codestamp yang sebenarnya, lalu mengeklik dan mengetik di jendelanya lewat WebView2 DevTools Protocol (port 9333). Setiap suite mencetak satu baris `PASS` atau `FAIL` per cek.
+The scripts in this folder run the real Codestamp release build, then click and type in its window through the WebView2 DevTools Protocol (port 9333). Each suite prints one `PASS` or `FAIL` line per check.
 
-Alur setiap suite, harness, dan cara menjalankannya dijelaskan di [docs/testing](../docs/testing/README.md).
+The flow of every suite, the harness, and how to run them are described in [docs/testing](../docs/testing/README.md).
 
-Mulai cepat, dari folder project (Windows):
+Quick start, from the project folder (Windows):
 
 ```bash
 npm install --prefix e2e
@@ -18,10 +18,10 @@ CARGO_TARGET_DIR="$PWD/e2e/.work/target" npx tauri build --no-bundle
 bash e2e/run-list.sh default stage40
 ```
 
-`codegen-e2e.mjs` tidak butuh aplikasinya. Suite ini menjalankan kode hasil Copy as code di setiap bahasa yang toolchain-nya terpasang:
+`codegen-e2e.mjs` does not need the app. It runs the Copy as code output in every language whose toolchain is installed:
 
 ```bash
 node e2e/codegen-e2e.mjs
 ```
 
-File yang dibuat saat tes berjalan disimpan di `e2e/.work/` dan tidak ikut di-commit. Cadangkan data aplikasi (`%APPDATA%\dev.codestamp.desktop`) sebelum menjalankan suite, karena suite membuat data uji dan mengubah beberapa pengaturan.
+Files created during a test run are kept in `e2e/.work/` and are not committed. Back up the app data (`%APPDATA%\dev.codestamp.desktop`) before running the suites, because they create test data and change a few settings.

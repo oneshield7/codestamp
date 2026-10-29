@@ -1,17 +1,17 @@
-# Stage 22: Request gRPC
+# Stage 22: gRPC requests
 
-Suite [`stage22-e2e.mjs`](../../../e2e/stage22-e2e.mjs) · 18 cek
+Suite [`stage22-e2e.mjs`](../../../e2e/stage22-e2e.mjs) · 18 checks
 
-Mengambil service lewat server reflection atau dari file `.proto` (dengan import), lalu menjalankan panggilan unary dan streaming dengan metadata dan auth, status error, serta memeriksa keadaan yang tersimpan. Membuat "E2E gRPC" lalu menghapusnya.
+Loads services through server reflection or from a `.proto` file (with imports), then runs unary and streaming calls with metadata and auth, error statuses, and checks the saved state. Creates "E2E gRPC" and deletes it afterwards.
 
-## Kebutuhan
+## Requirements
 
-- Server gRPC uji `grpc-shop-server.mjs` dengan paket `@grpc/grpc-js`, `@grpc/proto-loader`, dan `@grpc/reflection`.
-- Dialog simpan atau buka file Windows, dijawab oleh `answer-dialog.ps1`.
+- The gRPC test server `grpc-shop-server.mjs` with the packages `@grpc/grpc-js`, `@grpc/proto-loader`, and `@grpc/reflection`.
+- The Windows save or open file dialog, answered by `answer-dialog.ps1`.
 
-## Alur
+## Flow
 
-### 1. Awal
+### 1. Setup
 
 - collection variables are set for the test
 - rows are stamped gRPC and Run all is off for gRPC only
@@ -52,4 +52,4 @@ Mengambil service lewat server reflection atau dari file `.proto` (dengan import
 
 ---
 
-Sebelumnya: [Server-Sent Events](stage-21.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Orchestration](stage-23.md)
+Previous: [Server-Sent Events](stage-21.md) · [Stage list](../README.md#stage-list) · Next: [Orchestration](stage-23.md)

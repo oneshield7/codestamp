@@ -1,80 +1,80 @@
-# Pengujian Codestamp
+# Testing Codestamp
 
-Codestamp diuji dari dua sisi. Pemeriksaan statis dan tes Rust berjalan tanpa jendela. Suite end-to-end (e2e) menjalankan build release yang sebenarnya, lalu mengeklik dan mengetik di jendela aplikasi lewat WebView2 DevTools Protocol (CDP).
+Codestamp is tested from two sides. Static checks and the Rust tests run without a window. The end-to-end (e2e) suites run the real release build, then click and type in the app window through the WebView2 DevTools Protocol (CDP).
 
-Folder ini menjelaskan alur setiap suite e2e: apa yang disiapkan, langkah yang dijalankan, dan cek yang harus lolos di setiap langkah. Setiap stage punya satu halaman di [`stages/`](stages/). Skrip suite dan helper-nya ada di folder [`e2e/`](../../e2e/).
+This folder describes the flow of every e2e suite: what it sets up, the steps it runs, and the checks that must pass at each step. Each stage has one page in [`stages/`](stages/). The suite scripts and their helpers are in the [`e2e/`](../../e2e/) folder.
 
-## Lapisan pengujian
+## Testing layers
 
-| Lapisan         | Perintah            | Isi                                                                                       |
-| --------------- | ------------------- | ----------------------------------------------------------------------------------------- |
-| Tipe dan Svelte | `npm run check`     | `svelte-check` (gagal bila ada warning) dan `tsc` untuk file Node                         |
-| Lint frontend   | `npm run lint`      | ESLint tanpa warning dan Prettier                                                         |
-| Lint Rust       | `npm run lint:rust` | `cargo fmt --check` dan `cargo clippy -D warnings`                                        |
-| Tes Rust        | `npm run test:rust` | 308 tes unit dan integrasi di inti Rust (`src-tauri/src`)                                 |
-| Semua di atas   | `npm run verify`    | Menjalankan keempatnya berurutan                                                          |
-| End-to-end      | `e2e/*-e2e.mjs`     | 34 suite, 727 cek terhadap build release dan kode Copy as code, dijelaskan di halaman ini |
+| Layer            | Command             | Contents                                                                               |
+| ---------------- | ------------------- | -------------------------------------------------------------------------------------- |
+| Types and Svelte | `npm run check`     | `svelte-check` (fails on warnings) and `tsc` for the Node files                        |
+| Frontend lint    | `npm run lint`      | ESLint with no warnings, and Prettier                                                  |
+| Rust lint        | `npm run lint:rust` | `cargo fmt --check` and `cargo clippy -D warnings`                                     |
+| Rust tests       | `npm run test:rust` | 309 unit and integration tests in the Rust core (`src-tauri/src`)                      |
+| All of the above | `npm run verify`    | Runs the four above in order                                                           |
+| End-to-end       | `e2e/*-e2e.mjs`     | 34 suites, 727 checks against the release build and the Copy as code output, see below |
 
-Tes Rust mencakup validasi request, import dan export (Postman, OpenAPI, WSDL, file Codestamp), sinkron Git dan penggabungan per field, grup akses dan enkripsinya, History, Recently deleted, dan migrasi database. Tes ini memakai database di memori, jadi tidak menyentuh data aplikasi.
+The Rust tests cover request validation, import and export (Postman, OpenAPI, WSDL, Codestamp files), Git sync and per-field merging, access groups and their encryption, History, Recently deleted, and database migrations. They use an in-memory database, so they never touch app data.
 
 ## Harness
 
-Suite e2e hanya berjalan di Windows, karena memakai WebView2 dan beberapa helper PowerShell. Semua file yang dibuat saat tes berjalan (build uji, profil WebView2, bare repository Git, screenshot, dan fixture updater) disimpan di `e2e/.work/`, yang tidak ikut di-commit.
+The e2e suites run only on Windows, because they use WebView2 and a few PowerShell helpers. Every file created during a test run (the test build, WebView2 profiles, Git bare repositories, screenshots, and updater fixtures) is kept in `e2e/.work/`, which is not committed.
 
-1. **Build salinan uji.** `npx tauri build --no-bundle` dengan `CARGO_TARGET_DIR` menunjuk ke `e2e/.work/target` (path absolut, karena Tauri menjalankan cargo dari `src-tauri`), supaya build uji tidak bentrok dengan Codestamp yang sedang dipakai dari `src-tauri/target`.
-2. **`launch.mjs` menjalankan salinan uji.** Exe dijalankan dengan `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9333` dan `WEBVIEW2_USER_DATA_FOLDER` miliknya sendiri. Salinan uji lama dihentikan lebih dulu, dan yang dikenali hanya proses dari path build uji, bukan Codestamp milik pengguna. `launch.mjs` menunggu sampai daftar collection termuat dan layar pembuka hilang.
-3. **Git tanpa host sungguhan.** Lewat variabel `GIT_CONFIG_COUNT`, salinan uji memetakan `https://git.test/` ke bare repository di `e2e/.work/git-hosts/`. Konfigurasi Git pengguna tidak diubah. `E2E_GIT_CONFIG` menambah pasangan konfigurasi untuk satu suite (stage35 memakainya untuk mematikan credential helper).
-4. **Suite terhubung lewat CDP.** Suite mengambil halaman dari `http://127.0.0.1:9333/json`, menjalankan JavaScript dengan `Runtime.evaluate`, lalu memasang helper kecil seperti `$btn`, `$nav`, dan `$row` untuk mencari elemen. Data awal dibuat lewat perintah Tauri (`window.__TAURI_INTERNALS__.invoke`), sedangkan langkah yang diuji dijalankan dengan klik, ketikan, dan event keyboard di UI yang asli.
-5. **Hasil.** Setiap cek mencetak satu baris `PASS` atau `FAIL` beserta detail yang diamati, lalu suite menutup dengan `N/M passed`. Bila suite berhenti di tengah, baris yang sudah terkumpul tetap dicetak sebelum error-nya.
+1. **Build a test copy.** `npx tauri build --no-bundle` with `CARGO_TARGET_DIR` pointing to `e2e/.work/target` (an absolute path, because Tauri runs cargo from `src-tauri`), so the test build never clashes with the Codestamp in use from `src-tauri/target`.
+2. **`launch.mjs` starts the test copy.** The exe runs with `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--remote-debugging-port=9333` and its own `WEBVIEW2_USER_DATA_FOLDER`. An old test copy is stopped first, and only processes from the test build path are matched, never the user's own Codestamp. `launch.mjs` waits until the collection list has loaded and the launch screen is gone.
+3. **Git without a real host.** Through the `GIT_CONFIG_COUNT` variables, the test copy maps `https://git.test/` to bare repositories in `e2e/.work/git-hosts/`. The user's Git configuration is not changed. `E2E_GIT_CONFIG` adds configuration pairs for a single suite (stage35 uses it to turn off the credential helper).
+4. **Suites connect over CDP.** A suite takes the page from `http://127.0.0.1:9333/json`, runs JavaScript with `Runtime.evaluate`, then installs small helpers such as `$btn`, `$nav`, and `$row` to find elements. Starting data is created through Tauri commands (`window.__TAURI_INTERNALS__.invoke`), while the steps under test run as clicks, typing, and keyboard events in the real UI.
+5. **Results.** Each check prints one `PASS` or `FAIL` line with the observed details, and the suite ends with `N/M passed`. If a suite stops halfway, the lines collected so far are still printed before the error.
 
-Helper yang dipakai bersama:
+Shared helpers:
 
-| File                                                       | Fungsi                                                                                      |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `launch.mjs`                                               | Menjalankan salinan uji dengan CDP dan menunggu sampai siap                                 |
-| `eval.mjs`                                                 | Menjalankan satu ekspresi di halaman aplikasi dan mencetak hasilnya                         |
-| `run-list.sh`                                              | Menjalankan beberapa suite di satu ukuran jendela, setelah membersihkan sisa data uji       |
-| `run-sweep.sh`                                             | Menjalankan semua suite (kecuali stage25, stage34, dan CLI) di satu ukuran jendela          |
-| `test-process.ps1`                                         | Menemukan salinan uji dari path exe-nya                                                     |
-| `answer-dialog.ps1`                                        | Mengisi dan mengonfirmasi dialog buka atau simpan file Windows lewat pesan jendela          |
-| `resize-window.ps1`                                        | Mengubah ukuran jendela uji ke 720×520 atau maximize                                        |
-| `window-rect.ps1`                                          | Membaca posisi jendela dan layar (stage39)                                                  |
-| `test-window.ps1`                                          | Menemukan jendela salinan uji; dipakai helper jendela lain                                  |
-| `hit-test.ps1`, `restore-window.ps1`, `desktop-locked.ps1` | Tepi resize, mengembalikan ukuran jendela, dan cek desktop terkunci (stage25)               |
-| `activate-window.ps1`, `menu-keys.ps1`                     | Membuka menu native lewat keyboard (stage25)                                                |
-| `mcp-server.mjs`                                           | Server MCP uji lewat STDIO dan Streamable HTTP (stage13)                                    |
-| `grpc-shop-server.mjs`, `protos/`                          | Server gRPC uji dengan reflection dan file `.proto`-nya (stage22)                           |
-| `soap-server.mjs`                                          | Server SOAP dan WSDL uji (stage24)                                                          |
-| `access-mate.mjs`                                          | Rekan kerja tiruan untuk grup akses, ditulis hanya dari format file (stage37)               |
-| `updater/prepare.mjs`                                      | Membuat kunci uji, konfigurasi build updater, dan installer palsu bertanda tangan (stage34) |
-| `updater/fake-installer.rs`                                | Installer palsu yang hanya mencatat argumennya (stage34)                                    |
+| File                                                       | Purpose                                                                                      |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `launch.mjs`                                               | Starts the test copy with CDP and waits until it is ready                                    |
+| `eval.mjs`                                                 | Runs one expression in the app page and prints the result                                    |
+| `run-list.sh`                                              | Runs several suites at one window size, after clearing leftover test data                    |
+| `run-sweep.sh`                                             | Runs every suite (except stage25, stage34, and the CLI) at one window size                   |
+| `test-process.ps1`                                         | Finds the test copy by its exe path                                                          |
+| `answer-dialog.ps1`                                        | Fills in and confirms the Windows open or save file dialog through window messages           |
+| `resize-window.ps1`                                        | Resizes the test window to 720×520 or maximizes it                                           |
+| `window-rect.ps1`                                          | Reads the window and screen position (stage39)                                               |
+| `test-window.ps1`                                          | Finds the test copy's window; used by the other window helpers                               |
+| `hit-test.ps1`, `restore-window.ps1`, `desktop-locked.ps1` | Resize edges, restoring the window size, and the locked desktop check (stage25)              |
+| `activate-window.ps1`, `menu-keys.ps1`                     | Opens the native menu with the keyboard (stage25)                                            |
+| `mcp-server.mjs`                                           | MCP test server over STDIO and Streamable HTTP (stage13)                                     |
+| `grpc-shop-server.mjs`, `protos/`                          | gRPC test server with reflection and its `.proto` files (stage22)                            |
+| `soap-server.mjs`                                          | SOAP and WSDL test server (stage24)                                                          |
+| `access-mate.mjs`                                          | A simulated teammate for access groups, written only from the file format (stage37)          |
+| `updater/prepare.mjs`                                      | Creates the test key, the updater build configuration, and a signed fake installer (stage34) |
+| `updater/fake-installer.rs`                                | A fake installer that only records its arguments (stage34)                                   |
 
-Server lain yang dibutuhkan, misalnya server echo HTTP, server OAuth, dan server GraphQL, dijalankan oleh suite masing-masing di komputer yang sama.
+Other servers the suites need, such as the HTTP echo server, the OAuth server, and the GraphQL server, are started by each suite on the same machine.
 
-## Data uji
+## Test data
 
-- Setiap suite membuat data uji sendiri yang namanya diawali "E2E", lalu menghapusnya di blok `finally`, juga saat suite gagal di tengah. `run-list.sh` menghapus sisa collection "E2E" dari run yang terhenti.
-- Kunci tanda tangan stage34 dibuat ulang oleh `updater/prepare.mjs` setiap kali dijalankan dan hanya ada di `e2e/.work/`. Jangan pakai kunci rilis untuk tes.
-- Sebelum menjalankan e2e, cadangkan `codestamp.db` beserta file `-wal` dan `-shm` dari folder data aplikasi (`%APPDATA%\dev.codestamp.desktop`). Setelah selesai, kembalikan cadangan itu dan cocokkan hash-nya. Suite mengubah tema dan beberapa pengaturan selama berjalan.
-- Beberapa suite menyentuh sistem operasi. stage37 membuat kunci perangkat di Windows Credential Manager akun yang menjalankan tes, dan suite yang memakai `answer-dialog.ps1` membuka dialog file Windows yang sebenarnya.
+- Each suite creates its own test data with names that start with "E2E", then deletes it in a `finally` block, also when the suite fails halfway. `run-list.sh` deletes "E2E" collections left over from an interrupted run.
+- The stage34 signing key is recreated by `updater/prepare.mjs` on every run and lives only in `e2e/.work/`. Never use the release key for tests.
+- Before running e2e, back up `codestamp.db` and its `-wal` and `-shm` files from the app data folder (`%APPDATA%\dev.codestamp.desktop`). Afterwards, restore that backup and compare the hashes. The suites change the theme and a few settings while they run.
+- Some suites touch the operating system. stage37 creates a device key in the Windows Credential Manager of the account that runs the tests, and suites that use `answer-dialog.ps1` open the real Windows file dialog.
 
-## Menjalankan
+## Running
 
-Kebutuhan: Windows 10 atau 11 dengan WebView2, Node.js 24 atau lebih baru, Rust, Git for Windows, dan Git Bash untuk skrip `.sh`. Semua perintah di bawah dijalankan dari folder project.
+Requirements: Windows 10 or 11 with WebView2, Node.js 24 or later, Rust, Git for Windows, and Git Bash for the `.sh` scripts. Run every command below from the project folder.
 
-Pasang dependency server uji (gRPC dan GraphQL) sekali:
+Install the test server dependencies (gRPC and GraphQL) once:
 
 ```bash
 npm install --prefix e2e
 ```
 
-Build salinan uji:
+Build the test copy:
 
 ```bash
 CARGO_TARGET_DIR="$PWD/e2e/.work/target" npx tauri build --no-bundle
 ```
 
-Jalankan salinan uji dan satu suite:
+Start the test copy and run one suite:
 
 ```bash
 node e2e/launch.mjs
@@ -84,7 +84,7 @@ node e2e/launch.mjs
 node e2e/stage40-e2e.mjs
 ```
 
-Jalankan beberapa suite, atau semuanya, di satu ukuran jendela:
+Run several suites, or all of them, at one window size:
 
 ```bash
 bash e2e/run-list.sh default stage10 stage12 stage40
@@ -94,7 +94,7 @@ bash e2e/run-list.sh default stage10 stage12 stage40
 bash e2e/run-sweep.sh minimum
 ```
 
-CLI e2e memakai `codestamp-cli` hasil build debug:
+The CLI e2e uses the debug build of `codestamp-cli`:
 
 ```bash
 cargo build --manifest-path src-tauri/Cargo.toml --bin codestamp-cli
@@ -104,13 +104,13 @@ cargo build --manifest-path src-tauri/Cargo.toml --bin codestamp-cli
 node e2e/cli-e2e.mjs
 ```
 
-Copy as code tidak butuh aplikasinya. Suite ini mem-bundle generator lalu menjalankan kode hasilnya dengan toolchain yang terpasang. Bahasa yang toolchain-nya tidak ada ditandai SKIP:
+Copy as code does not need the app. The suite bundles the generators, then runs the generated code with the installed toolchains. A language whose toolchain is missing is marked SKIP:
 
 ```bash
 node e2e/codegen-e2e.mjs
 ```
 
-stage34 memakai build updater khusus. Siapkan fixture-nya, build, lalu jalankan suite-nya. Build biasa perlu dibuat ulang sesudahnya untuk suite lain:
+stage34 uses a dedicated updater build. Prepare its fixtures, build, then run the suite. Rebuild the normal test copy afterwards for the other suites:
 
 ```bash
 node e2e/updater/prepare.mjs
@@ -124,68 +124,68 @@ CARGO_TARGET_DIR="$PWD/e2e/.work/target" npx tauri build --no-bundle --config e2
 node e2e/stage34-e2e.mjs
 ```
 
-- `run-list.sh <minimum|maximize|default> <suite…>` menjalankan suite pilihan di satu ukuran jendela, dimulai dengan salinan uji baru, tema Light, dan tanpa sisa collection "E2E".
-- `run-sweep.sh <minimum|maximize>` menjalankan semua suite di satu ukuran.
-- stage25 dijalankan sendirian karena menutup jendela di akhir, dan menu native-nya hanya diuji dengan `CODESTAMP_MENU_TEST=1` saat desktop tidak terkunci.
-- stage34 membutuhkan build updater khusus seperti di atas (lihat juga [halamannya](stages/stage-34.md)).
+- `run-list.sh <minimum|maximize|default> <suite…>` runs the chosen suites at one window size, starting with a fresh test copy, the Light theme, and no leftover "E2E" collections.
+- `run-sweep.sh <minimum|maximize>` runs every suite at one size.
+- stage25 runs on its own because it closes the window at the end, and its native menu is tested only with `CODESTAMP_MENU_TEST=1` while the desktop is unlocked.
+- stage34 needs the dedicated updater build shown above (see also [its page](stages/stage-34.md)).
 
-## Ukuran jendela
+## Window sizes
 
-- **Bawaan**: jendela pertama kali dibuka, dengan viewport sekitar 1280×820.
-- **minimum**: 720×520, ukuran jendela terkecil yang didukung. Di bawah 900px sidebar menjadi rel ikon.
-- **maximize**: resolusi monitor.
+- **Default**: the window as it first opens, with a viewport of about 1280×820.
+- **minimum**: 720×520, the smallest supported window size. Below 900px the sidebar becomes the icon rail.
+- **maximize**: the monitor resolution.
 
-Beberapa cek hanya berjalan di ukuran tertentu. Contohnya, cek perataan tombol "+" di sidebar dilewati saat sidebar dipaksa menjadi rel ikon, dan stage36 memeriksa tata letak berdampingan hanya bila jendelanya cukup lebar.
+Some checks run only at certain sizes. For example, the alignment check for the "+" button in the sidebar is skipped when the sidebar is forced into the icon rail, and stage36 checks the side-by-side layout only when the window is wide enough.
 
-## Cara membaca halaman stage
+## Reading a stage page
 
-Setiap halaman berisi ringkasan, kebutuhan suite itu, lalu alurnya. Bagian di alur mengikuti urutan bagian di dalam skrip suite. Nama cek ditulis persis seperti yang dicetak suite (dalam bahasa Inggris), supaya mudah dicocokkan dengan output. `[tema]` berarti cek itu diulang untuk Light, Dark, dan Dark Night. Angka cek di setiap halaman menghitung cek yang ditulis di suite; cek di dalam perulangan dihitung sekali walaupun berjalan beberapa kali.
+Each page holds a summary, what the suite needs, and then its flow. The parts of the flow follow the order of the sections in the suite script. Check names are written exactly as the suite prints them, so they are easy to match with the output. `[theme]` means the check repeats for Light, Dark, and Dark Night. The check count on each page counts the checks written in the suite; a check inside a loop counts once even though it runs several times.
 
-## Menambah stage
+## Adding a stage
 
-1. Salin struktur suite terbaru: koneksi CDP, helper, `check()`, dan blok `finally` yang membersihkan data.
-2. Beri nama data uji dengan awalan "E2E", dan buat data awal lewat perintah Tauri, bukan lewat UI yang tidak sedang diuji.
-3. Simpan file yang dibuat suite di `e2e/.work/` atau di folder sementara sistem, bukan di folder `e2e/` itu sendiri.
-4. Panel collection (Variables, Auth, Collaboration, Mock server, History, Export) terbuka sebagai dialog `.panel-dialog` dan tetap terbuka di belakang dialog konfirmasi. Cari dialog lain dengan `dialog[open]:not(.panel-dialog)`, dan cari isi panel lewat `section[aria-label="…"]`. Dropdown di dalam dialog baru membuka daftarnya setelah dialog selesai muncul, jadi tunggu sampai pilihannya ada, jangan memakai jeda tetap.
-5. Tambahkan suite ke daftar di `run-sweep.sh`, lalu tulis halamannya di folder ini.
+1. Copy the structure of the latest suite: the CDP connection, the helpers, `check()`, and the `finally` block that cleans up data.
+2. Give test data names that start with "E2E", and create starting data through Tauri commands, not through UI that is not under test.
+3. Keep files the suite creates in `e2e/.work/` or in the system temp folder, not in the `e2e/` folder itself.
+4. Collection panels (Variables, Auth, Collaboration, Mock server, History, Export) open as a `.panel-dialog` dialog and stay open behind confirmation dialogs. Find other dialogs with `dialog[open]:not(.panel-dialog)`, and find panel content through `section[aria-label="…"]`. A dropdown inside a dialog opens its list only once the dialog has finished appearing, so wait until the options exist instead of using a fixed delay.
+5. Add the suite to the list in `run-sweep.sh`, then write its page in this folder.
 
-## Daftar stage
+## Stage list
 
-| Suite                                        | Yang diuji                                                                | Cek |
-| -------------------------------------------- | ------------------------------------------------------------------------- | --- |
-| [stage10-e2e.mjs](stages/stage-10.md)        | Body form, cookie jar, variabel dinamis, dan Copy as code                 | 37  |
-| [stage11-e2e.mjs](stages/stage-11.md)        | Collaboration lewat Git                                                   | 30  |
-| [stage12-e2e.mjs](stages/stage-12.md)        | Tampilan dasar, Home, dan dialog New collection                           | 41  |
-| [stage13-e2e.mjs](stages/stage-13.md)        | Tema, Settings, variabel berwarna, dan klien MCP                          | 28  |
-| [stage14-e2e.mjs](stages/stage-14.md)        | Dropdown dan ikon berwarna                                                | 11  |
-| [stage15-e2e.mjs](stages/stage-15.md)        | Wording, Quick search, dan simpan body response                           | 24  |
-| [stage16-e2e.mjs](stages/stage-16.md)        | Path variable dan run berbasis data                                       | 15  |
-| [stage17-e2e.mjs](stages/stage-17.md)        | Auth: Digest, AWS SigV4, dan OAuth 2.0                                    | 15  |
-| [stage18-e2e.mjs](stages/stage-18.md)        | Import OpenAPI dan Swagger                                                | 9   |
-| [stage19-e2e.mjs](stages/stage-19.md)        | Request GraphQL                                                           | 10  |
-| [stage20-e2e.mjs](stages/stage-20.md)        | Example dan mock server                                                   | 14  |
-| [stage21-e2e.mjs](stages/stage-21.md)        | Server-Sent Events                                                        | 7   |
-| [stage22-e2e.mjs](stages/stage-22.md)        | Request gRPC                                                              | 18  |
-| [stage23-e2e.mjs](stages/stage-23.md)        | Orchestration                                                             | 16  |
-| [stage24-e2e.mjs](stages/stage-24.md)        | Body XML dan HTML, SOAP, dan import WSDL                                  | 20  |
-| [stage25-e2e.mjs](stages/stage-25.md)        | Title bar dan sidebar yang diciutkan                                      | 16  |
-| [stage26-e2e.mjs](stages/stage-26.md)        | Grup Tools dan Catalog                                                    | 30  |
-| [stage27-e2e.mjs](stages/stage-27.md)        | Indentasi None, SSL/TLS, dan Docs                                         | 27  |
-| [stage28-e2e.mjs](stages/stage-28.md)        | Membuka request dan area scroll                                           | 17  |
-| [stage29-e2e.mjs](stages/stage-29.md)        | Find di editor, nama baru, dan Docs yang ringkas                          | 23  |
-| [stage30-e2e.mjs](stages/stage-30.md)        | Akun Git per collection                                                   | 26  |
-| [stage31-e2e.mjs](stages/stage-31.md)        | Git accounts, Git changes, dan replace collection                         | 20  |
-| [stage32-e2e.mjs](stages/stage-32.md)        | Share ke repository yang sudah berisi file                                | 13  |
-| [stage33-e2e.mjs](stages/stage-33.md)        | Status bar, Ctrl+S, sync manual, dan environment bersama                  | 16  |
-| [stage34-e2e.mjs](stages/stage-34.md)        | Pembaruan dalam aplikasi                                                  | 21  |
-| [stage35-e2e.mjs](stages/stage-35.md)        | Perbaikan Git: clone rusak dan sign-in hilang                             | 9   |
-| [stage36-e2e.mjs](stages/stage-36.md)        | Git changes dengan riwayat panjang                                        | 14  |
-| [stage37-e2e.mjs](stages/stage-37.md)        | Grup akses                                                                | 28  |
-| [stage38-e2e.mjs](stages/stage-38.md)        | Layar pembuka                                                             | 9   |
-| [stage39-e2e.mjs](stages/stage-39.md)        | Posisi jendela, environment aktif, dan lipatan                            | 14  |
-| [stage40-e2e.mjs](stages/stage-40.md)        | Quick search, shortcut, status bar, Export, History, dan Recently deleted | 40  |
-| [collections-e2e.mjs](stages/collections.md) | Alur collection dasar                                                     | 8   |
-| [cli-e2e.mjs](stages/cli.md)                 | codestamp-cli                                                             | 11  |
-| [codegen-e2e.mjs](stages/codegen.md)         | Kode hasil Copy as code dijalankan di 15 bahasa                           | 90  |
+| Suite                                        | What is tested                                                             | Checks |
+| -------------------------------------------- | -------------------------------------------------------------------------- | ------ |
+| [stage10-e2e.mjs](stages/stage-10.md)        | Form body, cookie jar, dynamic variables, and Copy as code                 | 37     |
+| [stage11-e2e.mjs](stages/stage-11.md)        | Collaboration through Git                                                  | 30     |
+| [stage12-e2e.mjs](stages/stage-12.md)        | Basic look, Home, and the New collection dialog                            | 41     |
+| [stage13-e2e.mjs](stages/stage-13.md)        | Themes, Settings, colored variables, and the MCP client                    | 28     |
+| [stage14-e2e.mjs](stages/stage-14.md)        | Dropdowns and colored icons                                                | 11     |
+| [stage15-e2e.mjs](stages/stage-15.md)        | Wording, Quick search, and saving the response body                        | 24     |
+| [stage16-e2e.mjs](stages/stage-16.md)        | Path variables and data-driven runs                                        | 15     |
+| [stage17-e2e.mjs](stages/stage-17.md)        | Auth: Digest, AWS SigV4, and OAuth 2.0                                     | 15     |
+| [stage18-e2e.mjs](stages/stage-18.md)        | OpenAPI and Swagger import                                                 | 9      |
+| [stage19-e2e.mjs](stages/stage-19.md)        | GraphQL requests                                                           | 10     |
+| [stage20-e2e.mjs](stages/stage-20.md)        | Examples and the mock server                                               | 14     |
+| [stage21-e2e.mjs](stages/stage-21.md)        | Server-Sent Events                                                         | 7      |
+| [stage22-e2e.mjs](stages/stage-22.md)        | gRPC requests                                                              | 18     |
+| [stage23-e2e.mjs](stages/stage-23.md)        | Orchestration                                                              | 16     |
+| [stage24-e2e.mjs](stages/stage-24.md)        | XML and HTML bodies, SOAP, and WSDL import                                 | 20     |
+| [stage25-e2e.mjs](stages/stage-25.md)        | Title bar and the collapsed sidebar                                        | 16     |
+| [stage26-e2e.mjs](stages/stage-26.md)        | The Tools group and Catalog                                                | 30     |
+| [stage27-e2e.mjs](stages/stage-27.md)        | None indentation, SSL/TLS, and Docs                                        | 27     |
+| [stage28-e2e.mjs](stages/stage-28.md)        | Opening a request and the scroll area                                      | 17     |
+| [stage29-e2e.mjs](stages/stage-29.md)        | Find in the editor, new names, and a compact Docs page                     | 23     |
+| [stage30-e2e.mjs](stages/stage-30.md)        | A Git account per collection                                               | 26     |
+| [stage31-e2e.mjs](stages/stage-31.md)        | Git accounts, Git changes, and replacing a collection                      | 20     |
+| [stage32-e2e.mjs](stages/stage-32.md)        | Sharing to a repository that already has files                             | 13     |
+| [stage33-e2e.mjs](stages/stage-33.md)        | Status bar, Ctrl+S, manual sync, and shared environments                   | 16     |
+| [stage34-e2e.mjs](stages/stage-34.md)        | In-app updates                                                             | 21     |
+| [stage35-e2e.mjs](stages/stage-35.md)        | Git fixes: a broken clone and a lost sign-in                               | 9      |
+| [stage36-e2e.mjs](stages/stage-36.md)        | Git changes with a long history                                            | 14     |
+| [stage37-e2e.mjs](stages/stage-37.md)        | Access groups                                                              | 28     |
+| [stage38-e2e.mjs](stages/stage-38.md)        | Launch screen                                                              | 9      |
+| [stage39-e2e.mjs](stages/stage-39.md)        | Window position, the active environment, and folding                       | 14     |
+| [stage40-e2e.mjs](stages/stage-40.md)        | Quick search, shortcuts, status bar, Export, History, and Recently deleted | 40     |
+| [collections-e2e.mjs](stages/collections.md) | Basic collection flow                                                      | 8      |
+| [cli-e2e.mjs](stages/cli.md)                 | codestamp-cli                                                              | 11     |
+| [codegen-e2e.mjs](stages/codegen.md)         | The Copy as code output run in 15 languages                                | 90     |
 
-Total: 34 suite dan 727 cek.
+Total: 34 suites and 727 checks.

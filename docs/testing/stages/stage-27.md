@@ -1,10 +1,10 @@
-# Stage 27: Indentasi None, SSL/TLS, dan Docs
+# Stage 27: None indentation, SSL/TLS, and Docs
 
-Suite [`stage27-e2e.mjs`](../../../e2e/stage27-e2e.mjs) · 27 cek
+Suite [`stage27-e2e.mjs`](../../../e2e/stage27-e2e.mjs) · 27 checks
 
-Menguji indentasi editor "None" (bawaan), Settings › SSL/TLS, dan Docs: deskripsi dari collection Postman yang diimpor, Markdown yang digambar aman (HTML mentah tidak pernah jalan), menulis deskripsi, penyamaran nilai, dan duplikat. Mengimpor "E2E Docs" lalu menghapusnya.
+Tests the "None" editor indentation (the default), Settings › SSL/TLS, and Docs: descriptions from an imported Postman collection, Markdown rendered safely (raw HTML never runs), writing descriptions, masked values, and duplicates. Imports "E2E Docs" and deletes it afterwards.
 
-## Alur
+## Flow
 
 ### 1. Settings › Editor: None
 
@@ -56,4 +56,4 @@ Menguji indentasi editor "None" (bawaan), Settings › SSL/TLS, dan Docs: deskri
 
 ---
 
-Sebelumnya: [Grup Tools dan Catalog](stage-26.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Membuka request dan area scroll](stage-28.md)
+Previous: [The Tools group and Catalog](stage-26.md) · [Stage list](../README.md#stage-list) · Next: [Opening a request and the scroll area](stage-28.md)

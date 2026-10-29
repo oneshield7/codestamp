@@ -1,15 +1,15 @@
-# Stage 16: Path variable dan run berbasis data
+# Stage 16: Path variables and data-driven runs
 
-Suite [`stage16-e2e.mjs`](../../../e2e/stage16-e2e.mjs) · 15 cek
+Suite [`stage16-e2e.mjs`](../../../e2e/stage16-e2e.mjs) · 15 checks
 
-Menguji path variable (`/users/:id`) di kartu request, saat mengirim, di pratinjau URL, serta saat export dan import, lalu menjalankan collection dengan file data CSV. Membuat "E2E Paths" dan "E2E Paths Import" lalu menghapusnya.
+Tests path variables (`/users/:id`) on the request card, when sending, in the URL preview, and on export and import, then runs a collection with a CSV data file. Creates "E2E Paths" and "E2E Paths Import" and deletes them afterwards.
 
-## Kebutuhan
+## Requirements
 
-- Server HTTP lokal yang dibuat oleh suite itu sendiri (Node `http`).
-- Dialog simpan atau buka file Windows, dijawab oleh `answer-dialog.ps1`.
+- A local HTTP server started by the suite itself (Node `http`).
+- The Windows save or open file dialog, answered by `answer-dialog.ps1`.
 
-## Alur
+## Flow
 
 ### 1. The card
 
@@ -37,4 +37,4 @@ Menguji path variable (`/users/:id`) di kartu request, saat mengirim, di pratinj
 
 ---
 
-Sebelumnya: [Wording, Quick search, dan simpan body response](stage-15.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Auth: Digest, AWS SigV4, dan OAuth 2.0](stage-17.md)
+Previous: [Wording, Quick search, and saving the response body](stage-15.md) · [Stage list](../README.md#stage-list) · Next: [Auth: Digest, AWS SigV4, and OAuth 2.0](stage-17.md)

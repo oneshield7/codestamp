@@ -1,15 +1,15 @@
 # CLI: codestamp-cli
 
-Suite [`cli-e2e.mjs`](../../../e2e/cli-e2e.mjs) · 11 cek
+Suite [`cli-e2e.mjs`](../../../e2e/cli-e2e.mjs) · 11 checks
 
-`codestamp-cli` menjalankan file Collection v2.1 dengan file environment: variabel mengalir antarrequest, `--var` mengisi auth atau membaca environment proses, file data dijalankan sekali per baris, `--bail` berhenti di kegagalan pertama, dan laporan JSON serta JUnit ditulis. Folder Collaboration juga bisa dijalankan (WebSocket dilewati, stream dipotong). `--help` keluar dengan kode 0, request yang gagal membuat kode keluar 1, dan run yang tidak bisa dimulai keluar dengan kode 2 beserta alasannya.
+`codestamp-cli` runs a Collection v2.1 file with an environment file: variables flow between requests, `--var` fills in auth or reads the process environment, a data file runs once per row, `--bail` stops at the first failure, and JSON and JUnit reports are written. A Collaboration folder can be run too (WebSocket is skipped, streams are cut off). `--help` exits with code 0, a failed request makes the exit code 1, and a run that cannot start exits with code 2 and the reason.
 
-## Kebutuhan
+## Requirements
 
-- `codestamp-cli.exe` hasil build.
-- Server HTTP lokal yang dibuat oleh suite itu sendiri (Node `http`).
+- A built `codestamp-cli.exe`.
+- A local HTTP server started by the suite itself (Node `http`).
 
-## Alur
+## Flow
 
 ### 1. A Collection v2.1 file and an environment file
 
@@ -33,4 +33,4 @@ Suite [`cli-e2e.mjs`](../../../e2e/cli-e2e.mjs) · 11 cek
 
 ---
 
-Sebelumnya: [Alur collection dasar](collections.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Copy as code: kode yang dihasilkan dijalankan](codegen.md)
+Previous: [Basic collection flow](collections.md) · [Stage list](../README.md#stage-list) · Next: [Copy as code: the generated code is run](codegen.md)

@@ -1,16 +1,16 @@
-# Stage 31: Git accounts, Git changes, dan replace collection
+# Stage 31: Git accounts, Git changes, and replacing a collection
 
-Suite [`stage31-e2e.mjs`](../../../e2e/stage31-e2e.mjs) · 20 cek
+Suite [`stage31-e2e.mjs`](../../../e2e/stage31-e2e.mjs) · 20 checks
 
-Menguji Settings › Git accounts, pilihan akun di Collaboration, Tools › Git changes, dan Import › replace untuk collection yang dibagikan.
+Tests Settings › Git accounts, the account choice in Collaboration, Tools › Git changes, and Import › replace for a shared collection.
 
-## Kebutuhan
+## Requirements
 
-- Git for Windows. `https://git.test/` dipetakan ke bare repository lokal di `e2e/.work/git-hosts/` (lihat [harness](../README.md#harness)).
+- Git for Windows. `https://git.test/` is mapped to a local bare repository in `e2e/.work/git-hosts/` (see [harness](../README.md#harness)).
 
-## Alur
+## Flow
 
-### 1. Awal
+### 1. Setup
 
 - the collection is shared over the stand-in https host
 
@@ -47,4 +47,4 @@ Menguji Settings › Git accounts, pilihan akun di Collaboration, Tools › Git 
 
 ---
 
-Sebelumnya: [Akun Git per collection](stage-30.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Share ke repository yang sudah berisi file](stage-32.md)
+Previous: [A Git account per collection](stage-30.md) · [Stage list](../README.md#stage-list) · Next: [Sharing to a repository that already has files](stage-32.md)

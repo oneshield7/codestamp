@@ -1,14 +1,14 @@
-# Stage 26: Grup Tools dan Catalog
+# Stage 26: The Tools group and Catalog
 
-Suite [`stage26-e2e.mjs`](../../../e2e/stage26-e2e.mjs) · 30 cek
+Suite [`stage26-e2e.mjs`](../../../e2e/stage26-e2e.mjs) · 30 checks
 
-Sidebar berisi Collections dan Tools; halaman lain dicapai lewat status bar dan Quick search. Catalog menilai collection dari History, Run all, dan aturan kualitas: daftar, owner dan tag, overview, runtime, quality, hasil Run all di Tests, tautan flow, dan kolom yang tersisa di jendela sempit. Membuat "E2E Catalog" dan satu flow lalu menghapus keduanya.
+The sidebar holds Collections and Tools; other pages are reached through the status bar and Quick search. Catalog scores collections from History, Run all, and quality rules: the list, owner and tags, overview, runtime, quality, Run all results in Tests, flow links, and the columns left in a narrow window. Creates "E2E Catalog" and one flow and deletes both afterwards.
 
-## Kebutuhan
+## Requirements
 
-- Server HTTP lokal yang dibuat oleh suite itu sendiri (Node `http`).
+- A local HTTP server started by the suite itself (Node `http`).
 
-## Alur
+## Flow
 
 ### 1. The sidebar's Tools group
 
@@ -19,7 +19,7 @@ Sidebar berisi Collections dan Tools; halaman lain dicapai lewat status bar dan 
 
 ### 2. Fixture: one API with history, rules to break and a flow
 
-Menyiapkan data atau keadaan untuk langkah berikutnya, tanpa cek sendiri.
+Prepares data or state for the next steps, with no checks of its own.
 
 ### 3. The list
 
@@ -76,4 +76,4 @@ Menyiapkan data atau keadaan untuk langkah berikutnya, tanpa cek sendiri.
 
 ---
 
-Sebelumnya: [Title bar dan sidebar yang diciutkan](stage-25.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Indentasi None, SSL/TLS, dan Docs](stage-27.md)
+Previous: [Title bar and the collapsed sidebar](stage-25.md) · [Stage list](../README.md#stage-list) · Next: [None indentation, SSL/TLS, and Docs](stage-27.md)

@@ -1,10 +1,10 @@
-# Stage 12: Tampilan dasar, Home, dan dialog New collection
+# Stage 12: Basic look, Home, and the New collection dialog
 
-Suite [`stage12-e2e.mjs`](../../../e2e/stage12-e2e.mjs) · 41 cek
+Suite [`stage12-e2e.mjs`](../../../e2e/stage12-e2e.mjs) · 41 checks
 
-Memeriksa tampilan dasar (font Geist yang dibundel), hub Home, dialog New collection, emoji picker, validasi ikon dan base URL di inti Rust, tile collection kosong, toolbar ikon dengan tooltip dan keadaan tertekan, warna tombol Send per method, dialog Duplicate, lipat section, dan menambah request dari Home.
+Checks the basic look (the bundled Geist font), the Home hub, the New collection dialog, the emoji picker, icon and base URL validation in the Rust core, the empty collection tile, the icon toolbar with tooltips and a pressed state, the Send button color per method, the Duplicate dialog, folding sections, and adding a request from Home.
 
-## Alur
+## Flow
 
 ### 1. Postmark look
 
@@ -76,4 +76,4 @@ Memeriksa tampilan dasar (font Geist yang dibundel), hub Home, dialog New collec
 
 ---
 
-Sebelumnya: [Collaboration lewat Git](stage-11.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Tema, Settings, variabel berwarna, dan klien MCP](stage-13.md)
+Previous: [Collaboration through Git](stage-11.md) · [Stage list](../README.md#stage-list) · Next: [Themes, Settings, colored variables, and the MCP client](stage-13.md)

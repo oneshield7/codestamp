@@ -58,9 +58,7 @@
       },
       "nsis": {
         "installMode": "currentUser",
-        "languages": ["English", "Indonesian"],
-        "customLanguageFiles": { "Indonesian": "windows/Indonesian.nsh" },
-        "displayLanguageSelector": true,
+        "languages": ["English"],
         "compression": "lzma",
         "installerIcon": "icons/icon.ico",
         "startMenuFolder": "Codestamp",

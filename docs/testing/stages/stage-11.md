@@ -1,22 +1,22 @@
-# Stage 11: Collaboration lewat Git
+# Stage 11: Collaboration through Git
 
-Suite [`stage11-e2e.mjs`](../../../e2e/stage11-e2e.mjs) · 30 cek
+Suite [`stage11-e2e.mjs`](../../../e2e/stage11-e2e.mjs) · 30 checks
 
-Membagikan collection ke bare repository lokal, lalu mensimulasikan rekan kerja dengan `git` CLI. Yang diuji: perubahan rekan masuk lewat Sync now, edit lokal menunggu Sync now, ikon ikut tersinkron, konflik saat dua orang mengganti nama request yang sama (pilihan keep both), riwayat dan restore versi request, Join yang ditolak untuk alamat buruk atau collection yang sudah ada, dan Stop syncing.
+Shares a collection to a local bare repository, then simulates a teammate with the `git` CLI. Covered: a teammate's changes arrive through Sync now, local edits wait for Sync now, icons sync too, a conflict when two people rename the same request (the keep both option), request history and restoring a version, Join refusing a bad address or a collection that already exists, and Stop syncing.
 
-## Kebutuhan
+## Requirements
 
-- Git for Windows. `https://git.test/` dipetakan ke bare repository lokal di `e2e/.work/git-hosts/` (lihat [harness](../README.md#harness)).
+- Git for Windows. `https://git.test/` is mapped to a local bare repository in `e2e/.work/git-hosts/` (see [harness](../README.md#harness)).
 
-## Alur
+## Flow
 
 ### 1. CDP
 
-Terhubung ke salinan uji lewat CDP dan memasang helper.
+Connects to the test copy over CDP and installs the helpers.
 
 ### 2. A local collection
 
-Menyiapkan data atau keadaan untuk langkah berikutnya, tanpa cek sendiri.
+Prepares data or state for the next steps, with no checks of its own.
 
 ### 3. Share
 
@@ -74,4 +74,4 @@ Menyiapkan data atau keadaan untuk langkah berikutnya, tanpa cek sendiri.
 
 ---
 
-Sebelumnya: [Body form, cookie jar, variabel dinamis, dan Copy as code](stage-10.md) · [Daftar stage](../README.md#daftar-stage) · Berikutnya: [Tampilan dasar, Home, dan dialog New collection](stage-12.md)
+Previous: [Form body, cookie jar, dynamic variables, and Copy as code](stage-10.md) · [Stage list](../README.md#stage-list) · Next: [Basic look, Home, and the New collection dialog](stage-12.md)
