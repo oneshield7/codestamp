@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-007ec6"></a>
-  <a href="../../releases"><img alt="Release: v0.3.6" src="https://img.shields.io/badge/release-v0.3.6-007ec6"></a>
+  <a href="../../releases"><img alt="Release: v0.3.7" src="https://img.shields.io/badge/release-v0.3.7-007ec6"></a>
   <img alt="Platform: Windows 10 and 11" src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078d6">
 </p>
 

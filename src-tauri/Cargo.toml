@@ -1,6 +1,6 @@
 [package]
 name = "codestamp-desktop"
-version = "0.3.6"
+version = "0.3.7"
 description = "Codestamp, a lightweight desktop API client"
 license = "Apache-2.0"
 edition = "2024"

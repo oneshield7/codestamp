@@ -1,6 +1,6 @@
 name: Release
 
-# Pushing a tag such as v0.3.6 builds the Windows installer and attaches it to a draft release,
+# Pushing a tag such as v0.3.7 builds the Windows installer and attaches it to a draft release,
 # which stays unpublished until someone reviews it.
 on:
   push:
@@ -17,9 +17,9 @@ jobs:
       # Secrets cannot be read in `if:`, so whether a certificate is configured is noted here.
       HAS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE != '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
@@ -60,7 +60,7 @@ jobs:
         run: npx tauri build --config src-tauri/tauri.unsigned.conf.json
 
       - name: Attach the installer to a draft release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           draft: true
           files: src-tauri/target/release/bundle/nsis/*-setup.exe
