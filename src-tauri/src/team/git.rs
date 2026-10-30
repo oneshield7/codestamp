@@ -119,7 +119,9 @@ impl Git {
         exec(&self.dir, &full, NETWORK_TIMEOUT, None, None).await
     }
 
-    pub async fn commit(&self, args: &[&str], author: &Author) -> Result<String, GitError> {
+    /// Commands that record an identity (commit, and merge even with `--no-commit`), so a device
+    /// without a global Git identity can still sync.
+    pub async fn run_as(&self, args: &[&str], author: &Author) -> Result<String, GitError> {
         exec(&self.dir, args, LOCAL_TIMEOUT, Some(author), None).await
     }
 

@@ -8,6 +8,10 @@ All notable changes to Codestamp are listed here. Versions follow [Semantic Vers
 
 - The installer and uninstaller are in English only, whatever the Windows display language. The language selector and the Indonesian installer text were removed.
 
+### Fixed
+
+- Syncing a team collection no longer fails when teammates' changes need merging on a device whose Git has no global name and email. Codestamp now runs that merge with the name and email set for the collection in Collaboration, as it already did for commits.
+
 ## [0.3.6] - 2026-10-29
 
 First public release.

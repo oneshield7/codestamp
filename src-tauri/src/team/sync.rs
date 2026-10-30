@@ -348,7 +348,7 @@ async fn first_push(
     files::write(git.dir(), snapshot)?;
     git.run(&["add", "--all"]).await?;
     let message = format!("Share “{}” from Codestamp", snapshot.collection.name);
-    git.commit(&["commit", "--quiet", "-m", &message], author)
+    git.run_as(&["commit", "--quiet", "-m", &message], author)
         .await?;
     git.network(&["push", "--quiet", "--set-upstream", REMOTE, BRANCH])
         .await?;
@@ -402,7 +402,7 @@ async fn replace_push(
         "Replace the repository's files with “{}” from Codestamp",
         snapshot.collection.name
     );
-    git.commit(&["commit", "--quiet", "-m", &message], author)
+    git.run_as(&["commit", "--quiet", "-m", &message], author)
         .await?;
     let target = format!("HEAD:{branch}");
     match git.network(&["push", "--quiet", REMOTE, &target]).await {
@@ -879,15 +879,18 @@ async fn merge(
     }
 
     // Records the remote commit as a parent while keeping this tree; the merged files go on top.
-    git.run(&[
-        "merge",
-        "--quiet",
-        "--no-ff",
-        "--no-commit",
-        "-s",
-        "ours",
-        tracking,
-    ])
+    git.run_as(
+        &[
+            "merge",
+            "--quiet",
+            "--no-ff",
+            "--no-commit",
+            "-s",
+            "ours",
+            tracking,
+        ],
+        author,
+    )
     .await?;
     if let Err(error) = write_merge(git, tracking, results, &foreign).await {
         // Back to the state before the merge; the user sees the reason.
@@ -895,7 +898,7 @@ async fn merge(
         return Err(error);
     }
     git.run(&["add", "--all"]).await?;
-    git.commit(
+    git.run_as(
         &[
             "commit",
             "--quiet",
@@ -1185,7 +1188,7 @@ async fn commit_local(git: &Git, snapshot: &Snapshot, author: &Author) -> Result
         return Ok(());
     }
     let message = commit_message(git, &staged, snapshot).await?;
-    git.commit(&["commit", "--quiet", "-m", &message], author)
+    git.run_as(&["commit", "--quiet", "-m", &message], author)
         .await?;
     Ok(())
 }
@@ -1416,7 +1419,7 @@ mod tests {
             name: "Seed".to_owned(),
             email: "seed@example.com".to_owned(),
         };
-        seed.commit(&["commit", "--quiet", "-m", "Old files"], &seeder)
+        seed.run_as(&["commit", "--quiet", "-m", "Old files"], &seeder)
             .await
             .expect("commit");
         seed.network(&["push", "--quiet", "origin", "master"])
