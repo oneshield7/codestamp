@@ -4,6 +4,10 @@ All notable changes to Codestamp are listed here. Versions follow [Semantic Vers
 
 ## [Unreleased]
 
+## [0.3.7] - 2026-10-30
+
+The first release with an installer on GitHub.
+
 ### Changed
 
 - The installer and uninstaller are in English only, whatever the Windows display language. The language selector and the Indonesian installer text were removed.
@@ -12,9 +16,9 @@ All notable changes to Codestamp are listed here. Versions follow [Semantic Vers
 
 - Syncing a team collection no longer fails when teammates' changes need merging on a device whose Git has no global name and email. Codestamp now runs that merge with the name and email set for the collection in Collaboration, as it already did for commits.
 
-## [0.3.6] - 2026-10-29
+## 0.3.6 - 2026-10-29
 
-First public release.
+The first version with public source code. It has no GitHub release.
 
 ### Added
 
@@ -38,5 +42,5 @@ First public release.
 
 Versions 0.1.0 to 0.3.4 were built before the repository was public. Their changes are described stage by stage, in Indonesian, in [`README.id.md`](README.id.md).
 
-[Unreleased]: ../../compare/v0.3.6...HEAD
-[0.3.6]: ../../releases/tag/v0.3.6
+[Unreleased]: ../../compare/v0.3.7...HEAD
+[0.3.7]: ../../releases/tag/v0.3.7

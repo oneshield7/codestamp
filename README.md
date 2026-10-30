@@ -7,7 +7,7 @@
 
 <p align="center">
   <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-007ec6"></a>
-  <a href="../../releases"><img alt="Release: v0.3.6" src="https://img.shields.io/badge/release-v0.3.6-007ec6"></a>
+  <a href="../../releases"><img alt="Release: v0.3.7" src="https://img.shields.io/badge/release-v0.3.7-007ec6"></a>
   <img alt="Platform: Windows 10 and 11" src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078d6">
 </p>
 
@@ -15,7 +15,7 @@
 
 Codestamp is a desktop API client for HTTP, GraphQL, WebSocket, Server-Sent Events, gRPC, SOAP and MCP. The network core is written in Rust on Tauri 2, the interface in Svelte 5 and TypeScript, and it runs on the WebView that ships with Windows instead of a bundled browser, so the installer is about 6.5 MB.
 
-Current release: **0.3.6, Windows 10 and 11 (x64)**. macOS and Linux builds are planned.
+Current release: **0.3.7, Windows 10 and 11 (x64)**. macOS and Linux builds are planned.
 
 ## What You Need To Know
 
