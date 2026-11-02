@@ -12,7 +12,8 @@ export interface EnvironmentSummary {
 
 export interface EnvironmentList {
   environments: EnvironmentSummary[];
-  activeId: string | null;
+  /** Each collection's active environment, by collection id. */
+  activeIds: Record<string, string>;
 }
 
 /** Secret variables arrive with an empty `value`; read one with `revealSecret`. */
@@ -59,8 +60,9 @@ export function setEnvironmentCollection(id: string, collectionId: string | null
   return invoke('set_environment_collection', { id, collectionId });
 }
 
-export function setActiveEnvironment(id: string | null): Promise<void> {
-  return invoke('set_active_environment', { id });
+/** `id: null` leaves the collection without an environment. */
+export function setActiveEnvironment(collectionId: string, id: string | null): Promise<void> {
+  return invoke('set_active_environment', { collectionId, id });
 }
 
 export function getEnvironmentVariables(id: string): Promise<VariableView[]> {
@@ -89,6 +91,33 @@ export interface VariableHint {
   scope: HintSource;
   isSecret: boolean;
   preview: string;
+}
+
+/** What `{{name}}` means in a collection right now. Secrets come without their value. */
+export interface VariableDetail {
+  name: string;
+  /** `null` when nothing defines the name. */
+  source: HintSource | null;
+  /** The variable a new value is saved to; `null` for dynamic and undefined names. */
+  id: string | null;
+  /** The environment's name when the value comes from the active environment. */
+  setName: string | null;
+  /** Empty for secrets; the description of a dynamic variable. */
+  value: string;
+  isSecret: boolean;
+  restricted: boolean;
+  /** Restricted to an access group this device is not in. */
+  locked: boolean;
+  /** The collection that shares the variable, so its next sync takes the change along. */
+  sharedBy: string | null;
+}
+
+export function variableDetail(collectionId: string | null, name: string): Promise<VariableDetail> {
+  return invoke('variable_detail', { collectionId, name });
+}
+
+export function setVariableValue(id: string, value: string): Promise<void> {
+  return invoke('set_variable_value', { id, value });
 }
 
 export interface UrlPreview {

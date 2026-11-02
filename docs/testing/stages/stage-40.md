@@ -83,4 +83,4 @@ Quick search opens without a blurred backdrop and without dropped frames, no sho
 
 ---
 
-Previous: [Window position, the active environment, and folding](stage-39.md) · [Stage list](../README.md#stage-list) · Next: [Basic collection flow](collections.md)
+Previous: [Window position, the active environment, and folding](stage-39.md) · [Stage list](../README.md#stage-list) · Next: [The HTML page view, the variable popover, environments per collection, and the sticky header](stage-41.md)

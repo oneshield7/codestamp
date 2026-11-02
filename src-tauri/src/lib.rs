@@ -29,6 +29,7 @@ mod text;
 mod trash;
 mod update;
 mod websocket;
+mod workspace;
 
 use appearance::fonts::FontStore;
 use appearance::settings::{restore_window, theme_script};
@@ -168,6 +169,14 @@ pub fn run() {
             trash::commands::restore_deleted,
             trash::commands::forget_deleted,
             trash::commands::forget_all_deleted,
+            workspace::commands::list_workspaces,
+            workspace::commands::create_workspace,
+            workspace::commands::update_workspace,
+            workspace::commands::open_workspace,
+            workspace::commands::delete_workspace,
+            workspace::commands::move_collection_to_workspace,
+            workspace::commands::find_workspace_logos,
+            workspace::commands::find_website_logo,
             history::commands::list_history,
             history::commands::delete_history_entry,
             history::commands::clear_history,
@@ -183,6 +192,8 @@ pub fn run() {
             environment::commands::reveal_secret,
             environment::commands::get_collection_variable_set,
             environment::commands::variable_hints,
+            environment::commands::variable_detail,
+            environment::commands::set_variable_value,
             environment::commands::preview_url,
             import::commands::preview_import,
             import::commands::run_import,
@@ -279,6 +290,7 @@ fn open_main_window(
         .center()
         .visible(false)
         .initialization_script(theme_script(&appearance)?)
+        .initialization_script(workspace::launch::SCRIPT)
         .build()?;
     restore_window(&window, &appearance)?;
     window.show()?;

@@ -2,6 +2,7 @@ import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import * as api from '../api/collections';
 import { toAppError, type HttpResponseOutput } from '../api/http';
 import type { ChangedRequest } from '../api/team';
+import { moveCollectionToWorkspace } from '../api/workspaces';
 import { recentlyDeleted } from './deleted.svelte';
 import { notices } from './notices.svelte';
 import { contentFromDraft, createDraft, draftFromSaved, type RequestDraft } from '../request/draft';
@@ -305,6 +306,25 @@ export class Workspace {
       }
       recentlyDeleted.announce(deleted);
     });
+  }
+
+  /**
+   * Moves the open collection to another workspace and opens the next one here. Pending edits are
+   * saved first; failures are thrown so the dialog can show them. Resolves to whether it moved.
+   */
+  async moveCollection(workspaceId: string): Promise<boolean> {
+    const current = this.collection;
+    if (!current || !(await this.closeRequest())) {
+      return false;
+    }
+    await moveCollectionToWorkspace(current.id, workspaceId);
+    this.collections = this.collections.filter((item) => item.id !== current.id);
+    this.collection = null;
+    const next = this.collections.at(0);
+    if (next) {
+      await this.openCollection(next.id);
+    }
+    return true;
   }
 
   async setCollectionAuth(auth: api.Auth): Promise<void> {

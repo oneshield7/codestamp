@@ -331,6 +331,79 @@ CREATE TABLE deleted_items (
 CREATE INDEX idx_deleted_items_at ON deleted_items(deleted_at);
 ";
 
+/// Each collection keeps its own active environment, a choice on this device that is never
+/// synced. The one environment that used to be active for everything stays active in every
+/// collection that may use it: its own collection, or all of them when it is kept on this device.
+const SCHEMA_V27: &str = "
+CREATE TABLE active_environments (
+    collection_id TEXT PRIMARY KEY REFERENCES collections(id) ON DELETE CASCADE,
+    environment_id TEXT NOT NULL REFERENCES environments(id) ON DELETE CASCADE
+);
+INSERT INTO active_environments (collection_id, environment_id)
+SELECT c.id, e.id
+FROM settings s
+JOIN environments e ON e.id = s.value AND e.is_global = 0 AND e.collection_id IS NULL
+JOIN collections c ON e.owner_collection_id IS NULL OR e.owner_collection_id = c.id
+WHERE s.key = 'active_environment_id';
+DELETE FROM settings WHERE key = 'active_environment_id';
+";
+
+/// Workspaces keep collections, named environments, Globals, flows, cookies and Recently deleted
+/// apart. Everything already here goes into the first one. A collection's own variable set
+/// (`collection_id` set) follows its collection, so it has no workspace of its own. Collections
+/// and flows block deleting their workspace; the rest goes with it.
+const SCHEMA_V28: &str = "
+CREATE TABLE workspaces (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    hue TEXT NOT NULL,
+    sort_order INTEGER NOT NULL,
+    created_at INTEGER NOT NULL
+);
+INSERT INTO workspaces (id, name, hue, sort_order, created_at)
+VALUES ('00000000-0000-4000-8000-000000000001', 'My workspace', 'blue', 0, 0);
+ALTER TABLE collections ADD COLUMN workspace_id TEXT REFERENCES workspaces(id);
+ALTER TABLE flows ADD COLUMN workspace_id TEXT REFERENCES workspaces(id);
+ALTER TABLE environments ADD COLUMN workspace_id TEXT
+    REFERENCES workspaces(id) ON DELETE CASCADE;
+ALTER TABLE deleted_items ADD COLUMN workspace_id TEXT
+    REFERENCES workspaces(id) ON DELETE CASCADE;
+UPDATE collections SET workspace_id = '00000000-0000-4000-8000-000000000001';
+UPDATE flows SET workspace_id = '00000000-0000-4000-8000-000000000001';
+UPDATE environments SET workspace_id = '00000000-0000-4000-8000-000000000001'
+WHERE collection_id IS NULL;
+UPDATE deleted_items SET workspace_id = '00000000-0000-4000-8000-000000000001';
+CREATE INDEX idx_collections_workspace ON collections(workspace_id, sort_order);
+CREATE INDEX idx_flows_workspace ON flows(workspace_id, sort_order);
+CREATE UNIQUE INDEX idx_environments_globals ON environments(workspace_id) WHERE is_global = 1;
+CREATE TABLE workspace_cookies (
+    workspace_id TEXT PRIMARY KEY REFERENCES workspaces(id) ON DELETE CASCADE,
+    data BLOB NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+INSERT INTO workspace_cookies (workspace_id, data, updated_at)
+SELECT '00000000-0000-4000-8000-000000000001', data, updated_at FROM cookie_jar;
+DROP TABLE cookie_jar;
+INSERT INTO settings (key, value)
+VALUES ('current_workspace', '00000000-0000-4000-8000-000000000001');
+CREATE VIEW current_workspace AS SELECT COALESCE(
+    (SELECT w.id FROM settings s JOIN workspaces w ON w.id = s.value
+     WHERE s.key = 'current_workspace'),
+    (SELECT id FROM workspaces ORDER BY sort_order, created_at LIMIT 1)) AS id;
+";
+
+/// A workspace's icon: its first letter (the default), an emoji, or an image, which is either a
+/// logo found from a website (`icon_source`) or a file the user chose. Images are kept here, so
+/// they show without a connection.
+const SCHEMA_V29: &str = "
+ALTER TABLE workspaces ADD COLUMN icon_kind TEXT NOT NULL DEFAULT 'letter'
+    CHECK (icon_kind IN ('letter', 'emoji', 'image'));
+ALTER TABLE workspaces ADD COLUMN icon_emoji TEXT;
+ALTER TABLE workspaces ADD COLUMN icon_image BLOB;
+ALTER TABLE workspaces ADD COLUMN icon_type TEXT;
+ALTER TABLE workspaces ADD COLUMN icon_source TEXT;
+";
+
 const SCHEMA_V9: &str = "
 CREATE TABLE team_links (
     collection_id TEXT PRIMARY KEY REFERENCES collections(id) ON DELETE CASCADE,
@@ -387,11 +460,11 @@ impl Database {
 
 /// Schema steps in order. Step N runs once, in its own transaction, and sets `user_version` to N;
 /// a new step is simply appended here.
-const MIGRATIONS: [&str; 26] = [
+const MIGRATIONS: [&str; 29] = [
     SCHEMA_V1, SCHEMA_V2, SCHEMA_V3, SCHEMA_V4, SCHEMA_V5, SCHEMA_V6, SCHEMA_V7, SCHEMA_V8,
     SCHEMA_V9, SCHEMA_V10, SCHEMA_V11, SCHEMA_V12, SCHEMA_V13, SCHEMA_V14, SCHEMA_V15, SCHEMA_V16,
     SCHEMA_V17, SCHEMA_V18, SCHEMA_V19, SCHEMA_V20, SCHEMA_V21, SCHEMA_V22, SCHEMA_V23, SCHEMA_V24,
-    SCHEMA_V25, SCHEMA_V26,
+    SCHEMA_V25, SCHEMA_V26, SCHEMA_V27, SCHEMA_V28, SCHEMA_V29,
 ];
 /// The `user_version` of a database that has every step.
 pub const SCHEMA_VERSION: i64 = MIGRATIONS.len() as i64;
@@ -461,5 +534,112 @@ mod tests {
             .query_row("SELECT auth FROM collections", [], |row| row.get(0))
             .expect("auth column");
         assert_eq!(auth, r#"{"type":"none"}"#);
+    }
+
+    /// The actives an older database ends up with when `active` was its one active environment.
+    fn actives_after_upgrade(active: &str) -> Vec<(String, String)> {
+        let conn = Connection::open_in_memory().expect("database");
+        conn.pragma_update(None, "foreign_keys", "ON")
+            .expect("keys");
+        for sql in &MIGRATIONS[..26] {
+            conn.execute_batch(sql).expect("older schema");
+        }
+        conn.pragma_update(None, "user_version", 26)
+            .expect("version");
+        conn.execute_batch(
+            "INSERT INTO collections (id, name, sort_order, created_at, updated_at)
+             VALUES ('a', 'Orders', 1, 0, 0), ('b', 'Users', 2, 0, 0);
+             INSERT INTO environments (id, name, is_global, sort_order, created_at)
+             VALUES ('device', 'Device', 0, 1, 0);
+             INSERT INTO environments (id, name, is_global, owner_collection_id, sort_order, created_at)
+             VALUES ('owned', 'Orders staging', 0, 'a', 2, 0);",
+        )
+        .expect("data");
+        conn.execute(
+            "INSERT INTO settings (key, value) VALUES ('active_environment_id', ?1)",
+            [active],
+        )
+        .expect("old setting");
+        migrate(&conn).expect("migrate");
+        let left: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM settings WHERE key = 'active_environment_id'",
+                [],
+                |row| row.get(0),
+            )
+            .expect("settings");
+        assert_eq!(left, 0, "the old setting is gone");
+        let mut statement = conn
+            .prepare("SELECT collection_id, environment_id FROM active_environments ORDER BY 1")
+            .expect("query");
+        statement
+            .query_map([], |row| Ok((row.get(0)?, row.get(1)?)))
+            .expect("rows")
+            .collect::<Result<_, _>>()
+            .expect("actives")
+    }
+
+    #[test]
+    fn the_old_active_environment_stays_active_where_it_may_be_used() {
+        let pair =
+            |collection: &str, environment: &str| (collection.to_owned(), environment.to_owned());
+        assert_eq!(
+            actives_after_upgrade("device"),
+            [pair("a", "device"), pair("b", "device")]
+        );
+        assert_eq!(actives_after_upgrade("owned"), [pair("a", "owned")]);
+    }
+
+    #[test]
+    fn everything_from_before_workspaces_lands_in_my_workspace() {
+        let conn = Connection::open_in_memory().expect("database");
+        conn.pragma_update(None, "foreign_keys", "ON")
+            .expect("keys");
+        for sql in &MIGRATIONS[..27] {
+            conn.execute_batch(sql).expect("older schema");
+        }
+        conn.pragma_update(None, "user_version", 27)
+            .expect("version");
+        conn.execute_batch(
+            "INSERT INTO collections (id, name, sort_order, created_at, updated_at)
+             VALUES ('a', 'Orders', 1, 0, 0);
+             INSERT INTO environments (id, name, is_global, sort_order, created_at)
+             VALUES ('globals', 'Globals', 1, 0, 0), ('device', 'Device', 0, 1, 0);
+             INSERT INTO environments (id, name, is_global, sort_order, created_at, collection_id)
+             VALUES ('set', 'Collection variables', 0, 0, 0, 'a');
+             INSERT INTO flows (id, name, sort_order, created_at, updated_at)
+             VALUES ('f', 'Checkout', 0, 0, 0);
+             INSERT INTO cookie_jar (id, data, updated_at) VALUES (1, x'0102', 5);",
+        )
+        .expect("data");
+        migrate(&conn).expect("migrate");
+
+        let (id, name): (String, String) = conn
+            .query_row(
+                "SELECT w.id, w.name FROM current_workspace c JOIN workspaces w ON w.id = c.id",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?)),
+            )
+            .expect("open workspace");
+        assert_eq!(name, "My workspace");
+        let in_workspace =
+            |sql: &str| -> i64 { conn.query_row(sql, [&id], |row| row.get(0)).expect("count") };
+        assert_eq!(
+            in_workspace("SELECT COUNT(*) FROM collections WHERE workspace_id = ?1"),
+            1
+        );
+        assert_eq!(
+            in_workspace("SELECT COUNT(*) FROM flows WHERE workspace_id = ?1"),
+            1
+        );
+        assert_eq!(
+            in_workspace("SELECT COUNT(*) FROM environments WHERE workspace_id = ?1"),
+            2,
+            "Globals and the device environment, not the collection's own set"
+        );
+        assert_eq!(
+            in_workspace("SELECT COUNT(*) FROM workspace_cookies WHERE workspace_id = ?1"),
+            1
+        );
     }
 }

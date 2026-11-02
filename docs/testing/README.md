@@ -11,11 +11,11 @@ This folder describes the flow of every e2e suite: what it sets up, the steps it
 | Types and Svelte | `npm run check`     | `svelte-check` (fails on warnings) and `tsc` for the Node files                        |
 | Frontend lint    | `npm run lint`      | ESLint with no warnings, and Prettier                                                  |
 | Rust lint        | `npm run lint:rust` | `cargo fmt --check` and `cargo clippy -D warnings`                                     |
-| Rust tests       | `npm run test:rust` | 309 unit and integration tests in the Rust core (`src-tauri/src`)                      |
+| Rust tests       | `npm run test:rust` | 328 unit and integration tests in the Rust core (`src-tauri/src`)                      |
 | All of the above | `npm run verify`    | Runs the four above in order                                                           |
-| End-to-end       | `e2e/*-e2e.mjs`     | 34 suites, 727 checks against the release build and the Copy as code output, see below |
+| End-to-end       | `e2e/*-e2e.mjs`     | 36 suites, 771 checks against the release build and the Copy as code output, see below |
 
-The Rust tests cover request validation, import and export (Postman, OpenAPI, WSDL, Codestamp files), Git sync and per-field merging, access groups and their encryption, History, Recently deleted, and database migrations. They use an in-memory database, so they never touch app data.
+The Rust tests cover request validation, import and export (Postman, OpenAPI, WSDL, Codestamp files), Git sync and per-field merging, access groups and their encryption, History, Recently deleted, workspaces, and database migrations. They use an in-memory database, so they never touch app data.
 
 ## Harness
 
@@ -151,41 +151,43 @@ Each page holds a summary, what the suite needs, and then its flow. The parts of
 
 ## Stage list
 
-| Suite                                        | What is tested                                                             | Checks |
-| -------------------------------------------- | -------------------------------------------------------------------------- | ------ |
-| [stage10-e2e.mjs](stages/stage-10.md)        | Form body, cookie jar, dynamic variables, and Copy as code                 | 37     |
-| [stage11-e2e.mjs](stages/stage-11.md)        | Collaboration through Git                                                  | 30     |
-| [stage12-e2e.mjs](stages/stage-12.md)        | Basic look, Home, and the New collection dialog                            | 41     |
-| [stage13-e2e.mjs](stages/stage-13.md)        | Themes, Settings, colored variables, and the MCP client                    | 28     |
-| [stage14-e2e.mjs](stages/stage-14.md)        | Dropdowns and colored icons                                                | 11     |
-| [stage15-e2e.mjs](stages/stage-15.md)        | Wording, Quick search, and saving the response body                        | 24     |
-| [stage16-e2e.mjs](stages/stage-16.md)        | Path variables and data-driven runs                                        | 15     |
-| [stage17-e2e.mjs](stages/stage-17.md)        | Auth: Digest, AWS SigV4, and OAuth 2.0                                     | 15     |
-| [stage18-e2e.mjs](stages/stage-18.md)        | OpenAPI and Swagger import                                                 | 9      |
-| [stage19-e2e.mjs](stages/stage-19.md)        | GraphQL requests                                                           | 10     |
-| [stage20-e2e.mjs](stages/stage-20.md)        | Examples and the mock server                                               | 14     |
-| [stage21-e2e.mjs](stages/stage-21.md)        | Server-Sent Events                                                         | 7      |
-| [stage22-e2e.mjs](stages/stage-22.md)        | gRPC requests                                                              | 18     |
-| [stage23-e2e.mjs](stages/stage-23.md)        | Orchestration                                                              | 16     |
-| [stage24-e2e.mjs](stages/stage-24.md)        | XML and HTML bodies, SOAP, and WSDL import                                 | 20     |
-| [stage25-e2e.mjs](stages/stage-25.md)        | Title bar and the collapsed sidebar                                        | 16     |
-| [stage26-e2e.mjs](stages/stage-26.md)        | The Tools group and Catalog                                                | 30     |
-| [stage27-e2e.mjs](stages/stage-27.md)        | None indentation, SSL/TLS, and Docs                                        | 27     |
-| [stage28-e2e.mjs](stages/stage-28.md)        | Opening a request and the scroll area                                      | 17     |
-| [stage29-e2e.mjs](stages/stage-29.md)        | Find in the editor, new names, and a compact Docs page                     | 23     |
-| [stage30-e2e.mjs](stages/stage-30.md)        | A Git account per collection                                               | 26     |
-| [stage31-e2e.mjs](stages/stage-31.md)        | Git accounts, Git changes, and replacing a collection                      | 20     |
-| [stage32-e2e.mjs](stages/stage-32.md)        | Sharing to a repository that already has files                             | 13     |
-| [stage33-e2e.mjs](stages/stage-33.md)        | Status bar, Ctrl+S, manual sync, and shared environments                   | 16     |
-| [stage34-e2e.mjs](stages/stage-34.md)        | In-app updates                                                             | 21     |
-| [stage35-e2e.mjs](stages/stage-35.md)        | Git fixes: a broken clone and a lost sign-in                               | 9      |
-| [stage36-e2e.mjs](stages/stage-36.md)        | Git changes with a long history                                            | 14     |
-| [stage37-e2e.mjs](stages/stage-37.md)        | Access groups                                                              | 28     |
-| [stage38-e2e.mjs](stages/stage-38.md)        | Launch screen                                                              | 9      |
-| [stage39-e2e.mjs](stages/stage-39.md)        | Window position, the active environment, and folding                       | 14     |
-| [stage40-e2e.mjs](stages/stage-40.md)        | Quick search, shortcuts, status bar, Export, History, and Recently deleted | 40     |
-| [collections-e2e.mjs](stages/collections.md) | Basic collection flow                                                      | 8      |
-| [cli-e2e.mjs](stages/cli.md)                 | codestamp-cli                                                              | 11     |
-| [codegen-e2e.mjs](stages/codegen.md)         | The Copy as code output run in 15 languages                                | 90     |
+| Suite                                        | What is tested                                                                               | Checks |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------- | ------ |
+| [stage10-e2e.mjs](stages/stage-10.md)        | Form body, cookie jar, dynamic variables, and Copy as code                                   | 37     |
+| [stage11-e2e.mjs](stages/stage-11.md)        | Collaboration through Git                                                                    | 30     |
+| [stage12-e2e.mjs](stages/stage-12.md)        | Basic look, Home, and the New collection dialog                                              | 41     |
+| [stage13-e2e.mjs](stages/stage-13.md)        | Themes, Settings, colored variables, and the MCP client                                      | 28     |
+| [stage14-e2e.mjs](stages/stage-14.md)        | Dropdowns and colored icons                                                                  | 11     |
+| [stage15-e2e.mjs](stages/stage-15.md)        | Wording, Quick search, and saving the response body                                          | 24     |
+| [stage16-e2e.mjs](stages/stage-16.md)        | Path variables and data-driven runs                                                          | 15     |
+| [stage17-e2e.mjs](stages/stage-17.md)        | Auth: Digest, AWS SigV4, and OAuth 2.0                                                       | 15     |
+| [stage18-e2e.mjs](stages/stage-18.md)        | OpenAPI and Swagger import                                                                   | 9      |
+| [stage19-e2e.mjs](stages/stage-19.md)        | GraphQL requests                                                                             | 10     |
+| [stage20-e2e.mjs](stages/stage-20.md)        | Examples and the mock server                                                                 | 14     |
+| [stage21-e2e.mjs](stages/stage-21.md)        | Server-Sent Events                                                                           | 7      |
+| [stage22-e2e.mjs](stages/stage-22.md)        | gRPC requests                                                                                | 18     |
+| [stage23-e2e.mjs](stages/stage-23.md)        | Orchestration                                                                                | 17     |
+| [stage24-e2e.mjs](stages/stage-24.md)        | XML and HTML bodies, SOAP, and WSDL import                                                   | 20     |
+| [stage25-e2e.mjs](stages/stage-25.md)        | Title bar and the collapsed sidebar                                                          | 16     |
+| [stage26-e2e.mjs](stages/stage-26.md)        | The Tools group and Catalog                                                                  | 30     |
+| [stage27-e2e.mjs](stages/stage-27.md)        | None indentation, SSL/TLS, and Docs                                                          | 27     |
+| [stage28-e2e.mjs](stages/stage-28.md)        | Opening a request and the scroll area                                                        | 17     |
+| [stage29-e2e.mjs](stages/stage-29.md)        | Find in the editor, new names, and a compact Docs page                                       | 23     |
+| [stage30-e2e.mjs](stages/stage-30.md)        | A Git account per collection                                                                 | 26     |
+| [stage31-e2e.mjs](stages/stage-31.md)        | Git accounts, Git changes, and replacing a collection                                        | 20     |
+| [stage32-e2e.mjs](stages/stage-32.md)        | Sharing to a repository that already has files                                               | 13     |
+| [stage33-e2e.mjs](stages/stage-33.md)        | Status bar, Ctrl+S, manual sync, and shared environments                                     | 16     |
+| [stage34-e2e.mjs](stages/stage-34.md)        | In-app updates                                                                               | 21     |
+| [stage35-e2e.mjs](stages/stage-35.md)        | Git fixes: a broken clone and a lost sign-in                                                 | 9      |
+| [stage36-e2e.mjs](stages/stage-36.md)        | Git changes with a long history                                                              | 14     |
+| [stage37-e2e.mjs](stages/stage-37.md)        | Access groups                                                                                | 28     |
+| [stage38-e2e.mjs](stages/stage-38.md)        | Launch screen                                                                                | 9      |
+| [stage39-e2e.mjs](stages/stage-39.md)        | Window position, the active environment, and folding                                         | 14     |
+| [stage40-e2e.mjs](stages/stage-40.md)        | Quick search, shortcuts, status bar, Export, History, and Recently deleted                   | 40     |
+| [stage41-e2e.mjs](stages/stage-41.md)        | The HTML page view, the variable popover, environments per collection, and the sticky header | 19     |
+| [stage42-e2e.mjs](stages/stage-42.md)        | Workspaces                                                                                   | 24     |
+| [collections-e2e.mjs](stages/collections.md) | Basic collection flow                                                                        | 8      |
+| [cli-e2e.mjs](stages/cli.md)                 | codestamp-cli                                                                                | 11     |
+| [codegen-e2e.mjs](stages/codegen.md)         | The Copy as code output run in 15 languages                                                  | 90     |
 
-Total: 34 suites and 727 checks.
+Total: 36 suites and 771 checks.

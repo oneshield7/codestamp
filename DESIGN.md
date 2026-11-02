@@ -106,6 +106,7 @@ Get the tone through `methodTone()` / `methodColor()` (HTTP methods) or `stampTo
 - Used in the URL field, params/headers tables, auth fields, the body/message/MCP argument editors, and the URL line of closed requests.
 - Single source: `splitVariables()` / `variablePattern()` in `src/lib/format/variables.ts` (same naming rules as Rust), and the `VariableText` component for colored text.
 - An input field cannot color part of its text, so a colored copy is drawn over the input (no background, `pointer-events: none`) and the input text is made transparent; the caret and selection still belong to the input.
+- **Variable popover** (`VariablePopover`, `VariableHover`): resting the pointer 350 ms on a reference in a field or an editable body, or moving the caret into one with the arrow keys, Home or End, opens a 320px popover (surface, `--border`, radius md, `--shadow-pop`). It shows `{{name}}` in `--var`, where the value comes from (_Globals_, _Collection_, _Environment · name_, _Dynamic_, or _Not defined_), and the value in a field with **Save**. Saving uses the same checks as the variables table and refreshes every preview. Secrets stay hidden until **Show** (not offered in focus mode), a restricted value this device cannot read says so, and dynamic names show their description. It stays open while the pointer is on it or focus is inside it; Escape closes it and returns focus to the field.
 
 ### Icon colors (`--hue-*`)
 
@@ -122,7 +123,7 @@ Usage: set `data-hue="blue"` on the icon or its tile. The attribute fills `--hue
 | Cookies, MCP server tile/adder, Settings › Certificates                                   | amber  |
 | Orchestration, History feature, section adder, Settings › About & shortcuts               | orange |
 | Settings (sidebar and title), Capture feature, Settings › Data & history                  | rose   |
-| Copy as code feature, "No account needed" panel                                           | slate  |
+| Copy as code feature, "No account needed" panel, Settings › Workspaces                    | slate  |
 
 One place always has one color: the sidebar icon and its page title icon are the same (`NavIcon`). Icon colors carry no status meaning; status still uses the semantic tokens and text.
 
@@ -203,7 +204,7 @@ New colors are added first as tokens in `src/app.css` for all three themes, not 
 - The request card uses a **container query** (`container-type: inline-size`): when the card is narrower than 640px, the request name gets its own row and the header buttons move to a second row.
 - Dialogs are flex columns with `max-height: calc(100vh - 32px)`: the header and footer (action buttons) are always visible, and only the content in the middle scrolls or shrinks. Never put action buttons inside the scrolling area.
 - Flex children that hold long text (`nowrap` + ellipsis) must get `min-width: 0`, including panels inside dialogs that are `display: flex`; without it the text widens its container.
-- Dialogs: `width: min(<N>px, calc(100vw - 32px))` and `max-height: calc(100vh - 48px)` with scrollable content. Widths in use: 420 (confirmation), 580 (New collection), 760 (Copy as code), 860 (conflict), 920 (history), 1180 (Capture). Popovers: `min(372px, calc(100vw - 32px))`.
+- Dialogs: `width: min(<N>px, calc(100vw - 32px))` and `max-height: calc(100vh - 48px)` with scrollable content. Widths in use: 420 (confirmation), 460 (New workspace, Move to workspace), 580 (New collection), 760 (Copy as code), 860 (conflict), 920 (history), 1180 (Capture). Popovers: `min(372px, calc(100vw - 32px))`.
 - Wide tables are wrapped in `overflow-x: auto` and given a `min-width`.
 
 ## 5. Radius and elevation
@@ -287,7 +288,8 @@ New colors are added first as tokens in `src/app.css` for all three themes, not 
 
 ### Icon toolbar and tooltips (`IconButton`)
 
-- The collection header uses one row of icon buttons in a `role="group"` ("Collection actions"), with a vertical line between groups: **Run all** | **Variables, Auth, Collaboration, Mock server, History** | **Duplicate, Export, Delete**. Variables through History, and Export, open their panel as a dialog above the page (see Collection panel).
+- The collection header uses one row of icon buttons in a `role="group"` ("Collection actions"), with a vertical line between groups: **Run all** | **Variables, Auth, Collaboration, Mock server, History** | **Duplicate, Export, Move to workspace, Delete**. Variables through History, and Export, open their panel as a dialog above the page (see Collection panel). Move to workspace is disabled, with "create another workspace first" in its tooltip, while there is only one workspace.
+- The collection header (icon, name, environment picker, and these buttons) is `position: sticky; top: 0` in the scrolling area, on a `--bg` background (z-index 5), so the environment and the tools stay in reach on a long collection. Once it is stuck, a 1px `--border` line appears under it (an `IntersectionObserver` on a marker just above it; the line is always there in transparent, so the height never changes). The environment picker in the header has a fixed width (`flex: 0 1 260px`, longer names end in an ellipsis), so choosing an environment never re-wraps the header and moves the page. The "N requests · saved automatically" line sits below the header and scrolls away. The header's height is set as `--collection-head` on the collection view, and everything below the header gets `scroll-margin-top: calc(var(--collection-head) + 16px)`, so keyboard focus and an opened card stop below the header instead of underneath it. Use `scroll-margin-top` here, not `scroll-padding-top` on `.scroller`: padding also treats the header's own controls as hidden, and focusing them (for example when a dropdown closes) would scroll the page.
 - Each button: 34×34, radius md, border `--border`, 16px icon; hover border `--border-strong`; pressed `--surface-sunken`; open (`aria-expanded`) border `--text` + `--accent-soft` background; Delete turns red on hover.
 - **Tooltip** = the button label (also its `aria-label`): a small white box below the button (border `--border`, radius sm, shadow `0 4px 12px` α 0.12, 12px 500), shown on hover and on keyboard focus (not after a mouse click). The rightmost button uses `align="end"` and the leftmost button uses `align="start"` so the tooltip is not cut off by the window edge.
 - `placement="above"` opens the tooltip above the button, for buttons at the bottom edge of the window (status bar). `current` sets `aria-current="page"` and a pressed look (`--accent-soft` background) on the button that opens the page currently shown.
@@ -327,10 +329,25 @@ New colors are added first as tokens in `src/app.css` for all three themes, not 
   - `#app` is a flex column as tall as the window: the title bar (`flex: none`), then `.scroller` (`flex: 1; overflow-y: auto; position: relative`), which scrolls all the content. Its scrollbar starts right below the title bar. `position: relative` is required: without it, `position: absolute` elements inside (`visually-hidden` labels) stretch the window, and `scrollIntoView` also pushes the title bar up.
   - `.shell` inside it fills that area (`min-height: 100%`). Sticky elements inside the content use `top` relative to `.scroller` (sidebar `top: 0`, Docs index `top: 16px`), and scroll targets use `scroll-margin-top: 16px`.
 - Left: two `IconButton`s with the `quiet` variant (32×28, no border, hover `--accent-soft`): **Menu** (`aria-haspopup="menu"`, pressed while the menu is open) and **Collapse/Expand sidebar** (`align="start"`, so its tooltip starts at the button edge and is not cut off by the left edge of the window). Both use `keepFocus`: a mouse click does not move keyboard focus, so Edit commands from the menu apply to the field being edited.
-- Center: an empty `data-tauri-drag-region` area for moving the window; double-click to maximize/restore.
+- Center: the workspace switcher (see Workspaces), absolutely centered in the bar so it stays in place when the sidebar folds to the rail. The rest of the middle is an empty `data-tauri-drag-region` area for moving the window; double-click to maximize/restore.
 - Right: Minimize, Maximize/Restore, and Close, drawn like Windows 11 caption buttons (46px, 1px line icons at 10×10, hover `--accent-soft`). Close on hover uses the Windows red `--window-close-bg` with white text (5.66:1).
 - The menu uses the native Windows menu (`@tauri-apps/api/menu`), so Windows handles the keyboard, accessibility, and Edit commands. The menu module loads the first time the menu opens. Only items that actually work are shown. Menu items do not list accelerators; their shortcuts still work.
 - Keyboard focus: a `--focus` ring like other buttons. On window buttons that touch the edge, the ring offset is inward (`-2px`).
+
+### Workspaces (`WorkspaceSwitcher`, `WorkspaceDialog`, `MoveCollectionDialog`, `WorkspacesPanel`)
+
+- A workspace keeps its own collections, named environments, Globals, flows, cookies and Recently deleted. Settings, Git accounts, certificates, MCP approvals and updates are shared. Existing data is in the first workspace, "My workspace".
+- **Tile** (`WorkspaceTile`) shows the workspace's icon: the first character of the name (the default), 600, or an emoji, on the workspace's `--hue-<name>-bg` with `--hue-<name>` text (`data-hue`); or an image (a logo or a file) at 76% of the tile on white with a `--border` edge, because logos are made for light backgrounds. Sizes 18px (title bar), 22px (menu, Move dialog, Quick search), 32px (Settings, color choices, found logos) and 48px (the dialog's preview). A workspace's color is one of the eight title icon colors; a new one starts on a color no workspace has yet.
+- **Icons are stored in the database** (V29: `icon_kind`, `icon_emoji`, `icon_image`, `icon_type`, `icon_source`) and reach the window as `data:` URLs, the only images the CSP allows, so they show offline. The core accepts only PNG, JPEG, GIF, WebP and ICO, recognized from the file's own first bytes (never SVG), up to 256 KB.
+- **Switcher** in the title bar: a 26px button (surface, `--border-strong`, radius md, 12px 500) with the tile, the name (ellipsis, at most 260px) and a chevron; `aria-label` "Workspace: name". Pressed while open (`--text` border, `--accent-soft`). It opens a menu (`role="menu"`, surface, border, radius lg, `--shadow-pop`, 280px) below it: one `menuitemradio` per workspace (tile, name, mono collection count, blue check on the open one), a line, then **New workspace** and **Manage workspaces**. The keyboard works like Dropdown: arrows/Enter/Space open it, arrows/Home/End move, Enter chooses, Escape or Tab closes it and returns focus to the button.
+- **Opening another workspace** restarts the page (`location.reload()`), the way restoring a backup does, so every view reads the new workspace. Before that, pending edits are saved; unsaved panel or environment edits, a running Orchestration run or Run all stop it with a banner ("…, then switch workspaces."). The cookie jar in memory is saved for the old workspace and filled with the new one's. The **launch screen** of that reload shows the workspace being opened instead of the Codestamp logo: its icon in a 72px tile inside the usual ring (a logo at 48px on white), and its name in 15px 600 below. The app leaves `codestamp.openingWorkspace` in session storage before reloading; the launch script (`workspace::launch::SCRIPT`, run before the page) reads it once and sets CSS custom properties that `launch.css` draws, so the workspace is there at the first paint. Starting Codestamp still shows the logo.
+- **New workspace / Edit workspace** dialog (500px): Name (40px field); **Icon**: a 48px preview and a segmented control (native radios) with **Letter**, **Logo**, **Image** and **Emoji**; the panel for the chosen kind; Color (eight 32px tiles as native radios, shown for Letter and Emoji; the chosen one has a 2px `--text` ring, so it does not rely on color); an explanation of what a workspace keeps (only when creating); then a hint, Cancel and **Create workspace** / **Save**. Save waits until the chosen kind has its pick ("Pick a logo, or choose another icon."). Creating opens the new workspace.
+  - **Logo**: choosing it looks the name up 600 ms after typing stops, and again only when the name changes. The core guesses websites from the name (legal words such as PT and Tbk dropped; the whole name joined, then its first word; `.com`, `.co.id`, `.id`, `.net`, `.org`, `.io`; at most 8) and asks Google's favicon service (`www.google.com/s2/favicons`, redirects only to `tN.gstatic.com`) for each, also with `www.`; a 404 means none. Logos found are buttons (`aria-pressed`, the chosen one with a `--text` ring) with the website under each, without repeats; the first is chosen. A Website field with **Find** (Enter works too) adds that site's logo first. A `role="status"` line says what happens ("Looking for a logo of …", "No logo found for … Type its website, or keep the letter."), and a 12px note says the name or website goes to Google's icon service. Nothing is sent before Logo is chosen.
+  - **Image**: **Choose image…** opens a PNG, JPG or WebP file up to 1 MB; it is drawn on a canvas at 128px on its longer edge and saved as PNG.
+  - **Emoji**: **Choose emoji** opens the collection emoji picker (`label="Workspace icon"`, without the automatic choice).
+- **Move to workspace** dialog (460px): what moves (requests, history, the environments it owns) and what stays (environments kept on this device), the other workspaces as radio rows (tile, name, collection count; chosen row `--text` border and `--surface-muted`), then Cancel and **Move collection**. Afterwards the next collection opens and a banner offers "Open <workspace>".
+- **Settings › Workspaces**: a row per workspace (32px tile, name with a green "Open" chip on the open one, a muted line such as "12 collections · 4 environments · 2 flows" or "Empty") with Open, Edit and Delete. Delete is disabled unless the workspace is empty and not the last one; a note under the list says how to empty one. Deleting asks first (ConfirmDialog, "Delete workspace"); deleting the open workspace opens the first other one.
+- **Quick search** lists other workspaces as "Switch to name" (group Workspaces), found by their name or by typing "workspace".
 
 ### Sidebar
 
@@ -388,6 +405,7 @@ New colors are added first as tokens in `src/app.css` for all three themes, not 
 - 1px `--border-strong` border, radius lg, `--shadow-card`.
 - Header: step badge (26px, round, ink background), editable 17px name, 12px muted save status ("Saved"; red when saving fails), then icon buttons.
 - Target row: the URL field and a Send button in the selected method's color (it changes when the method changes). The request and response panels can stack (separated by a dashed line) or sit side by side (`flex-wrap`, 420px basis).
+- An HTML response body opens as the page, with a **Page | Source** segmented control above it and a 12px muted hint ("Scripts and files from other sites are not loaded."). The page renders in `<iframe sandbox="" srcdoc>`: no scripts, forms, or navigation, and the app's CSP keeps out images and styles from other hosts. The frame gets the browser's white (`color-scheme: light; background: Canvas`), because pages expect it. In focus mode the HTML is masked before it renders.
 - A card opened from outside the list (Quick search, History panel, Catalog, Docs, Orchestration, Run all, Import) is scrolled to the top of the content area with `revealElement` (`scroll-margin-top: 16px`) and receives focus (`tabindex="-1"`). A card opened from its own row does not scroll the page.
 
 ### Request row (closed)
@@ -488,6 +506,8 @@ Fold button (chevron, `aria-expanded`), dotted drag handle, `EditableText` name 
 
 - The list on the left is grouped under 12px muted group titles: _On this device_, then one group per collection (emoji + name).
 - Under the environment name is a **Belongs to** Dropdown (_This device only_ or a collection) with a 12px muted hint that explains the effect: only on this device, shared through Git on Sync now (secrets stay on each device), or carried along when the collection is shared.
+- Each collection picks its own active environment (table `active_environments`, kept on this device and never synced). The picker in a collection's header lists its own environments and the ones on this device (labeled _name · This device_); choosing one there changes nothing in other collections. An environment that belongs to a collection only works in that collection, and the Rust core applies the same rule when it fills in values. Giving an environment to a collection ends its use in every other collection.
+- Under the name, an environment of a collection has **Set active** / **Deactivate** (for that collection) and an _Active_ badge. One kept on this device shows where it is used instead ("Used by Orders, Users", or "Not used yet · pick it in a collection’s header"), since that choice belongs to each collection. In the list, _Active_ marks an environment that any collection uses.
 
 ### Dropzone and drop target
 
@@ -507,7 +527,7 @@ CodeMirror with a transparent background inside a `--surface-muted` frame (borde
 
 ### Settings
 
-- Section navigation on the left (200px, sticky): Appearance, Editor, Requests, Proxy, SSL/TLS, Data & history, About & shortcuts. The active section is raised like a sidebar item.
+- Section navigation on the left (200px, sticky): Appearance, Editor, Requests, Proxy, SSL/TLS, Git accounts, Workspaces, Data & history, About & shortcuts. The active section is raised like a sidebar item.
 - Section content is a panel (surface, border, radius lg). Shared classes (`.panel`, `.field`, `.input`, `.check`, `.button`, `.primary`, `.segmented`, `.error`, `.status`) are defined once in `SettingsView` with `:global`.
 - Editor, Requests, and Data & history save automatically 400 ms after the last change; Rust checks the values, and error messages show in the panel. Proxy has a Save button because the address and password are typed in gradually.
 - Server certificate verification cannot be turned off; the Requests panel explains this and points to SSL/TLS (minimum TLS version, CA certificate, client certificate).
@@ -572,7 +592,7 @@ A grid of cards (min 150px). Each card holds a mini preview that uses that theme
 ### Orchestration (`FlowsView`, `FlowEditor`, `FlowMap`, `FlowStepCard`)
 
 - A two-column page: the flow list (200px, active item like a sidebar item) and the editor. Editor header: `EditableText` name (title), save status, a **Run flow** button (ink background; turns into a red outlined Stop while running), and Delete flow.
-- **Map card** (`section` "Flow map", surface, border, radius lg): the top row holds the _Environment_ label and the environment picker on the left, and the run summary on the right (`role="status"`, plus a `--err` stop note). Below it is the step map (`FlowMap`).
+- **Map card** (`section` "Flow map", surface, border, radius lg): the top row holds one environment picker per collection the steps use (labeled with the collection's name, `aria-label` "Environment of …"; a step uses its own collection's environment) on the left, and the run summary on the right (`role="status"`, plus a `--err` stop note). Below it is the step map (`FlowMap`).
 - **Step map**: a grid with Start and End columns `--edge` wide (80px), an Add step column `--add` wide (52px), and step columns that share the remaining width equally (`minmax(120px, 1fr)`). Four steps (692px) fit without scrolling in a 1280px window, also when the page has a scrollbar; at that minimum width a DELETE stamp still fits in a node. When they do not fit, only the map scrolls sideways, and the selected node is scrolled into view without scrolling the page.
   - `<ol aria-label="Steps from start to end">` uses subgrid. A 1.5px `--border-strong` line runs from the center of the Start column to the center of the End column, with a chevron in front of every point. Each point sits in the center of its column.
   - **Add step**: a round `IconButton` with "+" (tooltip and name "Add step", `aria-haspopup="dialog"`), between the last step and End.
@@ -699,74 +719,76 @@ Appears before an STDIO server runs for the first time, and every time its progr
 
 ## 13. File locations
 
-| File                                            | Contents                                                 |
-| ----------------------------------------------- | -------------------------------------------------------- |
-| `src/app.css`                                   | Tokens, reset, global utilities                          |
-| `src/lib/appearance/presets.ts`                 | Font presets and size ranges                             |
-| `src/lib/request/methods.ts`                    | HTTP method tones and colors                             |
-| `src/lib/request/codegen/`                      | Copy as code generators, one file per language           |
-| `src/lib/components/CodeDialog.svelte`          | Copy as code dialog (Language, Values, code)             |
-| `src/lib/format/status.ts`                      | HTTP status tones                                        |
-| `src/lib/team/status.ts`                        | Team sync status tones and text                          |
-| `src/lib/components/AccountFields.svelte`       | Git account, name, and email fields for Collaboration    |
-| `src/lib/editor/setup.ts`                       | Code editor theme and syntax highlighting                |
-| `src/lib/capture/render.ts`                     | Capture image palette (light and dark)                   |
-| `src/lib/privacy/secrets.ts`                    | Masking of sensitive values                              |
-| `src-tauri/src/storage/icons.rs`                | Emoji catalog, automatic rules, icon whitelist           |
-| `src/lib/state/icons.ts`                        | Emoji catalog loaded once from Rust                      |
-| `src/lib/components/EmojiPicker.svelte`         | Collection emoji picker                                  |
-| `src/lib/components/IconButton.svelte`          | Icon button with tooltip and status dot                  |
-| `src/lib/components/HomeView.svelte`            | Home page                                                |
-| `src/lib/components/NewCollectionDialog.svelte` | New collection dialog                                    |
-| `src/lib/components/ChoiceCard.svelte`          | Radio choice card (32px icon, title, description)        |
-| `src/lib/components/ImportView.svelte`          | Import page                                              |
-| `src/lib/components/StatusBar.svelte`           | Status bar: Settings, data, and version                  |
-| `src/lib/components/ViewPanel.svelte`           | Collection panel shell (title, actions, Close)           |
-| `src/lib/components/PanelDialog.svelte`         | Modal dialog for every collection panel                  |
-| `src/lib/components/CollectionExport.svelte`    | Export collection panel with a format dropdown           |
-| `src/lib/components/CollectionHistory.svelte`   | Per-collection History panel                             |
-| `src/lib/components/ExportOutcome.svelte`       | Export result: path and notes, or an error               |
-| `src/lib/components/DeletedView.svelte`         | Recently deleted page                                    |
-| `src/lib/state/deleted.svelte.ts`               | Recently deleted list, Undo, and Restore                 |
-| `src/lib/components/CollectionStart.svelte`     | Empty collection view                                    |
-| `src/lib/components/ThemePicker.svelte`         | Theme picker with previews                               |
-| `src/lib/components/Dropdown.svelte`            | Styled dropdown that replaces `<select>`                 |
-| `src/lib/components/NavIcon.svelte`             | Colored icons for the sidebar and page titles            |
-| `src/lib/components/SettingsView.svelte`        | Settings frame and shared panel styles                   |
-| `src/lib/components/settings/`                  | A panel for each Settings section                        |
-| `src/lib/components/VariableText.svelte`        | Text with colored `{{variable}}`                         |
-| `src/lib/format/variables.ts`                   | Variable reference pattern and parser                    |
-| `src/lib/components/McpPanel.svelte`            | MCP card content (server, arguments, result, log)        |
-| `src/lib/components/McpApprovalDialog.svelte`   | Approval before an MCP program runs                      |
-| `src/lib/components/QuickSearch.svelte`         | Quick search `Ctrl+Space`                                |
-| `src/lib/dom/reveal.ts`                         | Scroll to an element and move focus to it                |
-| `src/lib/search/`                               | Search result matching and grouping                      |
-| `src/lib/editor/search.ts`                      | Find (Ctrl+F) in the code editor                         |
-| `src/lib/docs/filter.ts`                        | Filtering of documents and the collection list in Docs   |
-| `src/lib/components/GraphqlEditor.svelte`       | GraphQL query, variables, and schema                     |
-| `src/lib/components/GrpcPanel.svelte`           | gRPC card source, method, message, metadata              |
-| `src/lib/components/GrpcReplyPanel.svelte`      | gRPC reply (status, messages, headers, trailers)         |
-| `src/lib/components/SoapPanel.svelte`           | SOAP card WSDL, operation, version, and SOAPAction       |
-| `src/lib/components/ExamplesPanel.svelte`       | Request card Examples tab                                |
-| `src/lib/components/MockPanel.svelte`           | Collection mock server panel                             |
-| `src/lib/components/PathVariablesTable.svelte`  | `:name` path variable table                              |
-| `src/lib/components/OAuthFields.svelte`         | OAuth 2.0 settings and tokens                            |
-| `src/lib/components/FlowsView.svelte`           | Orchestration page (flow list and editor)                |
-| `src/lib/components/FlowEditor.svelte`          | Map card and the selected step's detail                  |
-| `src/lib/components/FlowMap.svelte`             | Step map, value lines, and stop line                     |
-| `src/lib/components/FlowStepCard.svelte`        | Step detail (Uses, Checks, Pass on, Response)            |
-| `src/lib/components/FlowStepMark.svelte`        | Step status mark                                         |
-| `src/lib/components/FlowValueChip.svelte`       | `{{name}}` chip for values that are passed on            |
-| `src/lib/components/FlowStepPicker.svelte`      | Request picker dialog for steps                          |
-| `src/lib/components/MethodStamp.svelte`         | Method/request type stamp                                |
-| `src/lib/components/CatalogView.svelte`         | Catalog page (list or a single API)                      |
-| `src/lib/components/catalog/`                   | List, API page, chart, rules, tiles                      |
-| `src/lib/catalog/present.ts`                    | API labels, colors, formatting, filters, and sort order  |
-| `src/lib/components/DocsView.svelte`            | Docs page (collection list and document)                 |
-| `src/lib/components/docs/`                      | Description, Markdown, request block, tables             |
-| `src/lib/components/settings/TlsPanel.svelte`   | Settings › SSL/TLS (TLS version and certificates)        |
-| `branding/codestamp-logo.svg`                   | App logo: source for the icon and the sidebar logo       |
-| `branding/logo-samples/`                        | Logo samples compared before choosing 3a                 |
-| `branding/banner-light.svg`, `banner-dark.svg`  | README banner for GitHub light and dark mode             |
-| `branding/why/`                                 | README "Why Codestamp" images, light and dark            |
-| `branding/OFL-Geist.txt`                        | License of the Geist fonts embedded in the README images |
+| File                                            | Contents                                                  |
+| ----------------------------------------------- | --------------------------------------------------------- |
+| `src/app.css`                                   | Tokens, reset, global utilities                           |
+| `src/lib/appearance/presets.ts`                 | Font presets and size ranges                              |
+| `src/lib/request/methods.ts`                    | HTTP method tones and colors                              |
+| `src/lib/request/codegen/`                      | Copy as code generators, one file per language            |
+| `src/lib/components/CodeDialog.svelte`          | Copy as code dialog (Language, Values, code)              |
+| `src/lib/format/status.ts`                      | HTTP status tones                                         |
+| `src/lib/team/status.ts`                        | Team sync status tones and text                           |
+| `src/lib/components/AccountFields.svelte`       | Git account, name, and email fields for Collaboration     |
+| `src/lib/editor/setup.ts`                       | Code editor theme and syntax highlighting                 |
+| `src/lib/capture/render.ts`                     | Capture image palette (light and dark)                    |
+| `src/lib/privacy/secrets.ts`                    | Masking of sensitive values                               |
+| `src-tauri/src/storage/icons.rs`                | Emoji catalog, automatic rules, icon whitelist            |
+| `src/lib/state/icons.ts`                        | Emoji catalog loaded once from Rust                       |
+| `src/lib/components/EmojiPicker.svelte`         | Collection emoji picker                                   |
+| `src/lib/components/IconButton.svelte`          | Icon button with tooltip and status dot                   |
+| `src/lib/components/HomeView.svelte`            | Home page                                                 |
+| `src/lib/components/NewCollectionDialog.svelte` | New collection dialog                                     |
+| `src/lib/components/ChoiceCard.svelte`          | Radio choice card (32px icon, title, description)         |
+| `src/lib/components/ImportView.svelte`          | Import page                                               |
+| `src/lib/components/StatusBar.svelte`           | Status bar: Settings, data, and version                   |
+| `src/lib/components/ViewPanel.svelte`           | Collection panel shell (title, actions, Close)            |
+| `src/lib/components/PanelDialog.svelte`         | Modal dialog for every collection panel                   |
+| `src/lib/components/CollectionExport.svelte`    | Export collection panel with a format dropdown            |
+| `src/lib/components/CollectionHistory.svelte`   | Per-collection History panel                              |
+| `src/lib/components/ExportOutcome.svelte`       | Export result: path and notes, or an error                |
+| `src/lib/components/DeletedView.svelte`         | Recently deleted page                                     |
+| `src/lib/state/deleted.svelte.ts`               | Recently deleted list, Undo, and Restore                  |
+| `src/lib/components/CollectionStart.svelte`     | Empty collection view                                     |
+| `src/lib/components/ThemePicker.svelte`         | Theme picker with previews                                |
+| `src/lib/components/Dropdown.svelte`            | Styled dropdown that replaces `<select>`                  |
+| `src/lib/components/NavIcon.svelte`             | Colored icons for the sidebar and page titles             |
+| `src/lib/components/SettingsView.svelte`        | Settings frame and shared panel styles                    |
+| `src/lib/components/settings/`                  | A panel for each Settings section                         |
+| `src/lib/components/VariableText.svelte`        | Text with colored `{{variable}}`                          |
+| `src/lib/components/VariablePopover.svelte`     | Popover over a `{{variable}}`: its value, source and Save |
+| `src/lib/state/variable-hover.svelte.ts`        | When the variable popover opens and closes                |
+| `src/lib/format/variables.ts`                   | Variable reference pattern and parser                     |
+| `src/lib/components/McpPanel.svelte`            | MCP card content (server, arguments, result, log)         |
+| `src/lib/components/McpApprovalDialog.svelte`   | Approval before an MCP program runs                       |
+| `src/lib/components/QuickSearch.svelte`         | Quick search `Ctrl+Space`                                 |
+| `src/lib/dom/reveal.ts`                         | Scroll to an element and move focus to it                 |
+| `src/lib/search/`                               | Search result matching and grouping                       |
+| `src/lib/editor/search.ts`                      | Find (Ctrl+F) in the code editor                          |
+| `src/lib/docs/filter.ts`                        | Filtering of documents and the collection list in Docs    |
+| `src/lib/components/GraphqlEditor.svelte`       | GraphQL query, variables, and schema                      |
+| `src/lib/components/GrpcPanel.svelte`           | gRPC card source, method, message, metadata               |
+| `src/lib/components/GrpcReplyPanel.svelte`      | gRPC reply (status, messages, headers, trailers)          |
+| `src/lib/components/SoapPanel.svelte`           | SOAP card WSDL, operation, version, and SOAPAction        |
+| `src/lib/components/ExamplesPanel.svelte`       | Request card Examples tab                                 |
+| `src/lib/components/MockPanel.svelte`           | Collection mock server panel                              |
+| `src/lib/components/PathVariablesTable.svelte`  | `:name` path variable table                               |
+| `src/lib/components/OAuthFields.svelte`         | OAuth 2.0 settings and tokens                             |
+| `src/lib/components/FlowsView.svelte`           | Orchestration page (flow list and editor)                 |
+| `src/lib/components/FlowEditor.svelte`          | Map card and the selected step's detail                   |
+| `src/lib/components/FlowMap.svelte`             | Step map, value lines, and stop line                      |
+| `src/lib/components/FlowStepCard.svelte`        | Step detail (Uses, Checks, Pass on, Response)             |
+| `src/lib/components/FlowStepMark.svelte`        | Step status mark                                          |
+| `src/lib/components/FlowValueChip.svelte`       | `{{name}}` chip for values that are passed on             |
+| `src/lib/components/FlowStepPicker.svelte`      | Request picker dialog for steps                           |
+| `src/lib/components/MethodStamp.svelte`         | Method/request type stamp                                 |
+| `src/lib/components/CatalogView.svelte`         | Catalog page (list or a single API)                       |
+| `src/lib/components/catalog/`                   | List, API page, chart, rules, tiles                       |
+| `src/lib/catalog/present.ts`                    | API labels, colors, formatting, filters, and sort order   |
+| `src/lib/components/DocsView.svelte`            | Docs page (collection list and document)                  |
+| `src/lib/components/docs/`                      | Description, Markdown, request block, tables              |
+| `src/lib/components/settings/TlsPanel.svelte`   | Settings › SSL/TLS (TLS version and certificates)         |
+| `branding/codestamp-logo.svg`                   | App logo: source for the icon and the sidebar logo        |
+| `branding/logo-samples/`                        | Logo samples compared before choosing 3a                  |
+| `branding/banner-light.svg`, `banner-dark.svg`  | README banner for GitHub light and dark mode              |
+| `branding/why/`                                 | README "Why Codestamp" images, light and dark             |
+| `branding/OFL-Geist.txt`                        | License of the Geist fonts embedded in the README images  |

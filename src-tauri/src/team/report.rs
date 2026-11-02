@@ -47,7 +47,7 @@ pub async fn overview(
     vault: &Vault,
     state: &TeamState,
 ) -> Result<Vec<RepoSummary>, AppError> {
-    let links = db.with(repo::links)?;
+    let links = db.with(repo::open_workspace_links)?;
     let mut summaries = Vec::with_capacity(links.len());
     for link in links {
         let dir = state.dir(&link.collection_id);

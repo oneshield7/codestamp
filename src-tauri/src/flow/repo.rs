@@ -13,7 +13,8 @@ use crate::storage::repo as collections;
 pub fn list(conn: &Connection) -> Result<Vec<FlowSummary>, AppError> {
     let mut statement = conn.prepare(
         "SELECT f.id, f.name, (SELECT COUNT(*) FROM flow_steps s WHERE s.flow_id = f.id)
-         FROM flows f ORDER BY f.sort_order, f.created_at",
+         FROM flows f WHERE f.workspace_id = (SELECT id FROM current_workspace)
+         ORDER BY f.sort_order, f.created_at",
     )?;
     let rows = statement.query_map([], |row| {
         Ok(FlowSummary {
@@ -29,8 +30,9 @@ pub fn insert(conn: &Connection, name: &str) -> Result<FlowSummary, AppError> {
     let id = new_id();
     let now = now_ms();
     conn.execute(
-        "INSERT INTO flows (id, name, sort_order, created_at, updated_at)
-         VALUES (?1, ?2, (SELECT COALESCE(MAX(sort_order), -1) + 1 FROM flows), ?3, ?3)",
+        "INSERT INTO flows (id, name, sort_order, created_at, updated_at, workspace_id)
+         VALUES (?1, ?2, (SELECT COALESCE(MAX(sort_order), -1) + 1 FROM flows), ?3, ?3,
+                 (SELECT id FROM current_workspace))",
         params![id, name, now],
     )?;
     Ok(FlowSummary {
@@ -202,6 +204,22 @@ mod tests {
             grpc: None,
             soap: None,
         }
+    }
+
+    #[test]
+    fn lists_only_the_open_workspaces_flows() {
+        let db = Database::in_memory().expect("database");
+        db.with(|conn| {
+            insert(conn, "Checkout")?;
+            let other = crate::workspace::repo::insert_named(conn, "Other")?;
+            crate::workspace::repo::set_current(conn, &other.id)?;
+            assert!(list(conn)?.is_empty());
+            insert(conn, "Login")?;
+            let names: Vec<String> = list(conn)?.into_iter().map(|flow| flow.name).collect();
+            assert_eq!(names, ["Login"]);
+            Ok(())
+        })
+        .expect("flows");
     }
 
     #[test]

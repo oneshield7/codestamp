@@ -14,6 +14,7 @@
 
 {#each parts as part, index (index)}{#if part.variable === null}{part.text}{:else}<span
       class="var"
+      data-variable={part.variable}
       class:missing={known !== null && !known.has(part.variable)}
       title={known !== null && !known.has(part.variable)
         ? `{{${part.variable}}} is not defined`

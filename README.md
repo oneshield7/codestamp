@@ -82,6 +82,7 @@ The code is open under Apache-2.0, so you can read how Codestamp handles your se
 
 - **Requests**: HTTP with query, header, body (JSON, text, XML, HTML, form, multipart, binary) and path variables; GraphQL with schema completion; WebSocket; Server-Sent Events; gRPC through server reflection or `.proto` files; SOAP with WSDL import; MCP over STDIO and Streamable HTTP.
 - **Collections as notebooks**: sections, one open request at a time, autosave, history per collection, and a 30-day Recently deleted.
+- **Workspaces** keep collections, environments, Globals, flows and cookies apart per team or client, each with its own icon (a letter, a company logo, an image or an emoji); switch from the title bar.
 - **Variables**: Globals, collection variables and environments, `{{name}}` completion, dynamic values such as `{{$guid}}`, and secret values encrypted at rest.
 - **Scripts**: pre-request and test scripts with a Postman-style `pm.*` API, run in a QuickJS sandbox with memory and time limits.
 - **Auth**: Basic, Bearer, API key, Digest, AWS Signature V4 and OAuth 2.0 (client credentials, password, authorization code with PKCE).

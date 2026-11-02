@@ -2,6 +2,7 @@ import type { CollectionSummary } from '../api/collections';
 import type { DocHit } from '../api/docs';
 import type { EnvironmentSummary } from '../api/environments';
 import type { SearchEntry } from '../api/search';
+import type { Workspace, WorkspaceHue, WorkspaceIcon } from '../api/workspaces';
 import { plural } from '../format/plural';
 import { urlPath } from '../format/url';
 import { stampLabel } from '../request/kinds';
@@ -30,13 +31,15 @@ export type SearchTarget =
   | { kind: 'docs'; collectionId: string; itemId: string }
   | { kind: 'environment'; environmentId: string }
   | { kind: 'page'; view: View }
-  | { kind: 'settings'; section: SettingsSection };
+  | { kind: 'settings'; section: SettingsSection }
+  | { kind: 'workspace'; workspaceId: string };
 
 export type SearchIcon =
   | { kind: 'stamp'; label: string; tone: StampTone }
   | { kind: 'emoji'; emoji: string }
   | { kind: 'nav'; name: NavIconName }
-  | { kind: 'path'; path: string; hue: string };
+  | { kind: 'path'; path: string; hue: string }
+  | { kind: 'workspace'; name: string; hue: WorkspaceHue; icon: WorkspaceIcon };
 
 export interface SearchResult {
   key: string;
@@ -62,6 +65,8 @@ export interface SearchSources {
   environments: readonly EnvironmentSummary[];
   /** Found by the core in names and descriptions as the query changes. */
   docs: readonly DocHit[];
+  /** The workspaces other than the open one. */
+  workspaces: readonly Workspace[];
 }
 
 /** A place to go; its name and icon come from the navigation it shares with the sidebar. */
@@ -117,7 +122,14 @@ const PAGES: readonly Page[] = [
   },
 ];
 
-const GROUP_LIMITS = { requests: 40, docs: 8, collections: 6, environments: 6, goTo: 8 } as const;
+const GROUP_LIMITS = {
+  requests: 40,
+  docs: 8,
+  collections: 6,
+  environments: 6,
+  workspaces: 6,
+  goTo: 8,
+} as const;
 
 const DOC_DETAILS = new Map<DocHit['item'], string>([
   ['collection', 'Collection docs'],
@@ -187,6 +199,11 @@ export function searchResults(
         );
       }),
       limit: GROUP_LIMITS.environments,
+    },
+    {
+      label: 'Workspaces',
+      items: workspaceMatches(sources.workspaces, words),
+      limit: GROUP_LIMITS.workspaces,
     },
     { label: 'Docs', items: docMatches(sources.docs, words), limit: GROUP_LIMITS.docs },
     { label: 'Go to', items: placeMatches(words), limit: GROUP_LIMITS.goTo },
@@ -384,6 +401,40 @@ function collectionResult(
     place: null,
     mono: false,
   };
+}
+
+/** Other workspaces, found by name or by typing "workspace". */
+function workspaceMatches(items: readonly Workspace[], words: readonly string[]): Scored[] {
+  return scoreAll(items, (workspace) => {
+    const title = `Switch to ${workspace.name}`;
+    const match = matchFields(
+      [
+        { text: title, weight: 1 },
+        { text: 'workspace', weight: 0.6 },
+      ],
+      words,
+    );
+    return (
+      match && {
+        score: match.score,
+        length: title.length,
+        result: {
+          key: `workspace:${workspace.id}`,
+          target: { kind: 'workspace', workspaceId: workspace.id },
+          icon: {
+            kind: 'workspace',
+            name: workspace.name,
+            hue: workspace.hue,
+            icon: workspace.icon,
+          },
+          title: highlight(title, match.ranges[0]),
+          detail: highlight(`Workspace · ${plural(workspace.collectionCount, 'collection')}`),
+          place: null,
+          mono: false,
+        },
+      }
+    );
+  });
 }
 
 function environmentName(environment: EnvironmentSummary): string {

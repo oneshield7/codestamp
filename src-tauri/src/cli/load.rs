@@ -75,7 +75,7 @@ pub fn load(options: &RunOptions) -> Result<Loaded, String> {
             .map_err(|error| format!("--var: {error}"))?;
     }
     if let Some((id, _)) = &environment {
-        db.with(|conn| environments::set_active(conn, Some(id)))
+        db.with(|conn| environments::set_active(conn, &collection_id, Some(id)))
             .map_err(|error| error.to_string())?;
     }
     Ok(Loaded {

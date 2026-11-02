@@ -23,3 +23,8 @@ export function freeName(base: string, names: readonly string[]): string {
   }
   return name;
 }
+
+/** The first character of a name, emoji included, uppercase: what stands in for its icon. */
+export function initial(name: string): string {
+  return (Array.from(name.trim())[0] ?? '?').toUpperCase();
+}

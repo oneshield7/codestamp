@@ -46,6 +46,16 @@
     ),
   );
   const selected = $derived(flow.steps.at(selectedIndex) ?? null);
+  // Each step uses its own collection's environment, so there is one picker per collection.
+  const stepCollections = $derived(
+    [
+      ...new Map(
+        flow.steps.flatMap((step) =>
+          step.request ? [[step.request.collectionId, step.request.collectionName] as const] : [],
+        ),
+      ),
+    ].map(([id, name]) => ({ id, name })),
+  );
 
   const received = $derived(
     incomingValues(flow.steps, selectedIndex).map((value) => ({
@@ -208,8 +218,14 @@
 
   <section class="map-card" aria-label="Flow map">
     <div class="bar">
-      <span class="bar-label">Environment</span>
-      <EnvironmentSelect {environments} />
+      {#each stepCollections as collection (collection.id)}
+        <span class="bar-label">{collection.name}</span>
+        <EnvironmentSelect
+          {environments}
+          collectionId={collection.id}
+          label="Environment of {collection.name}"
+        />
+      {/each}
       <span class="end-text" role="status">
         {endText}
         {#if stopNote}<span class="stop-note">{stopNote}</span>{/if}

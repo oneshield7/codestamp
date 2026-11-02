@@ -1,3 +1,6 @@
+import type { Workspace } from '../api/workspaces';
+import { initial } from '../format/names';
+
 /** The launch screen stays at least this long from the window opening, so a quick start does
  * not flicker. */
 const MIN_LAUNCH_MS = 500;
@@ -19,4 +22,28 @@ export function finishLaunch(): void {
     },
     Math.max(0, MIN_LAUNCH_MS - performance.now()),
   );
+}
+
+/** Where the launch screen finds the workspace a reload opens (read in Rust's launch script). */
+const OPENING_KEY = 'codestamp.openingWorkspace';
+
+/**
+ * Shows the workspace about to open on the launch screen of the reload that follows, in place of
+ * the Codestamp logo. Resolves to false when storage refused it; the reload then shows the logo.
+ */
+export function showOnLaunch(workspace: Workspace): boolean {
+  const icon = workspace.icon;
+  const shown = {
+    name: workspace.name,
+    hue: workspace.hue,
+    text:
+      icon.kind === 'emoji' ? icon.emoji : icon.kind === 'letter' ? initial(workspace.name) : '',
+    image: icon.kind === 'image' ? icon.dataUrl : null,
+  };
+  try {
+    sessionStorage.setItem(OPENING_KEY, JSON.stringify(shown));
+    return true;
+  } catch {
+    return false;
+  }
 }

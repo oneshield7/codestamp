@@ -6,6 +6,10 @@ use crate::auth::oauth::KEY_PREFIX as TOKEN_KEY_PREFIX;
 use crate::error::AppError;
 use crate::storage::db::{new_id, now_ms};
 use crate::storage::repo as collections;
+use crate::workspace::repo as workspaces;
+
+/// The items of the open workspace (`d`).
+const OPEN: &str = "d.workspace_id = (SELECT id FROM current_workspace)";
 
 /// Deleted collections and requests can be restored for this long.
 pub const KEEP_DAYS: i64 = 30;
@@ -189,8 +193,11 @@ fn keep_item(conn: &Connection, item: &DeletedItem, saved: &Saved) -> Result<(),
     let rows = serde_json::to_string(saved).map_err(|_| AppError::Storage)?;
     conn.execute(
         "INSERT INTO deleted_items
-             (id, kind, name, collection_id, collection_name, request_count, rows, deleted_at)
-         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+             (id, kind, name, collection_id, collection_name, request_count, rows, deleted_at,
+              workspace_id)
+         VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8,
+                 COALESCE((SELECT workspace_id FROM collections WHERE id = ?4),
+                          (SELECT id FROM current_workspace)))",
         params![
             item.id,
             item.kind.as_str(),
@@ -217,11 +224,11 @@ pub fn forget_expired(conn: &Connection) -> Result<(), AppError> {
 /// Newest first.
 pub fn list(conn: &Connection) -> Result<Vec<DeletedItem>, AppError> {
     forget_expired(conn)?;
-    let mut statement = conn.prepare(
+    let mut statement = conn.prepare(&format!(
         "SELECT d.id, d.kind, d.name, d.collection_id, d.collection_name, d.request_count,
                 d.deleted_at, EXISTS (SELECT 1 FROM collections c WHERE c.id = d.collection_id)
-         FROM deleted_items d ORDER BY d.deleted_at DESC",
-    )?;
+         FROM deleted_items d WHERE {OPEN} ORDER BY d.deleted_at DESC"
+    ))?;
     let items = statement
         .query_map([], |row| {
             Ok((
@@ -253,11 +260,28 @@ pub fn list(conn: &Connection) -> Result<Vec<DeletedItem>, AppError> {
 /// collection with the old name; one whose section is gone goes outside sections.
 pub fn restore(conn: &Connection, id: &str) -> Result<Restored, AppError> {
     let tx = conn.unchecked_transaction()?;
-    let (kind, name, collection_id, collection_name, rows): (String, String, String, String, String) = tx
+    let (kind, name, collection_id, collection_name, rows, workspace_id): (
+        String,
+        String,
+        String,
+        String,
+        String,
+        Option<String>,
+    ) = tx
         .query_row(
-            "SELECT kind, name, collection_id, collection_name, rows FROM deleted_items WHERE id = ?1",
+            "SELECT kind, name, collection_id, collection_name, rows, workspace_id
+             FROM deleted_items WHERE id = ?1",
             params![id],
-            |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?, row.get(4)?)),
+            |row| {
+                Ok((
+                    row.get(0)?,
+                    row.get(1)?,
+                    row.get(2)?,
+                    row.get(3)?,
+                    row.get(4)?,
+                    row.get(5)?,
+                ))
+            },
         )
         .optional()?
         .ok_or(AppError::NotFound("Deleted item"))?;
@@ -270,6 +294,12 @@ pub fn restore(conn: &Connection, id: &str) -> Result<Restored, AppError> {
                 )));
             }
             saved.restore(&tx)?;
+            // Copies kept before workspaces existed have no workspace in their rows.
+            let workspace_id = match workspace_id {
+                Some(id) => id,
+                None => workspaces::current(&tx)?,
+            };
+            workspaces::place_collection(&tx, &collection_id, &workspace_id)?;
             Restored {
                 kind: DeletedKind::Collection,
                 collection_id,
@@ -320,7 +350,7 @@ pub fn forget(conn: &Connection, id: &str) -> Result<(), AppError> {
 }
 
 pub fn forget_all(conn: &Connection) -> Result<(), AppError> {
-    conn.execute("DELETE FROM deleted_items", [])?;
+    conn.execute(&format!("DELETE FROM deleted_items AS d WHERE {OPEN}"), [])?;
     Ok(())
 }
 
@@ -588,5 +618,50 @@ mod tests {
             Ok(())
         })
         .expect("expiry and checks");
+    }
+
+    #[test]
+    fn each_workspace_lists_and_restores_its_own_deleted_items() {
+        let db = Database::in_memory().expect("database");
+        db.with(|conn| {
+            let first = workspaces::current(conn)?;
+            let shop = collections::insert_collection(conn, "Shop")?;
+            let deleted = delete_collection(conn, &shop.id)?;
+            // A copy kept before workspaces existed has no workspace in its rows.
+            let rows: String = conn.query_row(
+                "SELECT rows FROM deleted_items WHERE id = ?1",
+                params![deleted.id],
+                |row| row.get(0),
+            )?;
+            let mut saved: Saved = serde_json::from_str(&rows).map_err(|_| AppError::Storage)?;
+            saved.set(Table::Collections, "workspace_id", &Stored::Null);
+            conn.execute(
+                "UPDATE deleted_items SET rows = ?1 WHERE id = ?2",
+                params![
+                    serde_json::to_string(&saved).map_err(|_| AppError::Storage)?,
+                    deleted.id
+                ],
+            )?;
+
+            let other = workspaces::insert_named(conn, "Other")?;
+            workspaces::set_current(conn, &other.id)?;
+            assert!(list(conn)?.is_empty());
+            forget_all(conn)?;
+
+            workspaces::set_current(conn, &first)?;
+            assert_eq!(
+                list(conn)?.len(),
+                1,
+                "Delete all in another workspace left it"
+            );
+            restore(conn, &deleted.id)?;
+            let shown: Vec<String> = collections::list_collections(conn)?
+                .into_iter()
+                .map(|c| c.name)
+                .collect();
+            assert_eq!(shown, ["Shop"]);
+            Ok(())
+        })
+        .expect("workspaces");
     }
 }

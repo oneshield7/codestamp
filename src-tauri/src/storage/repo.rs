@@ -22,6 +22,7 @@ pub fn list_collections(conn: &Connection) -> Result<Vec<CollectionSummary>, App
     let mut statement = conn.prepare(
         "SELECT c.id, c.name, COUNT(r.id), c.icon
          FROM collections c LEFT JOIN requests r ON r.collection_id = c.id
+         WHERE c.workspace_id = (SELECT id FROM current_workspace)
          GROUP BY c.id ORDER BY c.sort_order",
     )?;
     let rows = statement.query_map([], summary_from_row)?;
@@ -54,7 +55,8 @@ pub fn insert_collection(conn: &Connection, name: &str) -> Result<CollectionSumm
     insert_collection_with_id(conn, &new_id(), name)
 }
 
-/// A team collection keeps the id it has in its repository on every member's device.
+/// A team collection keeps the id it has in its repository on every member's device. New
+/// collections go into the open workspace.
 pub fn insert_collection_with_id(
     conn: &Connection,
     id: &str,
@@ -63,8 +65,9 @@ pub fn insert_collection_with_id(
     let id = id.to_owned();
     let now = now_ms();
     conn.execute(
-        "INSERT INTO collections (id, name, sort_order, created_at, updated_at)
-         VALUES (?1, ?2, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM collections), ?3, ?3)",
+        "INSERT INTO collections (id, name, sort_order, created_at, updated_at, workspace_id)
+         VALUES (?1, ?2, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM collections), ?3, ?3,
+                 (SELECT id FROM current_workspace))",
         params![id, name, now],
     )?;
     Ok(CollectionSummary {
@@ -167,6 +170,7 @@ pub fn search_entries(conn: &Connection) -> Result<Vec<SearchEntry>, AppError> {
          FROM requests r
          JOIN collections c ON c.id = r.collection_id
          LEFT JOIN sections s ON s.id = r.section_id
+         WHERE c.workspace_id = (SELECT id FROM current_workspace)
          ORDER BY c.sort_order, COALESCE(s.sort_order, -1), r.sort_order
          LIMIT ?1",
     )?;

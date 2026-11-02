@@ -1,3 +1,4 @@
+import { SvelteMap } from 'svelte/reactivity';
 import * as api from '../api/environments';
 import { notices } from './notices.svelte';
 import { variableRevision } from './variable-revision.svelte';
@@ -5,22 +6,41 @@ import { VariableEditor } from './variable-editor.svelte';
 
 const NEW_ENVIRONMENT_NAME = 'New environment';
 
-/** Globals and named environments, the active one, and the editor for the selected one. */
+/**
+ * Globals and named environments, the environment each collection uses, and the editor for the
+ * selected one.
+ */
 export class Environments {
   list = $state<api.EnvironmentSummary[]>([]);
-  activeId = $state<string | null>(null);
+  /** The active environment of each collection, by collection id. */
+  readonly activeIds = new SvelteMap<string, string>();
   selectedId = $state<string | null>(null);
   readonly editor = new VariableEditor();
 
   readonly selected = $derived(this.list.find((env) => env.id === this.selectedId) ?? null);
   readonly named = $derived(this.list.filter((env) => !env.isGlobal));
-  readonly active = $derived(this.list.find((env) => env.id === this.activeId) ?? null);
 
-  /** Told when an environment that belongs to a collection changes, so the next sync shares it. */
-  #sharedChanged: (collectionId: string) => void = () => undefined;
+  /**
+   * The environments a collection can use: its own and the ones kept on this device. Another
+   * collection's environment never fills in values here.
+   */
+  usableIn(collectionId: string): api.EnvironmentSummary[] {
+    return this.named.filter(
+      (env) => env.collectionId === null || env.collectionId === collectionId,
+    );
+  }
 
-  watchShared(listener: (collectionId: string) => void): void {
-    this.#sharedChanged = listener;
+  /** The environment this collection uses, if any. */
+  activeIn(collectionId: string): api.EnvironmentSummary | null {
+    const id = this.activeIds.get(collectionId);
+    return this.usableIn(collectionId).find((env) => env.id === id) ?? null;
+  }
+
+  /** The collections that use this environment. */
+  usedBy(environmentId: string): string[] {
+    return [...this.activeIds.keys()].filter(
+      (collectionId) => this.activeIn(collectionId)?.id === environmentId,
+    );
   }
 
   /** Also after a sync brought environments in: the open one is re-read unless it has edits. */
@@ -28,9 +48,12 @@ export class Environments {
     await notices.guard(async () => {
       const result = await api.listEnvironments();
       this.list = result.environments;
-      this.activeId = result.activeId;
+      this.activeIds.clear();
+      for (const [collectionId, id] of Object.entries(result.activeIds)) {
+        this.activeIds.set(collectionId, id);
+      }
       if (this.selectedId === null || !this.list.some((env) => env.id === this.selectedId)) {
-        await this.select(this.activeId ?? this.list.at(0)?.id ?? null);
+        await this.select(this.list.at(0)?.id ?? null);
       } else if (!this.editor.dirty) {
         await this.editor.load(this.selectedId);
       }
@@ -47,9 +70,13 @@ export class Environments {
       await api.setEnvironmentCollection(current.id, collectionId);
       const previous = current.collectionId;
       current.collectionId = collectionId;
+      // Once it belongs to one collection, the others stop using it.
+      if (collectionId !== null) {
+        this.#forget(current.id, collectionId);
+      }
       for (const owner of [previous, collectionId]) {
         if (owner !== null) {
-          this.#sharedChanged(owner);
+          variableRevision.sharedChanged(owner);
         }
       }
     });
@@ -89,17 +116,20 @@ export class Environments {
       await api.deleteEnvironment(current.id);
       this.#tellOwner(current);
       this.list = this.list.filter((env) => env.id !== current.id);
-      if (this.activeId === current.id) {
-        this.activeId = null;
-      }
+      this.#forget(current.id, null);
       await this.select(this.list.at(0)?.id ?? null);
     });
   }
 
-  async setActive(id: string | null): Promise<void> {
+  /** `id: null` leaves the collection without an environment. */
+  async setActive(collectionId: string, id: string | null): Promise<void> {
     await notices.guard(async () => {
-      await api.setActiveEnvironment(id);
-      this.activeId = id;
+      await api.setActiveEnvironment(collectionId, id);
+      if (id === null) {
+        this.activeIds.delete(collectionId);
+      } else {
+        this.activeIds.set(collectionId, id);
+      }
       variableRevision.bump();
     });
   }
@@ -113,9 +143,18 @@ export class Environments {
     }
   }
 
+  /** Drops an environment from every collection that uses it, except `keep`. */
+  #forget(environmentId: string, keep: string | null): void {
+    for (const [collectionId, id] of [...this.activeIds]) {
+      if (id === environmentId && collectionId !== keep) {
+        this.activeIds.delete(collectionId);
+      }
+    }
+  }
+
   #tellOwner(environment: api.EnvironmentSummary): void {
     if (environment.collectionId !== null) {
-      this.#sharedChanged(environment.collectionId);
+      variableRevision.sharedChanged(environment.collectionId);
     }
   }
 }

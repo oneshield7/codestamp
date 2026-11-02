@@ -23,6 +23,48 @@
   height: 84px;
 }
 
+/* Opening another workspace: its icon and name take the logo's place (set by the launch script
+   in src-tauri/src/workspace/launch.rs). */
+html[data-opening] .launch-mark img {
+  display: none;
+}
+
+html[data-opening] .launch-mark::before {
+  content: var(--opening-text, '');
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  background: var(--opening-hue-bg, #e8effd);
+  color: var(--opening-hue, #2459d6);
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* Logos are drawn on white, as in the app's workspace tiles. */
+html[data-opening='image'] .launch-mark::before {
+  box-sizing: border-box;
+  border: 1px solid var(--border, #e2e4e9);
+  background: #ffffff var(--opening-image) center / 48px no-repeat;
+}
+
+html[data-opening] .launch-mark::after {
+  content: var(--opening-name, '');
+  position: absolute;
+  top: calc(100% + 16px);
+  left: 50%;
+  max-width: 80vw;
+  overflow: hidden;
+  transform: translateX(-50%);
+  color: var(--text, #111318);
+  font-size: 15px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .launch-ring {
   position: absolute;
   inset: 0;

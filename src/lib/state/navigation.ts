@@ -99,7 +99,7 @@ export const NAV_ICON_HUES: ReadonlyMap<NavIconName, string> = new Map<NavIconNa
 export type NewCollectionStart = 'empty' | 'import' | 'join';
 
 export type SettingsSection =
-  'appearance' | 'editor' | 'requests' | 'proxy' | 'tls' | 'git' | 'data' | 'about';
+  'appearance' | 'editor' | 'requests' | 'proxy' | 'tls' | 'git' | 'workspaces' | 'data' | 'about';
 
 export interface SettingsSectionInfo {
   key: SettingsSection;
@@ -153,6 +153,13 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionInfo[] = [
     label: 'Git accounts',
     icon: `${circle(6, 5, 2)}${circle(6, 19, 2)}${circle(18, 7, 2)}M6 7v10M18 9c0 5-12 3-12 8`,
     keywords: 'git github gitlab bitbucket account credential sign in sign out collaboration',
+  },
+  {
+    key: 'workspaces',
+    hue: 'slate',
+    label: 'Workspaces',
+    icon: 'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 18l9 5 9-5',
+    keywords: 'workspace switch move collection rename delete',
   },
   {
     key: 'data',

@@ -5,6 +5,7 @@
   import type { EnvironmentSummary } from '../api/environments';
   import { toAppError } from '../api/http';
   import { searchIndex, type SearchEntry } from '../api/search';
+  import type { Workspace } from '../api/workspaces';
   import {
     pathCompletion,
     searchResults,
@@ -13,17 +14,20 @@
   } from '../search/results';
   import MethodStamp from './MethodStamp.svelte';
   import NavIcon from './NavIcon.svelte';
+  import WorkspaceTile from './WorkspaceTile.svelte';
 
   interface Props {
     collections: readonly CollectionSummary[];
     environments: readonly EnvironmentSummary[];
+    /** The workspaces other than the open one, offered as "Switch to …". */
+    workspaces: readonly Workspace[];
     /** Docs is open, so its results lead the list. */
     docsFirst: boolean;
     onPick: (target: SearchTarget) => void;
     onClose: () => void;
   }
 
-  let { collections, environments, docsFirst, onPick, onClose }: Props = $props();
+  let { collections, environments, workspaces, docsFirst, onPick, onClose }: Props = $props();
 
   const LIST_ID = 'quick-search-results';
   /** Docs are searched in the core, so typing settles before each search. */
@@ -38,7 +42,7 @@
   let activeIndex = $state(0);
   let docs = $state.raw<DocHit[]>([]);
 
-  const sources = $derived({ requests, collections, environments, docs });
+  const sources = $derived({ requests, collections, environments, docs, workspaces });
   const groups = $derived(searchResults(sources, query, docsFirst));
   const results = $derived(groups.flatMap((group) => group.results));
   const active = $derived(results.at(Math.min(activeIndex, results.length - 1)));
@@ -205,6 +209,12 @@
                   <span class="emoji">{result.icon.emoji}</span>
                 {:else if result.icon.kind === 'nav'}
                   <NavIcon name={result.icon.name} />
+                {:else if result.icon.kind === 'workspace'}
+                  <WorkspaceTile
+                    name={result.icon.name}
+                    hue={result.icon.hue}
+                    icon={result.icon.icon}
+                  />
                 {:else}
                   <span class="tile" data-hue={result.icon.hue}>
                     <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">

@@ -218,15 +218,16 @@ const knownVariables = Facet.define<ReadonlySet<string> | null, ReadonlySet<stri
   combine: (values) => values.at(-1) ?? null,
 });
 
-const variableMark = Decoration.mark({ class: 'cm-variable' });
-const missingMark = Decoration.mark({ class: 'cm-variable cm-variable-missing' });
-
+// `data-variable` lets the editor open the variable popover for the reference under the pointer.
 const variableMatcher = new MatchDecorator({
   regexp: variablePattern(),
   decoration: (match, view) => {
     const known = view.state.facet(knownVariables);
     const name = match[1] ?? '';
-    return known !== null && !known.has(name) ? missingMark : variableMark;
+    return Decoration.mark({
+      class: known !== null && !known.has(name) ? 'cm-variable cm-variable-missing' : 'cm-variable',
+      attributes: { 'data-variable': name },
+    });
   },
 });
 

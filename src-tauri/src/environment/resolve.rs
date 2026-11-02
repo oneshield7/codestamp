@@ -19,7 +19,7 @@ pub fn is_valid_name(name: &str) -> bool {
             .all(|c| c.is_ascii_alphanumeric() || matches!(c, '_' | '-' | '.'))
 }
 
-fn is_reference_name(name: &str) -> bool {
+pub fn is_reference_name(name: &str) -> bool {
     is_valid_name(name) || name.strip_prefix(DYNAMIC_PREFIX).is_some_and(is_valid_name)
 }
 
