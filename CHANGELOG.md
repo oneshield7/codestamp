@@ -4,6 +4,10 @@ All notable changes to Codestamp are listed here. Versions follow [Semantic Vers
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-02
+
+Workspaces, and an environment of its own for each collection. This version updates the database the first time it opens, and older versions cannot open it afterwards. Back up your data first in Settings › Data & history if you may go back.
+
 ### Added
 
 - Workspaces. Each workspace keeps its own collections, environments, Globals, flows, cookies and Recently deleted, so work for different teams or clients stays apart. Switch from the button in the middle of the title bar or from Quick search, and manage them in Settings › Workspaces. Settings, Git accounts and certificates are shared. Everything you already had is in "My workspace".
@@ -56,5 +60,6 @@ The first version with public source code. It has no GitHub release.
 
 Versions 0.1.0 to 0.3.4 were built before the repository was public. Their changes are described stage by stage, in Indonesian, in [`README.id.md`](README.id.md).
 
-[Unreleased]: ../../compare/v0.3.7...HEAD
+[Unreleased]: ../../compare/v0.4.0...HEAD
+[0.4.0]: ../../releases/tag/v0.4.0
 [0.3.7]: ../../releases/tag/v0.3.7
