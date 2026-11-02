@@ -10,6 +10,7 @@
   import ProxyPanel from './settings/ProxyPanel.svelte';
   import RequestsPanel from './settings/RequestsPanel.svelte';
   import TlsPanel from './settings/TlsPanel.svelte';
+  import WorkspacesPanel from './settings/WorkspacesPanel.svelte';
 
   interface Props {
     section?: SettingsSection;
@@ -57,6 +58,8 @@
         <TlsPanel />
       {:else if section === 'git'}
         <GitAccountsPanel />
+      {:else if section === 'workspaces'}
+        <WorkspacesPanel />
       {:else if section === 'data'}
         <DataPanel />
       {:else}

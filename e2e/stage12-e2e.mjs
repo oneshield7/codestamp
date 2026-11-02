@@ -450,7 +450,7 @@ try {
   );
   check(
     'the collection menu is icon buttons with labels',
-    toolbar.length === 9 && toolbar.every((b) => b.text === '' && b.label),
+    toolbar.length === 10 && toolbar.every((b) => b.text === '' && b.label),
     short(toolbar.map((b) => b.label)),
   );
   const box = await run(

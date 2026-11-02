@@ -1,9 +1,12 @@
 <script lang="ts">
   import { tick } from 'svelte';
   import { variableHints, type HintSource, type VariableHint } from '../api/environments';
+  import { splitVariables } from '../format/variables';
   import { notices } from '../state/notices.svelte';
   import { preferenceSettings } from '../state/preferences.svelte';
+  import { VariableHover } from '../state/variable-hover.svelte';
   import { variableNames } from '../state/variable-names.svelte';
+  import VariablePopover from './VariablePopover.svelte';
   import VariableText from './VariableText.svelte';
 
   interface Props {
@@ -61,6 +64,63 @@
     scrollLeft = input.scrollLeft;
   }
 
+  // The painted copy ignores the pointer, so the reference under it is found by position.
+  const hover = new VariableHover();
+  const CARET_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'Home', 'End']);
+  let wrap: HTMLSpanElement;
+  let mirror: HTMLSpanElement | undefined = $state();
+
+  $effect(() => () => {
+    hover.close();
+  });
+
+  function references(): HTMLElement[] {
+    return mirror ? [...mirror.querySelectorAll<HTMLElement>('[data-variable]')] : [];
+  }
+
+  function referenceAt(x: number, y: number): HTMLElement | null {
+    return (
+      references().find((element) => {
+        const box = element.getBoundingClientRect();
+        return x >= box.left && x <= box.right && y >= box.top && y <= box.bottom;
+      }) ?? null
+    );
+  }
+
+  /** The reference the caret is inside of, between its braces. */
+  function referenceAtCaret(): HTMLElement | null {
+    const caret = input.selectionStart;
+    if (caret === null || caret !== input.selectionEnd) {
+      return null;
+    }
+    let start = 0;
+    let index = 0;
+    for (const part of splitVariables(input.value)) {
+      const end = start + part.text.length;
+      if (part.variable !== null) {
+        if (caret > start && caret < end) {
+          return references().at(index) ?? null;
+        }
+        index += 1;
+      }
+      start = end;
+    }
+    return null;
+  }
+
+  function caretMoved(event: KeyboardEvent): void {
+    syncScroll();
+    if (!CARET_KEYS.has(event.key)) {
+      return;
+    }
+    const reference = referenceAtCaret();
+    if (reference) {
+      hover.openAt(reference);
+    } else {
+      hover.close();
+    }
+  }
+
   function rank(all: VariableHint[], text: string): VariableHint[] {
     const needle = text.toLowerCase();
     const starts = all.filter((hint) => hint.name.toLowerCase().startsWith(needle));
@@ -107,6 +167,11 @@
   }
 
   function handleKey(event: KeyboardEvent): void {
+    if (event.key === 'Escape' && hover.shown !== null) {
+      event.preventDefault();
+      hover.close();
+      return;
+    }
     if (matches.length === 0) {
       return;
     }
@@ -132,9 +197,19 @@
   }
 </script>
 
-<span class="wrap" class:url={variant === 'url'} class:field={variant === 'field'}>
+<span
+  bind:this={wrap}
+  class="wrap"
+  class:url={variant === 'url'}
+  class:field={variant === 'field'}
+  onfocusout={(event) => {
+    if (!(event.relatedTarget instanceof Node && wrap.contains(event.relatedTarget))) {
+      hover.close();
+    }
+  }}
+>
   {#if painted}
-    <span class="mirror {variant}" aria-hidden="true">
+    <span bind:this={mirror} class="mirror {variant}" aria-hidden="true">
       <span class="mirror-text" style:transform="translateX(-{scrollLeft}px)"
         ><VariableText text={value} known={variableNames.known(collectionId)} /></span
       >
@@ -161,13 +236,22 @@
       onInput?.();
       updateSuggestions();
       syncScroll();
+      hover.close();
     }}
     onscroll={syncScroll}
-    onkeyup={syncScroll}
+    onkeyup={caretMoved}
     onclick={syncScroll}
     onselect={syncScroll}
     onkeydown={handleKey}
     onblur={() => (typed = null)}
+    onpointermove={(event) => {
+      if (painted) {
+        hover.point(referenceAt(event.clientX, event.clientY));
+      }
+    }}
+    onpointerleave={() => {
+      hover.point(null);
+    }}
   />
   {#if matches.length > 0}
     <ul
@@ -195,6 +279,16 @@
         </li>
       {/each}
     </ul>
+  {/if}
+  {#if hover.shown && painted}
+    <VariablePopover
+      shown={hover.shown}
+      {collectionId}
+      {hover}
+      onDismiss={() => {
+        input.focus();
+      }}
+    />
   {/if}
 </span>
 

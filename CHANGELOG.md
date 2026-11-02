@@ -4,6 +4,20 @@ All notable changes to Codestamp are listed here. Versions follow [Semantic Vers
 
 ## [Unreleased]
 
+### Added
+
+- Workspaces. Each workspace keeps its own collections, environments, Globals, flows, cookies and Recently deleted, so work for different teams or clients stays apart. Switch from the button in the middle of the title bar or from Quick search, and manage them in Settings › Workspaces. Settings, Git accounts and certificates are shared. Everything you already had is in "My workspace".
+- Move to workspace in the collection header moves a collection, with the environments it owns, to another workspace.
+- A workspace's icon can be its first letter, a company logo, an image file or an emoji. Choosing Logo looks for the logo of the websites its name suggests, or of a website you type, through Google's icon service; nothing is sent before you choose Logo. The icon is saved on this device and shows on the launch screen while that workspace opens.
+- An HTML response opens as the page itself, with **Page** and **Source** to switch. The page renders in an empty sandbox: Codestamp runs none of its scripts and loads nothing from other sites.
+- Resting the pointer on a `{{variable}}` in a request, or moving the caret into it, opens a popover with its value and where it comes from. You can change the value and save it right there.
+
+### Changed
+
+- Each collection keeps its own active environment, so choosing one in a collection no longer changes the others. The picker lists the collection's own environments and the ones kept on this device, and a request never uses another collection's environment. After the update, the environment that was active stays active in every collection that can use it.
+- The flow map has one environment picker for each collection its steps use.
+- The collection header, with the environment picker and the collection tools, stays at the top while you scroll a long collection.
+
 ## [0.3.7] - 2026-10-30
 
 The first release with an installer on GitHub.

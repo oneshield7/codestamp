@@ -226,7 +226,7 @@ try {
   );
 
   // ---------- note 4: collection variables the active environment replaces ----------
-  await invoke('set_active_environment', { id: dev.id });
+  await invoke('set_active_environment', { collectionId, id: dev.id });
   await run('location.reload()');
   await sleep(1800);
   await run(helpers);
@@ -375,8 +375,8 @@ try {
   results.push(`FAIL  script stopped: ${error.message}`);
 } finally {
   try {
-    await invoke('set_active_environment', { id: null });
     if (collectionId) {
+      await invoke('set_active_environment', { collectionId, id: null });
       await invoke('unlink_team_collection', { collectionId });
       await invoke('delete_collection', { id: collectionId });
     }

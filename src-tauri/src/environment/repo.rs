@@ -1,11 +1,11 @@
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 
 use rusqlite::{Connection, OptionalExtension, params};
 
 use super::dynamic::DYNAMIC_VARIABLES;
 use super::models::{
-    EnvironmentList, EnvironmentSummary, HintSource, VariableHint, VariableInput, VariableScope,
-    VariableView,
+    EnvironmentList, EnvironmentSummary, HintSource, VariableDetail, VariableHint, VariableInput,
+    VariableScope, VariableView,
 };
 use super::resolve::is_valid_name;
 use super::validate::MAX_VARIABLES;
@@ -15,7 +15,6 @@ use crate::request::rules::MAX_KEY_VALUE_LENGTH;
 use crate::script::models::{ChangeScope, MAX_SCRIPT_CHANGES, VariableChange, VariableSnapshot};
 use crate::storage::db::{new_id, now_ms};
 
-const ACTIVE_ENVIRONMENT_KEY: &str = "active_environment_id";
 pub const SECRET_MASK: &str = "••••••";
 const HINT_PREVIEW_CHARS: usize = 60;
 const MAX_SKIPPED_MESSAGES: usize = 20;
@@ -23,6 +22,16 @@ const MAX_SKIPPED_MESSAGES: usize = 20;
 /// requests, so the reference shows as unresolved instead of sending an empty value.
 const LOCKED: &str = "(v.restricted IS NOT NULL AND NOT EXISTS (
     SELECT 1 FROM team_access_groups g WHERE g.id = v.restricted AND g.access = 1))";
+/// The sets (`e`) whose variables apply to collection `?1`: the Globals of its workspace (of the
+/// open one outside a collection), the collection's own variables, and the environment active in
+/// that collection unless another collection owns it.
+const APPLIES: &str = "((e.is_global = 1 AND e.workspace_id = COALESCE(
+        (SELECT workspace_id FROM collections WHERE id = ?1),
+        (SELECT id FROM current_workspace)))
+    OR e.collection_id = ?1
+    OR (e.collection_id IS NULL
+        AND e.id = (SELECT environment_id FROM active_environments WHERE collection_id = ?1)
+        AND (e.owner_collection_id IS NULL OR e.owner_collection_id = ?1)))";
 
 struct StoredVariable {
     value: String,
@@ -33,7 +42,7 @@ pub fn list(conn: &Connection) -> Result<EnvironmentList, AppError> {
     let mut statement = conn.prepare(
         "SELECT e.id, e.name, e.is_global, e.owner_collection_id, COUNT(v.id)
          FROM environments e LEFT JOIN variables v ON v.environment_id = e.id
-         WHERE e.collection_id IS NULL
+         WHERE e.collection_id IS NULL AND e.workspace_id = (SELECT id FROM current_workspace)
          GROUP BY e.id ORDER BY e.is_global DESC, e.sort_order",
     )?;
     let environments = statement
@@ -41,34 +50,81 @@ pub fn list(conn: &Connection) -> Result<EnvironmentList, AppError> {
         .collect::<Result<_, _>>()?;
     Ok(EnvironmentList {
         environments,
-        active_id: active_id(conn)?,
+        active_ids: active_ids(conn)?,
     })
 }
 
-fn active_id(conn: &Connection) -> Result<Option<String>, AppError> {
+/// The environment active in a collection, while that collection may still use it.
+fn active_for(conn: &Connection, collection_id: Option<&str>) -> Result<Option<String>, AppError> {
     Ok(conn
         .query_row(
-            "SELECT e.id FROM settings s JOIN environments e ON e.id = s.value
-             WHERE s.key = ?1 AND e.is_global = 0 AND e.collection_id IS NULL",
-            params![ACTIVE_ENVIRONMENT_KEY],
+            "SELECT e.id FROM active_environments a JOIN environments e ON e.id = a.environment_id
+             WHERE a.collection_id = ?1
+               AND (e.owner_collection_id IS NULL OR e.owner_collection_id = ?1)",
+            params![collection_id],
             |row| row.get(0),
         )
         .optional()?)
 }
 
-pub fn set_active(conn: &Connection, id: Option<&str>) -> Result<(), AppError> {
+/// Each collection's active environment, by collection id.
+fn active_ids(conn: &Connection) -> Result<BTreeMap<String, String>, AppError> {
+    let mut statement = conn.prepare(
+        "SELECT a.collection_id, a.environment_id
+         FROM active_environments a JOIN environments e ON e.id = a.environment_id
+         WHERE e.owner_collection_id IS NULL OR e.owner_collection_id = a.collection_id",
+    )?;
+    let rows = statement.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?;
+    Ok(rows.collect::<Result<_, _>>()?)
+}
+
+/// Chooses the environment a collection uses. One that belongs to another collection is refused.
+pub fn set_active(
+    conn: &Connection,
+    collection_id: &str,
+    id: Option<&str>,
+) -> Result<(), AppError> {
+    ensure_collection(conn, collection_id)?;
     let Some(id) = id else {
         conn.execute(
-            "DELETE FROM settings WHERE key = ?1",
-            params![ACTIVE_ENVIRONMENT_KEY],
+            "DELETE FROM active_environments WHERE collection_id = ?1",
+            params![collection_id],
         )?;
         return Ok(());
     };
     ensure_named_environment(conn, id)?;
+    let usable = conn
+        .query_row(
+            "SELECT 1 FROM environments
+             WHERE id = ?1 AND (owner_collection_id IS NULL OR owner_collection_id = ?2)",
+            params![id, collection_id],
+            |_| Ok(()),
+        )
+        .optional()?
+        .is_some();
+    if !usable {
+        return Err(AppError::invalid(
+            "This environment belongs to another collection",
+        ));
+    }
+    let same_workspace = conn
+        .query_row(
+            "SELECT 1 FROM environments e JOIN collections c ON c.id = ?2
+             WHERE e.id = ?1 AND e.workspace_id = c.workspace_id",
+            params![id, collection_id],
+            |_| Ok(()),
+        )
+        .optional()?
+        .is_some();
+    if !same_workspace {
+        return Err(AppError::invalid(
+            "This environment is in another workspace",
+        ));
+    }
     conn.execute(
-        "INSERT INTO settings (key, value) VALUES (?1, ?2)
-         ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-        params![ACTIVE_ENVIRONMENT_KEY, id],
+        "INSERT INTO active_environments (collection_id, environment_id) VALUES (?1, ?2)
+         ON CONFLICT(collection_id) DO UPDATE SET environment_id = excluded.environment_id",
+        params![collection_id, id],
     )?;
     Ok(())
 }
@@ -76,8 +132,9 @@ pub fn set_active(conn: &Connection, id: Option<&str>) -> Result<(), AppError> {
 pub fn insert(conn: &Connection, name: &str) -> Result<EnvironmentSummary, AppError> {
     let id = new_id();
     conn.execute(
-        "INSERT INTO environments (id, name, is_global, sort_order, created_at)
-         VALUES (?1, ?2, 0, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM environments), ?3)",
+        "INSERT INTO environments (id, name, is_global, sort_order, created_at, workspace_id)
+         VALUES (?1, ?2, 0, (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM environments), ?3,
+                 (SELECT id FROM current_workspace))",
         params![id, name, now_ms()],
     )?;
     Ok(EnvironmentSummary {
@@ -103,18 +160,23 @@ fn summary_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<EnvironmentSumm
 pub fn set_owner(conn: &Connection, id: &str, collection_id: Option<&str>) -> Result<(), AppError> {
     ensure_named_environment(conn, id)?;
     if let Some(collection_id) = collection_id {
-        conn.query_row(
-            "SELECT 1 FROM collections WHERE id = ?1",
-            params![collection_id],
-            |_| Ok(()),
-        )
-        .optional()?
-        .ok_or(AppError::NotFound("Collection"))?;
+        ensure_collection(conn, collection_id)?;
     }
+    // Given to a collection, it lives in that collection's workspace.
     conn.execute(
-        "UPDATE environments SET owner_collection_id = ?2 WHERE id = ?1",
+        "UPDATE environments SET owner_collection_id = ?2,
+             workspace_id = COALESCE((SELECT workspace_id FROM collections WHERE id = ?2),
+                                     workspace_id)
+         WHERE id = ?1",
         params![id, collection_id],
     )?;
+    // Once it belongs to one collection, the others stop using it.
+    if let Some(collection_id) = collection_id {
+        conn.execute(
+            "DELETE FROM active_environments WHERE environment_id = ?1 AND collection_id <> ?2",
+            params![id, collection_id],
+        )?;
+    }
     Ok(())
 }
 
@@ -162,9 +224,11 @@ pub fn put_owned(
         }
         None if !taken => {
             conn.execute(
-                "INSERT INTO environments (id, name, is_global, owner_collection_id, sort_order, created_at)
+                "INSERT INTO environments
+                     (id, name, is_global, owner_collection_id, sort_order, created_at, workspace_id)
                  VALUES (?1, ?2, 0, ?3,
-                         (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM environments), ?4)",
+                         (SELECT COALESCE(MAX(sort_order), 0) + 1 FROM environments), ?4,
+                         (SELECT workspace_id FROM collections WHERE id = ?3))",
                 params![id, name, collection_id, now_ms()],
             )?;
         }
@@ -177,15 +241,11 @@ pub fn put_owned(
     Ok(())
 }
 
-/// Removes an environment the shared collection no longer has, and forgets it as active.
+/// Removes an environment the shared collection no longer has; no collection uses it after.
 pub fn delete_owned(conn: &Connection, id: &str, collection_id: &str) -> Result<(), AppError> {
     conn.execute(
         "DELETE FROM environments WHERE id = ?1 AND owner_collection_id = ?2",
         params![id, collection_id],
-    )?;
-    conn.execute(
-        "DELETE FROM settings WHERE key = ?1 AND value = ?2",
-        params![ACTIVE_ENVIRONMENT_KEY, id],
     )?;
     Ok(())
 }
@@ -204,12 +264,7 @@ pub fn delete(conn: &Connection, id: &str) -> Result<(), AppError> {
         "DELETE FROM environments WHERE id = ?1 AND is_global = 0 AND collection_id IS NULL",
         params![id],
     )?;
-    expect_environment_changed(changed)?;
-    conn.execute(
-        "DELETE FROM settings WHERE key = ?1 AND value = ?2",
-        params![ACTIVE_ENVIRONMENT_KEY, id],
-    )?;
-    Ok(())
+    expect_environment_changed(changed)
 }
 
 pub fn variables(conn: &Connection, environment_id: &str) -> Result<Vec<VariableView>, AppError> {
@@ -312,6 +367,15 @@ pub fn reveal(conn: &Connection, vault: &Vault, id: &str) -> Result<String, AppE
         .ok_or(AppError::NotFound("Variable"))?;
     let blob = secret.ok_or_else(|| AppError::invalid("This variable is not secret"))?;
     vault.decrypt(id, &blob)
+}
+
+/// The Globals a collection's requests use: those of its workspace, or of the open one.
+pub fn globals_for(conn: &Connection, collection_id: Option<&str>) -> Result<String, AppError> {
+    Ok(conn.query_row(
+        &format!("SELECT e.id FROM environments e WHERE e.is_global = 1 AND {APPLIES}"),
+        params![collection_id],
+        |row| row.get(0),
+    )?)
 }
 
 /// The variable set that belongs to a collection, created the first time it is needed.
@@ -476,22 +540,18 @@ pub fn apply_script_changes(
             continue;
         }
         let target = match change.scope {
-            ChangeScope::Globals => Some(tx.query_row(
-                "SELECT id FROM environments WHERE is_global = 1",
-                [],
-                |row| row.get::<_, String>(0),
-            )?),
+            ChangeScope::Globals => Some(globals_for(&tx, collection_id)?),
             ChangeScope::Collection => collection_id
                 .map(|id| collection_set_id(&tx, id))
                 .transpose()?,
-            ChangeScope::Environment => active_id(&tx)?,
+            ChangeScope::Environment => active_for(&tx, collection_id)?,
         };
         let Some(environment_id) = target else {
             skipped.push(format!(
                 "Skipped “{}”: {}",
                 change.key,
                 match change.scope {
-                    ChangeScope::Environment => "no environment is active",
+                    ChangeScope::Environment => "no environment of this collection is active",
                     _ => "this request is not in a collection",
                 }
             ));
@@ -584,14 +644,10 @@ fn scoped_variables(
                      WHEN e.collection_id IS NOT NULL THEN 1
                      ELSE 2 END AS rank
          FROM variables v JOIN environments e ON e.id = v.environment_id
-         WHERE v.enabled = 1 AND NOT {LOCKED}
-           AND (e.is_global = 1
-                OR e.collection_id = ?2
-                OR (e.collection_id IS NULL
-                    AND e.id = (SELECT value FROM settings WHERE key = ?1)))
+         WHERE v.enabled = 1 AND NOT {LOCKED} AND {APPLIES}
          ORDER BY rank, v.sort_order"
     ))?;
-    let rows = statement.query_map(params![ACTIVE_ENVIRONMENT_KEY, collection_id], |row| {
+    let rows = statement.query_map(params![collection_id], |row| {
         let rank: i64 = row.get(4)?;
         Ok((
             row.get::<_, String>(1)?,
@@ -667,6 +723,96 @@ pub fn hints(
     Ok(hints)
 }
 
+/// Where `{{name}}` gets its value in a collection, by the same rules as sending. A restricted
+/// variable this device cannot read only shows when nothing else defines the name.
+pub fn detail(
+    conn: &Connection,
+    collection_id: Option<&str>,
+    name: &str,
+) -> Result<VariableDetail, AppError> {
+    if let Some((_, description)) = DYNAMIC_VARIABLES.iter().find(|(known, _)| *known == name) {
+        return Ok(VariableDetail {
+            source: Some(HintSource::Dynamic),
+            value: (*description).to_owned(),
+            ..VariableDetail::undefined(name)
+        });
+    }
+    let found = conn
+        .query_row(
+            &format!(
+                "SELECT v.id, v.value, v.secret IS NOT NULL, v.restricted IS NOT NULL, {LOCKED},
+                        e.name, COALESCE(e.collection_id, e.owner_collection_id),
+                        CASE WHEN e.is_global = 1 THEN 0
+                             WHEN e.collection_id IS NOT NULL THEN 1
+                             ELSE 2 END AS rank
+                 FROM variables v JOIN environments e ON e.id = v.environment_id
+                 WHERE v.key = ?2 AND v.enabled = 1 AND {APPLIES}
+                 ORDER BY {LOCKED}, rank DESC LIMIT 1"
+            ),
+            params![collection_id, name],
+            |row| {
+                let rank: i64 = row.get(7)?;
+                let is_secret: bool = row.get(2)?;
+                Ok(VariableDetail {
+                    source: Some(match rank {
+                        0 => HintSource::Global,
+                        1 => HintSource::Collection,
+                        _ => HintSource::Environment,
+                    }),
+                    id: Some(row.get(0)?),
+                    set_name: if rank == 2 { Some(row.get(5)?) } else { None },
+                    value: if is_secret {
+                        String::new()
+                    } else {
+                        row.get(1)?
+                    },
+                    is_secret,
+                    restricted: row.get(3)?,
+                    locked: row.get(4)?,
+                    shared_by: row.get(6)?,
+                    ..VariableDetail::undefined(name)
+                })
+            },
+        )
+        .optional()?;
+    Ok(found.unwrap_or_else(|| VariableDetail::undefined(name)))
+}
+
+/// The inputs that give one variable a new value and keep everything else in its set as it is
+/// (other secrets stay encrypted), with the set's id.
+pub fn with_new_value(
+    conn: &Connection,
+    variable_id: &str,
+    value: &str,
+) -> Result<(String, Vec<VariableInput>), AppError> {
+    let set_id: String = conn
+        .query_row(
+            "SELECT environment_id FROM variables WHERE id = ?1",
+            params![variable_id],
+            |row| row.get(0),
+        )
+        .optional()?
+        .ok_or(AppError::NotFound("Variable"))?;
+    let inputs = variables(conn, &set_id)?
+        .into_iter()
+        .map(|variable| VariableInput {
+            value: if variable.id == variable_id {
+                Some(value.to_owned())
+            } else if variable.is_secret {
+                None
+            } else {
+                Some(variable.value)
+            },
+            id: Some(variable.id),
+            key: variable.key,
+            is_secret: variable.is_secret,
+            enabled: variable.enabled,
+            restricted: variable.restricted,
+        })
+        .collect();
+    Ok((set_id, inputs))
+}
+
 fn stored_variables(
     conn: &Connection,
     environment_id: &str,
@@ -693,6 +839,16 @@ fn ensure_environment(conn: &Connection, id: &str) -> Result<(), AppError> {
     )
     .optional()?
     .ok_or(AppError::NotFound("Environment"))
+}
+
+fn ensure_collection(conn: &Connection, id: &str) -> Result<(), AppError> {
+    conn.query_row(
+        "SELECT 1 FROM collections WHERE id = ?1",
+        params![id],
+        |_| Ok(()),
+    )
+    .optional()?
+    .ok_or(AppError::NotFound("Collection"))
 }
 
 fn ensure_named_environment(conn: &Connection, id: &str) -> Result<(), AppError> {
@@ -738,12 +894,7 @@ mod tests {
     }
 
     fn globals_id(conn: &Connection) -> String {
-        conn.query_row(
-            "SELECT id FROM environments WHERE is_global = 1",
-            [],
-            |row| row.get(0),
-        )
-        .expect("globals exist")
+        globals_for(conn, None).expect("globals exist")
     }
 
     fn names(list: &[&str]) -> BTreeSet<String> {
@@ -756,7 +907,7 @@ mod tests {
         let list = db.with(list).expect("list");
         assert_eq!(list.environments.len(), 1);
         assert!(list.environments.first().is_some_and(|e| e.is_global));
-        assert_eq!(list.active_id, None);
+        assert!(list.active_ids.is_empty());
     }
 
     #[test]
@@ -859,28 +1010,35 @@ mod tests {
                 value: value.map(str::to_owned),
             };
 
+            let users = crate::storage::repo::insert_collection(conn, "Users")?;
             let skipped = apply_script_changes(
                 conn,
                 &vault,
-                None,
+                Some(&users.id),
                 &[change(ChangeScope::Environment, "token", Some("new"))],
             )?;
             assert_eq!(skipped.len(), 1, "no active environment yet");
-
-            set_active(conn, Some(&dev.id))?;
             let skipped = apply_script_changes(
                 conn,
                 &vault,
                 None,
+                &[change(ChangeScope::Collection, "nope", Some("1"))],
+            )?;
+            assert_eq!(skipped.len(), 1, "not in a collection");
+
+            set_active(conn, &users.id, Some(&dev.id))?;
+            let skipped = apply_script_changes(
+                conn,
+                &vault,
+                Some(&users.id),
                 &[
                     change(ChangeScope::Environment, "token", Some("new")),
                     change(ChangeScope::Environment, "gone", None),
                     change(ChangeScope::Environment, "added", Some("1")),
-                    change(ChangeScope::Collection, "nope", Some("1")),
                     change(ChangeScope::Globals, "bad name", Some("1")),
                 ],
             )?;
-            assert_eq!(skipped.len(), 2);
+            assert_eq!(skipped.len(), 1);
             assert_eq!(reveal(conn, &vault, &token_id)?, "new");
             let keys: Vec<String> = variables(conn, &dev.id)?
                 .into_iter()
@@ -888,7 +1046,7 @@ mod tests {
                 .collect();
             assert_eq!(keys, ["token", "added"]);
 
-            let snapshot = script_snapshot(conn, &vault, None)?;
+            let snapshot = script_snapshot(conn, &vault, Some(&users.id))?;
             assert_eq!(
                 snapshot.environment.get("token").map(String::as_str),
                 Some("new")
@@ -933,7 +1091,7 @@ mod tests {
                     &dev.id,
                     vec![var(None, "region", Some("jp"), false)],
                 )?;
-                set_active(conn, Some(&dev.id))?;
+                set_active(conn, &collection.id, Some(&dev.id))?;
                 let wanted = names(&["baseUrl", "region", "apiKey"]);
                 Ok((
                     lookup_values(conn, &vault, &wanted, Some(&collection.id), true)?,
@@ -1001,12 +1159,13 @@ mod tests {
                         var(None, "token", Some("t0k"), true),
                     ],
                 )?;
-                set_active(conn, Some(&dev.id))?;
+                let users = crate::storage::repo::insert_collection(conn, "Users")?;
+                set_active(conn, &users.id, Some(&dev.id))?;
                 lookup_values(
                     conn,
                     &vault,
                     &names(&["baseUrl", "region", "token"]),
-                    None,
+                    Some(&users.id),
                     true,
                 )
             })
@@ -1023,18 +1182,136 @@ mod tests {
     fn deleting_the_active_environment_clears_the_selection_and_globals_cannot_be_deleted() {
         let (db, _) = setup();
         db.with(|conn| {
+            let users = crate::storage::repo::insert_collection(conn, "Users")?;
             let dev = insert(conn, "Development")?;
-            set_active(conn, Some(&dev.id))?;
+            set_active(conn, &users.id, Some(&dev.id))?;
+            assert_eq!(
+                list(conn)?.active_ids.get(&users.id).map(String::as_str),
+                Some(dev.id.as_str())
+            );
             delete(conn, &dev.id)?;
-            assert_eq!(list(conn)?.active_id, None);
+            assert!(list(conn)?.active_ids.is_empty());
             let globals = globals_id(conn);
             assert!(matches!(delete(conn, &globals), Err(AppError::NotFound(_))));
             assert!(matches!(
-                set_active(conn, Some(&globals)),
+                set_active(conn, &users.id, Some(&globals)),
                 Err(AppError::NotFound(_))
             ));
             Ok(())
         })
         .expect("delete flow");
+    }
+
+    #[test]
+    fn another_collections_environment_never_fills_in_values() {
+        let (db, vault) = setup();
+        db.with(|conn| {
+            let orders = crate::storage::repo::insert_collection(conn, "Orders")?;
+            let users = crate::storage::repo::insert_collection(conn, "Users")?;
+            let staging = insert(conn, "Orders staging")?;
+            set_owner(conn, &staging.id, Some(&orders.id))?;
+            replace_variables(
+                conn,
+                &vault,
+                &staging.id,
+                vec![var(None, "region", Some("sg"), false)],
+            )?;
+            set_active(conn, &orders.id, Some(&staging.id))?;
+            assert!(matches!(
+                set_active(conn, &users.id, Some(&staging.id)),
+                Err(AppError::InvalidInput(_))
+            ));
+            let wanted = names(&["region"]);
+
+            let own = lookup_values(conn, &vault, &wanted, Some(&orders.id), true)?;
+            assert_eq!(own.get("region").map(String::as_str), Some("sg"));
+            assert!(lookup_values(conn, &vault, &wanted, Some(&users.id), true)?.is_empty());
+            assert!(lookup_values(conn, &vault, &wanted, None, true)?.is_empty());
+            assert!(
+                hints(conn, Some(&users.id))?
+                    .iter()
+                    .all(|h| h.name != "region")
+            );
+            assert_eq!(detail(conn, Some(&users.id), "region")?.source, None);
+            let here = detail(conn, Some(&orders.id), "region")?;
+            assert_eq!(here.source, Some(HintSource::Environment));
+            assert_eq!(here.set_name.as_deref(), Some("Orders staging"));
+            assert_eq!(here.shared_by.as_deref(), Some(orders.id.as_str()));
+
+            let change = VariableChange {
+                scope: ChangeScope::Environment,
+                key: "token".to_owned(),
+                value: Some("t".to_owned()),
+            };
+            let skipped = apply_script_changes(conn, &vault, Some(&users.id), &[change])?;
+            assert!(
+                skipped
+                    .iter()
+                    .any(|m| m.contains("no environment of this collection"))
+            );
+
+            // Kept on this device, it can be chosen in any collection, and each one keeps its own
+            // choice; giving it to a collection again ends its use everywhere else.
+            set_owner(conn, &staging.id, None)?;
+            assert!(lookup_values(conn, &vault, &wanted, Some(&users.id), true)?.is_empty());
+            set_active(conn, &users.id, Some(&staging.id))?;
+            let shared = lookup_values(conn, &vault, &wanted, Some(&users.id), true)?;
+            assert_eq!(shared.get("region").map(String::as_str), Some("sg"));
+            set_owner(conn, &staging.id, Some(&orders.id))?;
+            let actives = list(conn)?.active_ids;
+            assert_eq!(actives.len(), 1);
+            assert_eq!(actives.get(&orders.id), Some(&staging.id));
+            Ok(())
+        })
+        .expect("environment owners");
+    }
+
+    #[test]
+    fn a_new_value_from_the_popover_keeps_the_rest_of_the_set() {
+        let (db, vault) = setup();
+        db.with(|conn| {
+            let collection = crate::storage::repo::insert_collection(conn, "Users")?;
+            let set = collection_set_id(conn, &collection.id)?;
+            replace_variables(
+                conn,
+                &vault,
+                &set,
+                vec![
+                    var(None, "baseUrl", Some("https://old.test"), false),
+                    var(None, "token", Some("s3cr3t"), true),
+                ],
+            )?;
+            let base = detail(conn, Some(&collection.id), "baseUrl")?;
+            assert_eq!(base.source, Some(HintSource::Collection));
+            assert_eq!(base.value, "https://old.test");
+            assert_eq!(base.shared_by.as_deref(), Some(collection.id.as_str()));
+            let token = detail(conn, Some(&collection.id), "token")?;
+            assert!(token.is_secret);
+            assert_eq!(token.value, "");
+
+            let id = base.id.ok_or(AppError::Storage)?;
+            let (set_id, inputs) = with_new_value(conn, &id, "https://new.test")?;
+            assert_eq!(set_id, set);
+            replace_variables(conn, &vault, &set_id, inputs)?;
+            let wanted = names(&["baseUrl", "token"]);
+            let values = lookup_values(conn, &vault, &wanted, Some(&collection.id), true)?;
+            assert_eq!(
+                values.get("baseUrl").map(String::as_str),
+                Some("https://new.test")
+            );
+            assert_eq!(values.get("token").map(String::as_str), Some("s3cr3t"));
+
+            assert_eq!(
+                detail(conn, Some(&collection.id), "$guid")?.source,
+                Some(HintSource::Dynamic)
+            );
+            assert_eq!(detail(conn, Some(&collection.id), "missing")?.source, None);
+            assert!(matches!(
+                with_new_value(conn, "no-such-variable", "x"),
+                Err(AppError::NotFound(_))
+            ));
+            Ok(())
+        })
+        .expect("popover edit");
     }
 }

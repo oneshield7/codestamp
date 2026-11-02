@@ -17,6 +17,8 @@
   import StatusBar from './lib/components/StatusBar.svelte';
   import TitleBar from './lib/components/TitleBar.svelte';
   import UpdateBanner from './lib/components/UpdateBanner.svelte';
+  import WorkspaceDialog from './lib/components/WorkspaceDialog.svelte';
+  import WorkspaceSwitcher from './lib/components/WorkspaceSwitcher.svelte';
   import { appearanceSettings } from './lib/state/appearance.svelte';
   import { sidebar } from './lib/state/sidebar.svelte';
   import type { AppMenuActions } from './lib/titlebar/app-menu';
@@ -35,7 +37,9 @@
   import { Runner } from './lib/state/runner.svelte';
   import { TeamSync } from './lib/state/team.svelte';
   import { Updates } from './lib/state/updates.svelte';
+  import { variableRevision } from './lib/state/variable-revision.svelte';
   import { Workspace } from './lib/state/workspace.svelte';
+  import { workspaces } from './lib/state/workspaces.svelte';
 
   const UPDATE_CHECK_DELAY_MS = 3000;
 
@@ -74,14 +78,15 @@
       },
     });
   };
-  // Edits to an environment a collection shares wait for that collection's next Sync now.
-  environments.watchShared((collectionId) => {
+  // Edits to variables a collection shares wait for that collection's next Sync now.
+  variableRevision.watchShared((collectionId) => {
     workspace.notifyChanged(collectionId);
   });
   let view = $state<View>('collection');
   let settingsSection = $state<SettingsSection>('appearance');
   let newCollection = $state<NewCollectionStart | null>(null);
   let searchOpen = $state(false);
+  let newWorkspaceOpen = $state(false);
   // Handed to the Import page when it opens from the New collection dialog or an empty collection.
   let importFile = $state<File | null>(null);
   let importTarget = $state<string | null>(null);
@@ -125,26 +130,36 @@
     await openCollectionById(current.id);
   }
 
-  // Installing an update closes Codestamp, so pending edits are saved first and open ones stop it.
-  async function readyToClose(): Promise<string | null> {
+  /**
+   * Installing an update and opening another workspace both start Codestamp over, so pending edits
+   * are saved first and open ones stop it. `then` is what the user does next ("update"), and
+   * `failed` says what did not happen when saving fails.
+   */
+  async function readyToReload(then: string, failed: string): Promise<string | null> {
     const panel = workspace.unsavedPanel();
     if (panel) {
-      return `Save or close ${panel.toLowerCase()} first, then update.`;
+      return `Save or close ${panel.toLowerCase()} first, then ${then}.`;
     }
     if (environments.editor.dirty) {
-      return 'Save or discard your environment changes first, then update.';
+      return `Save or discard your environment changes first, then ${then}.`;
     }
     if (flows.running) {
-      return 'Wait for the Orchestration run to finish, then update.';
+      return `Wait for the Orchestration run to finish, then ${then}.`;
+    }
+    if (runner.running) {
+      return `Wait for Run all to finish, then ${then}.`;
     }
     if (!(await workspace.flushSave()) || !(await flows.flushSave())) {
-      return 'Your latest edits could not be saved, so the update did not start.';
+      return `Your latest edits could not be saved, so ${failed}.`;
     }
     return null;
   }
 
+  workspaces.readyToLeave = () =>
+    readyToReload('switch workspaces', 'the workspace did not change');
+
   function installUpdate(): void {
-    void updates.install(readyToClose);
+    void updates.install(() => readyToReload('update', 'the update did not start'));
   }
 
   async function openSettings(section: SettingsSection): Promise<void> {
@@ -171,9 +186,13 @@
       return;
     }
     view = 'run';
-    await runner.start(collection, environments.active?.name ?? null, (id, response) => {
-      workspace.recordResult(id, response);
-    });
+    await runner.start(
+      collection,
+      environments.activeIn(collection.id)?.name ?? null,
+      (id, response) => {
+        workspace.recordResult(id, response);
+      },
+    );
   }
 
   async function runAgain(): Promise<void> {
@@ -184,9 +203,13 @@
     await notices.guard(async () => {
       const collection =
         workspace.collection?.id === id ? workspace.collection : await getCollection(id);
-      await runner.start(collection, environments.active?.name ?? null, (requestId, response) => {
-        workspace.recordResult(requestId, response);
-      });
+      await runner.start(
+        collection,
+        environments.activeIn(collection.id)?.name ?? null,
+        (requestId, response) => {
+          workspace.recordResult(requestId, response);
+        },
+      );
     });
   }
 
@@ -257,6 +280,9 @@
         break;
       case 'settings':
         await openSettings(target.section);
+        break;
+      case 'workspace':
+        await workspaces.open(target.workspaceId);
         break;
     }
   }
@@ -352,6 +378,7 @@
   onMount(() => {
     void workspace.load().finally(finishLaunch);
     void environments.load();
+    void workspaces.load();
     window.addEventListener('keydown', toggleSearch, true);
     window.addEventListener('keydown', sidebarShortcut);
     // The first look for an update waits a moment so it does not slow down start-up.
@@ -380,7 +407,12 @@
   {sidebarLocked}
   sidebarNarrow={sidebar.narrow}
   onToggleSidebar={toggleSidebar}
-/>
+>
+  <WorkspaceSwitcher
+    onNew={() => (newWorkspaceOpen = true)}
+    onManage={() => void openSettings('workspaces')}
+  />
+</TitleBar>
 <div class="scroller">
   <div class="shell">
     {#if !focusMode.active}
@@ -540,10 +572,15 @@
   <QuickSearch
     collections={workspace.collections}
     environments={environments.list}
+    workspaces={workspaces.list.filter((item) => item.id !== workspaces.currentId)}
     docsFirst={view === 'docs'}
     onPick={(target: SearchTarget) => void openSearched(target)}
     onClose={() => (searchOpen = false)}
   />
+{/if}
+
+{#if newWorkspaceOpen}
+  <WorkspaceDialog onClose={() => (newWorkspaceOpen = false)} />
 {/if}
 
 {#if newCollection}

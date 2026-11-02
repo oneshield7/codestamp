@@ -16,6 +16,8 @@ const MAX_WORDS: usize = 8;
 /// Characters kept before and after the first word found in a description.
 const SNIPPET_BEFORE: usize = 40;
 const SNIPPET_AFTER: usize = 100;
+/// Only the open workspace's collections (`c`) are searched.
+const OPEN: &str = "c.workspace_id = (SELECT id FROM current_workspace)";
 
 /// The lowercase words of a query; a blank query has none.
 pub fn query_words(query: &str) -> Result<Vec<String>, AppError> {
@@ -49,26 +51,29 @@ pub fn search(conn: &Connection, words: &[String]) -> Result<Vec<DocHit>, AppErr
         }
     };
 
-    let mut collections =
-        conn.prepare("SELECT id, name, icon, description FROM collections ORDER BY sort_order")?;
+    let mut collections = conn.prepare(&format!(
+        "SELECT id, name, icon, description FROM collections c WHERE {OPEN} ORDER BY sort_order"
+    ))?;
     for hit in collections.query_map([], collection_row)? {
         keep(hit?);
     }
-    let mut sections = conn.prepare(
+    let mut sections = conn.prepare(&format!(
         "SELECT s.id, s.name, s.description, c.id, c.name, c.icon
-         FROM sections s JOIN collections c ON c.id = s.collection_id
-         ORDER BY c.sort_order, s.sort_order",
-    )?;
+             FROM sections s JOIN collections c ON c.id = s.collection_id
+             WHERE {OPEN}
+             ORDER BY c.sort_order, s.sort_order"
+    ))?;
     for hit in sections.query_map([], section_row)? {
         keep(hit?);
     }
-    let mut requests = conn.prepare(
+    let mut requests = conn.prepare(&format!(
         "SELECT r.id, r.name, r.description, r.kind, r.method, c.id, c.name, c.icon, s.name
-         FROM requests r
-         JOIN collections c ON c.id = r.collection_id
-         LEFT JOIN sections s ON s.id = r.section_id
-         ORDER BY c.sort_order, COALESCE(s.sort_order, -1), r.sort_order",
-    )?;
+             FROM requests r
+             JOIN collections c ON c.id = r.collection_id
+             LEFT JOIN sections s ON s.id = r.section_id
+             WHERE {OPEN}
+             ORDER BY c.sort_order, COALESCE(s.sort_order, -1), r.sort_order"
+    ))?;
     for hit in requests.query_map([], request_row)? {
         keep(hit?);
     }

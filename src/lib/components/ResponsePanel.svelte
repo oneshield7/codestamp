@@ -95,6 +95,12 @@
     markup?.language === 'xml' && response ? soapFault(response.bodyPreview) : null,
   );
 
+  // HTML (often a server's error page) opens as the page itself; the source is one click away.
+  let htmlView = $state<'page' | 'source'>('page');
+  const pageHtml = $derived(
+    markup?.language === 'html' && response ? shown(response.bodyPreview) : null,
+  );
+
   function headerValue(name: string, value: string): string {
     return maskSecrets && isSensitiveName(name) ? maskSecret(value) : value;
   }
@@ -276,14 +282,43 @@
         </ol>
       </div>
     {:else if tab === 'body'}
-      <div class="viewer" data-find>
-        <CodeEditor
-          value={bodyText}
-          label="Response body"
-          language={formattedJson === null ? (markup?.language ?? 'text') : 'json'}
-          readOnly
-        />
-      </div>
+      {#if pageHtml !== null}
+        <div class="view-bar">
+          <div class="segmented" role="group" aria-label="Show the HTML as">
+            <button
+              type="button"
+              class:on={htmlView === 'page'}
+              aria-pressed={htmlView === 'page'}
+              onclick={() => (htmlView = 'page')}>Page</button
+            >
+            <button
+              type="button"
+              class:on={htmlView === 'source'}
+              aria-pressed={htmlView === 'source'}
+              onclick={() => (htmlView = 'source')}>Source</button
+            >
+          </div>
+          {#if htmlView === 'page'}
+            <span class="hint">Scripts and files from other sites are not loaded.</span>
+          {/if}
+        </div>
+      {/if}
+      {#if pageHtml !== null && htmlView === 'page'}
+        <div class="viewer page">
+          <!-- An empty sandbox: no scripts, no forms, and no way to reach the app around it. -->
+          <iframe title="Response page" sandbox="" referrerpolicy="no-referrer" srcdoc={pageHtml}
+          ></iframe>
+        </div>
+      {:else}
+        <div class="viewer" data-find>
+          <CodeEditor
+            value={bodyText}
+            label="Response body"
+            language={formattedJson === null ? (markup?.language ?? 'text') : 'json'}
+            readOnly
+          />
+        </div>
+      {/if}
     {:else if tab === 'headers'}
       <dl class="headers mono">
         {#each response.headers as header, index (index)}
@@ -633,6 +668,58 @@
     resize: vertical;
     overflow: hidden;
     padding: 6px 4px;
+  }
+
+  .view-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px 0;
+  }
+
+  .segmented {
+    display: inline-flex;
+    gap: 2px;
+    padding: 3px;
+    border-radius: var(--radius-md);
+    background: var(--surface-sunken);
+  }
+
+  .segmented button {
+    padding: 4px 12px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-2);
+    font-size: 13px;
+  }
+
+  .segmented button.on {
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 500;
+    box-shadow: var(--shadow-segment);
+  }
+
+  .hint {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .viewer.page {
+    padding: 8px 16px 16px;
+  }
+
+  /* A page without its own background gets the browser's white, as it would in a browser. */
+  .viewer.page iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color-scheme: light;
+    background: Canvas;
   }
 
   .headers {

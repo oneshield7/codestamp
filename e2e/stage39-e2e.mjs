@@ -163,7 +163,7 @@ try {
   for (const name of ['E2E Dev', 'E2E Prod']) {
     envIds.push((await invoke('create_environment', { name })).ok.id);
   }
-  await invoke('set_active_environment', { id: envIds[1] });
+  await invoke('set_active_environment', { collectionId, id: envIds[1] });
   await reload();
   await run(`$nav('E2E Fold').click()`);
   await sleep(900);

@@ -2,7 +2,7 @@
   import { PhysicalPosition } from '@tauri-apps/api/dpi';
   import type { Menu } from '@tauri-apps/api/menu';
   import { getCurrentWindow } from '@tauri-apps/api/window';
-  import { onMount } from 'svelte';
+  import { onMount, type Snippet } from 'svelte';
   import { notices } from '../state/notices.svelte';
   import type { AppMenuActions } from '../titlebar/app-menu';
   import IconButton from './IconButton.svelte';
@@ -17,10 +17,18 @@
     /** A window too narrow for the full sidebar, said in the toggle's tooltip. */
     sidebarNarrow: boolean;
     onToggleSidebar: () => void;
+    /** Shown in the middle of the bar: the workspace switcher. */
+    children?: Snippet;
   }
 
-  let { menuActions, sidebarCollapsed, sidebarLocked, sidebarNarrow, onToggleSidebar }: Props =
-    $props();
+  let {
+    menuActions,
+    sidebarCollapsed,
+    sidebarLocked,
+    sidebarNarrow,
+    onToggleSidebar,
+    children,
+  }: Props = $props();
 
   const toggleLabel = $derived.by(() => {
     if (sidebarNarrow) {
@@ -128,6 +136,7 @@
       </svg>
     </IconButton>
   </div>
+  {@render children?.()}
   <div class="drag" data-tauri-drag-region></div>
   <div class="controls" role="group" aria-label="Window">
     <button

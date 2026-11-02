@@ -190,14 +190,14 @@ try {
   );
   await sleep(200);
   const fresh = await run(
-    `({ items: [...$map().children].map((li) => li.querySelector('button')?.getAttribute('aria-label') ?? li.textContent.trim()), end: $end(), card: !!$card(), env: !!document.querySelector('.map-card .bar button[aria-label="Active environment"]') })`,
+    `({ items: [...$map().children].map((li) => li.querySelector('button')?.getAttribute('aria-label') ?? li.textContent.trim()), end: $end(), card: !!$card(), env: document.querySelectorAll('.map-card .bar button[aria-label^="Environment of"]').length })`,
   );
   check(
     'a new flow shows Start, Add step and End on the map',
     fresh.items.join('|') === 'Start|Add step|End' &&
       fresh.end.pill === 'End' &&
       !fresh.card &&
-      fresh.env,
+      fresh.env === 0,
     short(fresh),
   );
   await run(
@@ -273,6 +273,14 @@ try {
         ]) &&
       JSON.stringify(planned.uses) === JSON.stringify(['{{token}} from step 2']),
     short(planned),
+  );
+  const pickers = await run(
+    `[...document.querySelectorAll('.map-card .bar button[aria-label^="Environment of"]')].map((b) => b.getAttribute('aria-label'))`,
+  );
+  check(
+    'the map has an environment picker for each collection its steps use',
+    JSON.stringify(pickers) === JSON.stringify([`Environment of ${NAME}`]),
+    short(pickers),
   );
   await run(`$nodes()[0].focus()`);
   for (const type of ['rawKeyDown', 'keyUp']) {

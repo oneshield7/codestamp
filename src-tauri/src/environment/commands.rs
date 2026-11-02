@@ -2,9 +2,11 @@ use tauri::State;
 
 use super::lookup::preview_url as preview;
 use super::models::{
-    EnvironmentList, EnvironmentSummary, UrlPreview, VariableHint, VariableInput, VariableView,
+    EnvironmentList, EnvironmentSummary, UrlPreview, VariableDetail, VariableHint, VariableInput,
+    VariableView,
 };
 use super::repo;
+use super::resolve::is_reference_name;
 use super::validate::check_variables;
 use super::vault::Vault;
 use crate::error::AppError;
@@ -58,15 +60,16 @@ pub async fn set_environment_collection(
     db.with(|conn| repo::set_owner(conn, &id, collection_id.as_deref()))
 }
 
+/// `id: None` leaves the collection without an environment.
 #[tauri::command]
 pub async fn set_active_environment(
     db: State<'_, Database>,
+    collection_id: String,
     id: Option<String>,
 ) -> Result<(), AppError> {
-    if let Some(id) = &id {
-        check_id(id)?;
-    }
-    db.with(|conn| repo::set_active(conn, id.as_deref()))
+    check_id(&collection_id)?;
+    check_optional_id(id.as_deref())?;
+    db.with(|conn| repo::set_active(conn, &collection_id, id.as_deref()))
 }
 
 #[tauri::command]
@@ -109,6 +112,37 @@ pub async fn variable_hints(
 ) -> Result<Vec<VariableHint>, AppError> {
     check_optional_id(collection_id.as_deref())?;
     db.with(|conn| repo::hints(conn, collection_id.as_deref()))
+}
+
+#[tauri::command]
+pub async fn variable_detail(
+    db: State<'_, Database>,
+    collection_id: Option<String>,
+    name: String,
+) -> Result<VariableDetail, AppError> {
+    check_optional_id(collection_id.as_deref())?;
+    if !is_reference_name(&name) {
+        return Err(AppError::invalid("Not a variable name"));
+    }
+    db.with(|conn| repo::detail(conn, collection_id.as_deref(), &name))
+}
+
+/// Changes one variable's value from the popover over a `{{name}}`, under the same checks as
+/// saving the whole set.
+#[tauri::command]
+pub async fn set_variable_value(
+    db: State<'_, Database>,
+    vault: State<'_, Vault>,
+    id: String,
+    value: String,
+) -> Result<(), AppError> {
+    check_id(&id)?;
+    db.with(|conn| {
+        let (set_id, inputs) = repo::with_new_value(conn, &id, &value)?;
+        let inputs = check_variables(inputs)?;
+        groups::check_edit(conn, &set_id, &inputs)?;
+        repo::replace_variables(conn, &vault, &set_id, inputs).map(|_| ())
+    })
 }
 
 #[tauri::command]

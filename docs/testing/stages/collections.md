@@ -23,4 +23,4 @@ Creates and renames a collection, opens a new request as a card, waits for autos
 
 ---
 
-Previous: [Quick search, shortcuts, status bar, Export, History, and Recently deleted](stage-40.md) · [Stage list](../README.md#stage-list) · Next: [codestamp-cli](cli.md)
+Previous: [Workspaces](stage-42.md) · [Stage list](../README.md#stage-list) · Next: [codestamp-cli](cli.md)

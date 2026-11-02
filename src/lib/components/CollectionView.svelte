@@ -31,11 +31,15 @@
   import RequestHistoryDialog from './RequestHistoryDialog.svelte';
   import RequestRow from './RequestRow.svelte';
   import MockPanel from './MockPanel.svelte';
+  import MoveCollectionDialog from './MoveCollectionDialog.svelte';
   import TeamPanel from './TeamPanel.svelte';
   import { mockStatus, type MockStatus } from '../api/mock';
   import { NAV_ICON_PATHS } from '../state/navigation';
   import { KEEP_DAYS } from '../api/trash';
   import { plural } from '../format/plural';
+  import type { Workspace as WorkspaceInfo } from '../api/workspaces';
+  import { notices } from '../state/notices.svelte';
+  import { workspaces } from '../state/workspaces.svelte';
 
   interface Props {
     workspace: Workspace;
@@ -60,6 +64,7 @@
     | { kind: 'request'; id: string; name: string };
 
   let pendingDelete: PendingDelete | null = $state(null);
+  let moving = $state(false);
   /** What the open Duplicate dialog copies. */
   let pendingDuplicate: {
     kind: 'collection' | 'section' | 'request';
@@ -111,6 +116,25 @@
   let resolving = $state(false);
   let pickingIcon = $state(false);
   let historyOf: { id: string; name: string } | null = $state(null);
+
+  // The header with the environment and the collection's tools stays on top while scrolling.
+  let stickMark: HTMLDivElement | undefined = $state();
+  let stuck = $state(false);
+  let headHeight = $state(0);
+
+  $effect(() => {
+    const mark = stickMark;
+    if (!mark) {
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      stuck = entry !== undefined && !entry.isIntersecting;
+    });
+    observer.observe(mark);
+    return () => {
+      observer.disconnect();
+    };
+  });
 
   // Steps run across all sections, in notebook order.
   const items = $derived.by((): ListItem[] => {
@@ -335,6 +359,21 @@
     void workspace.closeRequest();
   }
 
+  async function moveTo(target: WorkspaceInfo): Promise<void> {
+    const name = collection?.name ?? '';
+    if (!(await workspace.moveCollection(target.id))) {
+      return;
+    }
+    moving = false;
+    // Environments it owned went with it, and this device's one stops applying to it.
+    await environments.load();
+    await workspaces.load();
+    notices.inform(`“${name}” moved to ${target.name}.`, {
+      label: `Open ${target.name}`,
+      run: () => void workspaces.open(target.id),
+    });
+  }
+
   function onWindowKey(event: KeyboardEvent): void {
     if (event.defaultPrevented || isInEditor(event.target)) {
       return;
@@ -361,7 +400,7 @@
 <svelte:window onkeydown={onWindowKey} />
 
 {#if collection}
-  <div class="view">
+  <div class="view" style:--collection-head="{headHeight}px">
     {#if focusMode.active}
       <div class="focus-bar">
         <span class="focus-title">
@@ -382,7 +421,8 @@
         </button>
       </div>
     {:else}
-      <header class="top">
+      <div class="stick-mark" bind:this={stickMark} aria-hidden="true"></div>
+      <header class="top" class:stuck bind:offsetHeight={headHeight}>
         <div class="title">
           <div class="title-row">
             <div class="icon-wrap">
@@ -412,19 +452,10 @@
               onCommit={(name: string) => void workspace.renameCollection(name)}
             />
           </div>
-          <p class="meta">
-            {#if collection.requests.length === 0}
-              No requests yet · saved automatically
-            {:else}
-              {collection.requests.length}
-              {collection.requests.length === 1 ? 'request' : 'requests'} · saved automatically
-            {/if}
-            {#if workspace.createdId === collection.id && collection.requests.length === 0}
-              <span class="created" role="status">Created just now</span>
-            {/if}
-          </p>
         </div>
-        <EnvironmentSelect {environments} collections={workspace.collections} />
+        <div class="environment">
+          <EnvironmentSelect {environments} collectionId={collection.id} />
+        </div>
         <div class="tools" role="group" aria-label="Collection actions">
           <IconButton
             label={canRun ? 'Run all' : 'Run all · add an HTTP or GraphQL request first'}
@@ -530,6 +561,19 @@
             </svg>
           </IconButton>
           <IconButton
+            label={workspaces.list.length > 1
+              ? 'Move to workspace'
+              : 'Move to workspace · create another workspace first'}
+            popup="dialog"
+            disabled={workspaces.list.length < 2}
+            expanded={moving}
+            onclick={() => (moving = true)}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h7l2 2h7v10H4zM12 13h5M15 11l2 2-2 2" />
+            </svg>
+          </IconButton>
+          <IconButton
             label="Delete collection"
             danger
             popup="dialog"
@@ -543,6 +587,17 @@
           </IconButton>
         </div>
       </header>
+      <p class="meta">
+        {#if collection.requests.length === 0}
+          No requests yet · saved automatically
+        {:else}
+          {collection.requests.length}
+          {collection.requests.length === 1 ? 'request' : 'requests'} · saved automatically
+        {/if}
+        {#if workspace.createdId === collection.id && collection.requests.length === 0}
+          <span class="created" role="status">Created just now</span>
+        {/if}
+      </p>
       {#if link && link.conflicts.length > 0 && openPanel !== 'team'}
         <div class="overlap" role="status">
           <span>
@@ -559,7 +614,7 @@
       <CollectionVariables
         {workspace}
         collectionId={collection.id}
-        environmentName={environments.active?.name ?? null}
+        environmentName={environments.activeIn(collection.id)?.name ?? null}
         shared={link !== undefined}
         onClose={() => (openPanel = null)}
       />
@@ -745,7 +800,7 @@
             collectionAuth={collection.auth}
             focused={focusMode.active}
             maskSecrets={focusMode.active && focusMode.hideSecrets}
-            environmentName={environments.active?.name ?? null}
+            environmentName={environments.activeIn(collection.id)?.name ?? null}
             onFocus={() => {
               focusMode.enter();
             }}
@@ -879,6 +934,14 @@
     />
   {/if}
 
+  {#if moving}
+    <MoveCollectionDialog
+      collectionName={collection.name}
+      onMove={moveTo}
+      onClose={() => (moving = false)}
+    />
+  {/if}
+
   <ConfirmDialog
     open={pendingDelete !== null}
     title="Delete?"
@@ -946,12 +1009,35 @@
     color: var(--text-muted);
   }
 
+  /* Whatever is focused or revealed below the sticky header stops clear of it. The header's own
+     controls are left out, so focusing them never scrolls the page. */
+  .view > :global(:not(.top)),
+  .view > :global(:not(.top) *) {
+    scroll-margin-top: calc(var(--collection-head, 0px) + 16px);
+  }
+
+  .stick-mark {
+    height: 0;
+  }
+
+  /* Stays at the top of the scrolling area. The negative margins let its background cover what
+     scrolls underneath without moving the title from where it sat. */
   .top {
+    position: sticky;
+    top: 0;
+    z-index: 5;
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
-    margin-bottom: 8px;
+    margin: -20px -12px 0;
+    padding: 10px 12px;
+    border-bottom: 1px solid transparent;
+    background: var(--bg);
+  }
+
+  .top.stuck {
+    border-bottom-color: var(--border);
   }
 
   .title {
@@ -989,7 +1075,7 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 6px 12px;
-    margin: 8px 0 0;
+    margin: -14px 0 8px;
     color: var(--text-muted);
   }
 
@@ -1001,6 +1087,19 @@
     color: var(--ok);
     font-size: 12px;
     font-weight: 500;
+  }
+
+  /* A fixed width, so picking an environment with a longer or shorter name never re-wraps the
+     header and shifts the page under it. */
+  .environment {
+    flex: 0 1 260px;
+    min-width: 0;
+    display: flex;
+  }
+
+  .environment :global(.dropdown),
+  .environment :global(.trigger) {
+    width: 100%;
   }
 
   .tools {

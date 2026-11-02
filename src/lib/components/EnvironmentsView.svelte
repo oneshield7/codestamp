@@ -55,14 +55,27 @@
   ]);
 
   function meta(env: EnvironmentSummary): string {
-    return env.id === environments.activeId ? 'Active' : String(env.variableCount);
+    return environments.usedBy(env.id).length > 0 ? 'Active' : String(env.variableCount);
   }
 
   type Pending = { kind: 'delete' } | { kind: 'switch'; id: string };
   let pending: Pending | null = $state(null);
 
   const selected = $derived(environments.selected);
-  const isActive = $derived(selected !== null && selected.id === environments.activeId);
+  // An environment of a collection is switched on here for that collection; one kept on this
+  // device is chosen per collection in its header, so this page only says where it is used.
+  const isActive = $derived(
+    selected?.collectionId != null &&
+      environments.activeIn(selected.collectionId)?.id === selected.id,
+  );
+  const usedIn = $derived(
+    selected === null
+      ? ''
+      : workspace.collections
+          .filter((collection) => environments.usedBy(selected.id).includes(collection.id))
+          .map((collection) => collection.name)
+          .join(', '),
+  );
   let exported: (ExportResult & { environmentId: string }) | null = $state(null);
 
   async function exportSelected(id: string): Promise<void> {
@@ -132,7 +145,7 @@
             <span
               class="dot"
               class:global={env.isGlobal}
-              class:active={env.id === environments.activeId}
+              class:active={environments.usedBy(env.id).length > 0}
             ></span>
             <span class="name">{env.name}</span>
             <span class="meta">{meta(env)}</span>
@@ -159,16 +172,28 @@
               label="Environment name"
               onCommit={(name: string) => void environments.rename(name)}
             />
-            {#if isActive}
+            {#if selected.collectionId === null}
+              <span class="hint">
+                {usedIn === ''
+                  ? 'Not used yet · pick it in a collection’s header'
+                  : `Used by ${usedIn}`}
+              </span>
+            {:else if isActive}
+              {@const owner = selected.collectionId}
               <span class="badge">Active</span>
-              <button type="button" class="quiet" onclick={() => void environments.setActive(null)}>
-                Deactivate
-              </button>
-            {:else}
               <button
                 type="button"
                 class="quiet"
-                onclick={() => void environments.setActive(selected.id)}
+                onclick={() => void environments.setActive(owner, null)}
+              >
+                Deactivate
+              </button>
+            {:else}
+              {@const owner = selected.collectionId}
+              <button
+                type="button"
+                class="quiet"
+                onclick={() => void environments.setActive(owner, selected.id)}
               >
                 Set active
               </button>

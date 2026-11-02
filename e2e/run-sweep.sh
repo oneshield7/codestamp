@@ -8,7 +8,7 @@ node launch.mjs >/dev/null
 node eval.mjs "(async () => { const i = window.__TAURI_INTERNALS__.invoke; const a = (await i('get_appearance')).appearance; await i('save_appearance', { appearance: { ...a, theme: 'light' } }); location.reload(); return 'light'; })()" >/dev/null
 sleep 2
 echo "== $E2E_SIZE: viewport $(node eval.mjs '[innerWidth, innerHeight].join("x")')"
-for s in stage10 stage11 stage12 stage13 stage14 stage15 stage16 stage17 stage18 stage19 stage20 stage21 stage22 stage23 stage24 stage26 stage27 stage28 stage29 stage30 stage31 stage32 stage33 stage35 stage36 stage37 stage38 stage39 stage40 collections; do
+for s in stage10 stage11 stage12 stage13 stage14 stage15 stage16 stage17 stage18 stage19 stage20 stage21 stage22 stage23 stage24 stage26 stage27 stage28 stage29 stage30 stage31 stage32 stage33 stage35 stage36 stage37 stage38 stage39 stage40 stage41 stage42 collections; do
   out=$(timeout 420 node $s-e2e.mjs 2>&1)
   echo "$s: $(echo "$out" | grep -c '^PASS') pass, $(echo "$out" | grep -c '^FAIL') fail"
   echo "$out" | grep '^FAIL' | cut -c1-400 | head -6

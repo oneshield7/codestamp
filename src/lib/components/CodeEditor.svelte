@@ -11,7 +11,9 @@
     type EditorLanguage,
   } from '../editor/setup';
   import { preferenceSettings } from '../state/preferences.svelte';
+  import { VariableHover } from '../state/variable-hover.svelte';
   import { variableNames } from '../state/variable-names.svelte';
+  import VariablePopover from './VariablePopover.svelte';
 
   interface Props {
     value: string;
@@ -37,6 +39,33 @@
 
   let host: HTMLDivElement;
   let view: EditorView | undefined = $state();
+  // Only editable text with a collection behind it can show and change variable values.
+  const hover = new VariableHover();
+  const hoverable = $derived(variablesOf !== undefined && !readOnly);
+
+  $effect(() => () => {
+    hover.close();
+  });
+
+  $effect(() => {
+    if (!hoverable) {
+      return;
+    }
+    const move = (event: PointerEvent): void => {
+      if (event.target instanceof Element) {
+        hover.point(event.target.closest('[data-variable]'));
+      }
+    };
+    const leave = (): void => {
+      hover.point(null);
+    };
+    host.addEventListener('pointermove', move);
+    host.addEventListener('pointerleave', leave);
+    return () => {
+      host.removeEventListener('pointermove', move);
+      host.removeEventListener('pointerleave', leave);
+    };
+  });
   const languageSlot = new Compartment();
   const preferenceSlot = new Compartment();
   const variableSlot = new Compartment();
@@ -53,6 +82,7 @@
           variableSlot.of([]),
           EditorView.updateListener.of((update) => {
             if (update.docChanged) {
+              hover.close();
               onChange?.(update.state.doc.toString());
             }
           }),
@@ -132,6 +162,14 @@
 </script>
 
 <div class="editor" bind:this={host}></div>
+{#if hover.shown && hoverable}
+  <VariablePopover
+    shown={hover.shown}
+    collectionId={variablesOf ?? null}
+    {hover}
+    onDismiss={() => view?.focus()}
+  />
+{/if}
 
 <style>
   .editor {

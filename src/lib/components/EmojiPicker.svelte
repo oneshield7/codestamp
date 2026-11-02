@@ -14,9 +14,21 @@
     /** `null` goes back to the automatic icon. */
     onPick: (icon: string | null) => void;
     onClose: () => void;
+    /** The picker's accessible name. */
+    label?: string;
+    /** Offers going back to the icon picked from the name; workspaces have none to go back to. */
+    automatic?: boolean;
   }
 
-  let { current, name, custom, onPick, onClose }: Props = $props();
+  let {
+    current,
+    name,
+    custom,
+    onPick,
+    onClose,
+    label = 'Collection icon',
+    automatic = true,
+  }: Props = $props();
 
   let panel: HTMLElement;
   let search: HTMLInputElement;
@@ -99,7 +111,7 @@
   }
 </script>
 
-<div bind:this={panel} class="picker" role="dialog" aria-label="Collection icon" tabindex="-1">
+<div bind:this={panel} class="picker" role="dialog" aria-label={label} tabindex="-1">
   <label class="search">
     <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true">
       <circle cx="11" cy="11" r="6" /><path d="M20 20l-4.5-4.5" />
@@ -151,7 +163,9 @@
   {/if}
 
   <div class="foot">
-    <span class="mode">{custom ? 'Chosen by you' : 'Automatic: picked from the name'}</span>
+    {#if automatic}
+      <span class="mode">{custom ? 'Chosen by you' : 'Automatic: picked from the name'}</span>
+    {/if}
     <button type="button" class="small" disabled={entries.length === 0} onclick={shuffle}>
       <svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true">
         <path
@@ -160,14 +174,16 @@
       </svg>
       Shuffle
     </button>
-    <button
-      type="button"
-      class="small"
-      disabled={!custom}
-      onclick={() => {
-        onPick(null);
-      }}>Use automatic</button
-    >
+    {#if automatic}
+      <button
+        type="button"
+        class="small"
+        disabled={!custom}
+        onclick={() => {
+          onPick(null);
+        }}>Use automatic</button
+      >
+    {/if}
   </div>
 </div>
 

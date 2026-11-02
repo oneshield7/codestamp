@@ -911,7 +911,7 @@
     background: var(--surface);
     box-shadow: var(--shadow-card);
     overflow: hidden;
-    scroll-margin-top: 16px;
+    scroll-margin-top: calc(var(--collection-head, 0px) + 16px);
   }
 
   .card.focused {

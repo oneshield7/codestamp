@@ -1,6 +1,6 @@
 # Stage 23: Orchestration
 
-Suite [`stage23-e2e.mjs`](../../../e2e/stage23-e2e.mjs) · 16 checks
+Suite [`stage23-e2e.mjs`](../../../e2e/stage23-e2e.mjs) · 17 checks
 
 Builds a flow from Start to End on top of a local shop API (register, login, add to cart, checkout) and checks its step map: the value lines the selected step receives and passes on, arrow-key navigation, checks, a flow that stops (with a stop line to End) or continues on failure, order and saving, deleted requests, Quick search, and deleting the flow. Creates "E2E Shop" and deletes it afterwards.
 
@@ -20,6 +20,7 @@ Builds a flow from Start to End on top of a local shop API (register, login, add
 - the picker offers HTTP requests but not WebSocket ones
 - steps are numbered in order on the map, Add step sits before End
 - the selected step shows the values it receives and passes on
+- the map has an environment picker for each collection its steps use
 - arrow keys move between steps on the map
 
 ### 3. A passing run

@@ -76,6 +76,18 @@ pub fn links(conn: &Connection) -> Result<Vec<TeamLink>, AppError> {
     Ok(rows.collect::<Result<_, _>>()?)
 }
 
+/// The shared collections of the open workspace, for Git changes. Syncing uses all of them.
+pub fn open_workspace_links(conn: &Connection) -> Result<Vec<TeamLink>, AppError> {
+    let mut statement = conn.prepare(&format!(
+        "SELECT {LINK_COLUMNS} FROM team_links
+         WHERE collection_id IN (SELECT id FROM collections
+                                 WHERE workspace_id = (SELECT id FROM current_workspace))
+         ORDER BY created_at"
+    ))?;
+    let rows = statement.query_map([], TeamLink::from_row)?;
+    Ok(rows.collect::<Result<_, _>>()?)
+}
+
 pub fn delete_link(conn: &Connection, collection_id: &str) -> Result<(), AppError> {
     conn.execute(
         "DELETE FROM team_links WHERE collection_id = ?1",
