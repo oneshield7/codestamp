@@ -1,6 +1,6 @@
 name: Release
 
-# Pushing a tag such as v0.3.7 builds the Windows installer and attaches it to a draft release,
+# Pushing a tag such as v0.4.0 builds the Windows installer and attaches it to a draft release,
 # which stays unpublished until someone reviews it.
 on:
   push:

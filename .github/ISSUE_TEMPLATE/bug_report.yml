@@ -12,7 +12,7 @@ body:
     attributes:
       label: Codestamp version
       description: Shown in the status bar, bottom right.
-      placeholder: 0.3.7
+      placeholder: 0.4.0
     validations:
       required: true
   - type: input
