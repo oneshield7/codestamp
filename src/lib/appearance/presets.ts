@@ -1,4 +1,5 @@
 import type { Appearance, Theme } from '../api/settings';
+import { platform, systemName } from '../dom/platform';
 
 export interface FontPreset {
   key: string;
@@ -26,23 +27,36 @@ export const THEMES: ThemeOption[] = [
   { key: 'light', label: 'Light', hint: 'Ink on paper' },
   { key: 'dark', label: 'Dark', hint: 'Soft graphite' },
   { key: 'night', label: 'Dark Night', hint: 'Deep navy for late hours' },
-  { key: 'system', label: 'System', hint: 'Follows Windows' },
+  { key: 'system', label: 'System', hint: `Follows ${systemName}` },
 ];
+
+// Segoe UI, Cascadia and Consolas ship with Windows only.
+const windowsFonts = platform === 'windows';
 
 // The `-default` stacks are defined once in app.css; every choice falls back to them.
 export const UI_FONT_PRESETS: FontPreset[] = [
   { key: DEFAULT_FONT, label: 'Geist (default)', stack: 'var(--font-ui-default)' },
-  { key: 'segoe-ui', label: 'System · Segoe UI', stack: "'Segoe UI', var(--font-ui-default)" },
+  ...(windowsFonts
+    ? [{ key: 'segoe-ui', label: 'System · Segoe UI', stack: "'Segoe UI', var(--font-ui-default)" }]
+    : []),
 ];
 
 export const CODE_FONT_PRESETS: FontPreset[] = [
   { key: DEFAULT_FONT, label: 'Geist Mono (default)', stack: 'var(--font-code-default)' },
-  {
-    key: 'cascadia-code',
-    label: 'System · Cascadia Code',
-    stack: "'Cascadia Code', 'Cascadia Mono', var(--font-code-default)",
-  },
-  { key: 'consolas', label: 'System · Consolas', stack: 'Consolas, var(--font-code-default)' },
+  ...(windowsFonts
+    ? [
+        {
+          key: 'cascadia-code',
+          label: 'System · Cascadia Code',
+          stack: "'Cascadia Code', 'Cascadia Mono', var(--font-code-default)",
+        },
+        {
+          key: 'consolas',
+          label: 'System · Consolas',
+          stack: 'Consolas, var(--font-code-default)',
+        },
+      ]
+    : []),
 ];
 
 export const DEFAULT_APPEARANCE: Appearance = {

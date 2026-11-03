@@ -7,6 +7,7 @@
   import type { TeamSync } from '../state/team.svelte';
   import type { Workspace } from '../state/workspace.svelte';
   import { accountFor } from '../team/account';
+  import { INSTALL_GIT } from '../team/install';
   import AccountFields from './AccountFields.svelte';
   import ChoiceCard from './ChoiceCard.svelte';
   import EmojiPicker from './EmojiPicker.svelte';
@@ -289,8 +290,8 @@
       />
     {:else if gitMissing}
       <p class="info">
-        Git is not installed on this device. Install Git for Windows from git-scm.com, then reopen
-        Codestamp to join a shared collection.
+        Git is not installed on this device. {INSTALL_GIT}, then reopen Codestamp to join a shared
+        collection.
       </p>
     {:else}
       <div class="field">

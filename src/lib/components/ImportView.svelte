@@ -26,6 +26,7 @@
   import type { TeamSync } from '../state/team.svelte';
   import type { Workspace } from '../state/workspace.svelte';
   import { accountFor } from '../team/account';
+  import { INSTALL_GIT } from '../team/install';
   import AccountFields from './AccountFields.svelte';
   import CollectionTarget from './CollectionTarget.svelte';
   import ConfirmDialog from './ConfirmDialog.svelte';
@@ -572,8 +573,7 @@
       </p>
       {#if team.setup && team.setup.gitVersion === null}
         <p class="error">
-          Git is not installed on this device. Install Git for Windows from git-scm.com, then reopen
-          Codestamp.
+          Git is not installed on this device. {INSTALL_GIT}, then reopen Codestamp.
         </p>
       {:else}
         <label class="field">

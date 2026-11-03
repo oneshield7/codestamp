@@ -62,7 +62,7 @@ fn check_room(db: &Database) -> Result<(), AppError> {
     Ok(())
 }
 
-/// Adds a CA certificate that requests trust on top of the ones Windows trusts.
+/// Adds a CA certificate that requests trust on top of the ones the OS trusts.
 pub fn add_ca(
     db: &Database,
     vault: &Vault,

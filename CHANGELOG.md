@@ -4,6 +4,19 @@ All notable changes to Codestamp are listed here. Versions follow [Semantic Vers
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-03
+
+Codestamp now runs on Linux. The database format is the same as in 0.4.0.
+
+### Added
+
+- Linux packages. A `.deb` for Debian 12, Ubuntu 22.04 and later, and the distributions built on them installs Codestamp and `codestamp-cli`. Secret values keep their key in the system keyring (GNOME Keyring or KWallet) through Secret Service.
+
+### Changed
+
+- Codestamp opens even when the system's credential store cannot be reached. Saving a secret then says the store is unavailable, and switching workspaces still works.
+- Hints in Environments, Settings and Collaboration name the system Codestamp runs on. The Segoe UI, Cascadia Code and Consolas font choices appear on Windows only.
+
 ## [0.4.0] - 2026-11-02
 
 Workspaces, and an environment of its own for each collection. This version updates the database the first time it opens, and older versions cannot open it afterwards. Back up your data first in Settings › Data & history if you may go back.
@@ -60,6 +73,7 @@ The first version with public source code. It has no GitHub release.
 
 Versions 0.1.0 to 0.3.4 were built before the repository was public. Their changes are described stage by stage, in Indonesian, in [`README.id.md`](README.id.md).
 
-[Unreleased]: ../../compare/v0.4.0...HEAD
+[Unreleased]: ../../compare/v0.5.0...HEAD
+[0.5.0]: ../../releases/tag/v0.5.0
 [0.4.0]: ../../releases/tag/v0.4.0
 [0.3.7]: ../../releases/tag/v0.3.7

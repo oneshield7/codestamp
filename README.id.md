@@ -7,13 +7,13 @@
 
 <p align="center">
   <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-007ec6"></a>
-  <a href="../../releases"><img alt="Release: v0.4.0" src="https://img.shields.io/badge/release-v0.4.0-007ec6"></a>
-  <img alt="Platform: Windows 10 and 11" src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078d6">
+  <a href="../../releases"><img alt="Release: v0.5.0" src="https://img.shields.io/badge/release-v0.5.0-007ec6"></a>
+  <img alt="Platform: Windows 10 and 11, Linux" src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011%20%7C%20Linux-0078d6">
 </p>
 
 <p align="center"><a href="README.md">English</a> · <strong>Bahasa Indonesia</strong></p>
 
-API client desktop untuk HTTP, GraphQL, WebSocket, Server-Sent Events, gRPC, SOAP, dan MCP. Dibangun dengan **Tauri 2 + Rust** untuk inti jaringan dan **Svelte 5 + TypeScript** untuk UI. Aplikasi ini memakai webview bawaan Windows (WebView2), bukan browser yang dibundel, jadi installernya sekitar 6,5 MB.
+API client desktop untuk HTTP, GraphQL, WebSocket, Server-Sent Events, gRPC, SOAP, dan MCP. Dibangun dengan **Tauri 2 + Rust** untuk inti jaringan dan **Svelte 5 + TypeScript** untuk UI. Aplikasi ini memakai webview bawaan sistem (WebView2 di Windows, WebKitGTK di Linux), bukan browser yang dibundel, jadi installernya sekitar 6,5 MB.
 
 ## Yang Harus Anda Tahu
 
@@ -587,7 +587,7 @@ Tahap 37: **Copy as code untuk 15 bahasa**
 - `node e2e/codegen-e2e.mjs` kini menjalankan 15 bahasa. Image Docker tidak pernah diunduh oleh suite (`--pull never`); bahasa yang toolchain atau image-nya tidak ada ditandai SKIP.
 - Versi aplikasi naik ke **0.3.6**.
 
-Berikutnya: build untuk macOS dan Linux.
+Berikutnya: build untuk macOS. Paket Linux dijelaskan di [Paket Linux](#paket-linux).
 
 ## Prasyarat (Windows)
 
@@ -664,6 +664,25 @@ Setiap rilis:
    (`--notes-file catatan.txt` untuk catatan panjang, maksimal 4000 byte.)
 4. Unggah `Codestamp_<versi>_x64-setup.exe` dan `latest.json` ke folder yang sama di server. Codestamp yang sudah terpasang menemukannya saat dibuka berikutnya, atau lewat _Check for updates_.
 
+## Paket Linux
+
+```bash
+npm run installer
+```
+
+```bash
+bash scripts/recompress-deb.sh
+```
+
+Di Linux, perintah pertama membuild `codestamp-cli` lalu Codestamp dan menulis `src-tauri/target/release/bundle/deb/Codestamp_<versi>_amd64.deb`. Perintah kedua mengemas ulang `.deb` itu dengan xz, karena Tauri memakai gzip dan tidak punya pengaturan untuk itu. Ukurannya turun dari 11,7 MB menjadi 6,5 MB dengan isi yang sama.
+
+- Untuk Debian 12, Ubuntu 22.04 ke atas, dan distro turunannya (x64). Pasang dengan `sudo apt install ./Codestamp_<versi>_amd64.deb`; apt sekaligus memasang WebKitGTK bila belum ada.
+- `codestamp-desktop` dan `codestamp-cli` masuk ke `/usr/bin`, dan Codestamp muncul di menu aplikasi.
+- Data aplikasi ada di `~/.local/share/dev.codestamp.desktop`.
+- Kunci secret disimpan di keyring sistem lewat Secret Service (GNOME Keyring atau KWallet). Tanpa keyring yang berjalan, Codestamp tetap terbuka, tetapi menyimpan secret menampilkan "Could not access the secure credential store".
+- Prasyarat build: Node.js 24+, Rust stable, dan `build-essential libwebkit2gtk-4.1-dev libxdo-dev libssl-dev librsvg2-dev`.
+- Workflow _CI_ juga menjalankan `npm run verify` di `ubuntu-22.04` dan membuat `.deb` sebagai artifact di setiap pull request. Workflow _Release_ melampirkan `.deb` ke draft release yang sama dengan installer Windows. Paket dibuat di Ubuntu 22.04 supaya juga jalan di distro yang lebih baru.
+
 ## CLI untuk CI
 
 `codestamp-cli` menjalankan request HTTP dan GraphQL sebuah collection sesuai urutan notebook, lengkap dengan script dan test, seperti Run all. Database-nya hanya ada di memori selama run berjalan (dengan kunci enkripsi acak sementara), jadi data aplikasi di mesin itu tidak dibaca maupun diubah.
@@ -683,7 +702,7 @@ codestamp-cli run ./api-collaboration-repo --environment staging.postman_environ
 - `--bail` berhenti setelah request pertama yang gagal; `--delay <ms>`; `--timeout <detik>` (1-300).
 - `--junit <file>` (JUnit XML untuk CI) dan `--json <file>` (bentuk sama dengan Export report di aplikasi).
 - Exit code: `0` semua lulus, `1` ada yang gagal, `2` run tidak bisa dimulai atau laporan gagal ditulis. Warna hanya untuk terminal dan dimatikan oleh `NO_COLOR`.
-- WebSocket, MCP, dan gRPC dilewati dengan keterangan. Saat ini CLI dibangun bersama aplikasi Windows; build macOS/Linux menyusul bersama aplikasinya.
+- WebSocket, MCP, dan gRPC dilewati dengan keterangan. CLI ikut terpasang lewat installer Windows dan paket `.deb` Linux; build macOS menyusul bersama aplikasinya.
 
 ## Pemeriksaan kualitas
 

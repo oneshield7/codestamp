@@ -14,8 +14,17 @@ concurrency:
 
 jobs:
   verify:
-    name: Checks and Rust tests
-    runs-on: windows-latest
+    name: Checks and Rust tests (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-latest
+          # The oldest supported Ubuntu, so what builds here also runs on newer distributions.
+          - name: Linux
+            os: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
 
@@ -32,6 +41,12 @@ jobs:
         with:
           workspaces: src-tauri
 
+      - name: Install the Linux build libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev librsvg2-dev
+
       - name: Install dependencies
         run: npm ci
 
@@ -39,4 +54,48 @@ jobs:
         run: npm run verify
 
       - name: Audit npm dependencies
+        if: runner.os == 'Windows'
         run: npm audit --audit-level=high
+
+  # Builds the packages the release would attach, so they can be installed and tried first.
+  linux-packages:
+    name: Linux packages
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install the Linux build libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev librsvg2-dev patchelf
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build codestamp-cli
+        run: cargo build --release --manifest-path src-tauri/Cargo.toml --bin codestamp-cli
+
+      - name: Build the .deb and AppImage
+        run: npx tauri build
+
+      - name: Recompress the .deb with xz
+        run: bash scripts/recompress-deb.sh
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: linux-packages
+          path: |
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/appimage/*.AppImage
+          retention-days: 7

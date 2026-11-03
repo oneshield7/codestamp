@@ -8,13 +8,31 @@
     type ProxyScheme,
     type ProxySettings,
   } from '../../api/preferences';
+  import { forPlatform } from '../../dom/platform';
   import { notices } from '../../state/notices.svelte';
   import Dropdown from '../Dropdown.svelte';
   import NumberField from '../NumberField.svelte';
 
+  // Linux has no system-wide proxy setting that every program reads, only these variables.
   const MODES: { key: ProxyMode; label: string; hint: string }[] = [
-    { key: 'system', label: 'Use the system proxy', hint: 'The proxy set in Windows, if any' },
-    { key: 'off', label: 'No proxy', hint: 'Connect directly, even if Windows has a proxy' },
+    {
+      key: 'system',
+      label: 'Use the system proxy',
+      hint: forPlatform({
+        windows: 'The proxy set in Windows, if any',
+        macos: 'The proxy set in macOS, if any',
+        linux: 'The proxy in HTTP_PROXY or HTTPS_PROXY, if set',
+      }),
+    },
+    {
+      key: 'off',
+      label: 'No proxy',
+      hint: forPlatform({
+        windows: 'Connect directly, even if Windows has a proxy',
+        macos: 'Connect directly, even if macOS has a proxy',
+        linux: 'Connect directly, even if HTTP_PROXY is set',
+      }),
+    },
     { key: 'custom', label: 'Custom proxy', hint: 'A proxy only Codestamp uses' },
   ];
   const SCHEMES: { value: ProxyScheme; label: string }[] = [

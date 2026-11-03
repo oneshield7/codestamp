@@ -40,6 +40,15 @@ const BASE_CONFIG: [&str; 12] = [
 #[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
+#[cfg(windows)]
+const GIT_MISSING: &str =
+    "Git is not installed. Install Git for Windows (git-scm.com), then try again";
+#[cfg(target_os = "macos")]
+const GIT_MISSING: &str = "Git is not installed. Install Git (git-scm.com), then try again";
+#[cfg(not(any(windows, target_os = "macos")))]
+const GIT_MISSING: &str =
+    "Git is not installed. Install it with your package manager (the git package), then try again";
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GitError {
     Missing,
@@ -56,10 +65,7 @@ pub enum GitError {
 impl From<GitError> for AppError {
     fn from(error: GitError) -> Self {
         Self::InvalidInput(match error {
-            GitError::Missing => {
-                "Git is not installed. Install Git for Windows (git-scm.com), then try again"
-                    .to_owned()
-            }
+            GitError::Missing => GIT_MISSING.to_owned(),
             GitError::Timeout => "Git took too long to answer".to_owned(),
             GitError::Offline => "Could not reach the repository. Check the connection".to_owned(),
             GitError::SignIn => {
@@ -319,7 +325,10 @@ fn classify(stderr: &str) -> GitError {
         "repository not found",
         "does not appear to be a git repository",
         "returned error: 404",
-    ]) {
+    ])
+        // A folder remote that is gone: "fatal: repository '/srv/team.git' does not exist".
+        || (text.contains("fatal: repository '") && text.contains("' does not exist"))
+    {
         GitError::NotFound
     } else if has(&[
         "[rejected]",
@@ -500,8 +509,13 @@ mod tests {
         assert!(check_remote("https://github.com/team/api.git").is_ok());
         assert!(check_remote("ssh://git@github.com/team/api.git").is_ok());
         assert!(check_remote("git@github.com:team/api.git").is_ok());
-        assert!(check_remote("\\\\server\\share\\api.git").is_ok());
-        assert!(check_remote("C:\\repos\\api.git").is_ok());
+        #[cfg(windows)]
+        {
+            assert!(check_remote("\\\\server\\share\\api.git").is_ok());
+            assert!(check_remote("C:\\repos\\api.git").is_ok());
+        }
+        #[cfg(unix)]
+        assert!(check_remote("/srv/git/api.git").is_ok());
 
         assert!(check_remote("ext::sh -c touch% /tmp/pwned").is_err());
         assert!(check_remote("file:///C:/repos/api.git").is_err());
@@ -529,6 +543,10 @@ mod tests {
         );
         assert_eq!(
             classify("remote: Repository not found.\nfatal: repository 'x' not found"),
+            GitError::NotFound
+        );
+        assert_eq!(
+            classify("fatal: repository '/srv/git/team.git' does not exist"),
             GitError::NotFound
         );
         assert_eq!(

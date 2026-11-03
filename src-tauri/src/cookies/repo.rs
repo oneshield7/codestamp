@@ -26,7 +26,11 @@ pub fn save(conn: &Connection, vault: &Vault, jar: &CookieJar) -> Result<(), App
 /// Keeps the open workspace's cookies, then fills the jar with the ones `to` saved. The caller
 /// opens `to` afterwards.
 pub fn switch(conn: &Connection, vault: &Vault, jar: &CookieJar, to: &str) -> Result<(), AppError> {
-    save(conn, vault, jar)?;
+    match save(conn, vault, jar) {
+        // Without the key no jar can be kept at all, so the other workspace still opens.
+        Ok(()) | Err(AppError::SecretStore) => {}
+        Err(error) => return Err(error),
+    }
     jar.clear(None)?;
     jar.take_changed();
     load(conn, vault, jar, to)
@@ -148,5 +152,30 @@ mod tests {
         };
         assert_eq!(jar.value(&key).expect("value"), "first");
         assert_ne!(first, other);
+    }
+
+    struct NoCredentialStore;
+
+    impl crate::environment::vault::KeySource for NoCredentialStore {
+        fn load_or_create(&self) -> Result<Vec<u8>, AppError> {
+            Err(AppError::SecretStore)
+        }
+    }
+
+    #[test]
+    fn opens_another_workspace_without_a_credential_store() {
+        let db = Database::in_memory().expect("database");
+        let vault = Vault::new(Box::new(NoCredentialStore));
+        let jar = CookieJar::default();
+        let site = url::Url::parse("https://shop.test/").expect("url");
+        let header = HeaderValue::from_static("session=first; Path=/");
+        jar.set_cookies(&mut std::iter::once(&header), &site);
+
+        db.with(|conn| {
+            let other = workspaces::insert_named(conn, "Other")?.id;
+            switch(conn, &vault, &jar, &other)
+        })
+        .expect("switch");
+        assert!(jar.list().expect("list").is_empty());
     }
 }
