@@ -13,9 +13,9 @@
 
 <p align="center"><strong>English</strong> · <a href="README.id.md">Bahasa Indonesia</a></p>
 
-Codestamp is a desktop API client for HTTP, GraphQL, WebSocket, Server-Sent Events, gRPC, SOAP and MCP. The network core is written in Rust on Tauri 2, the interface in Svelte 5 and TypeScript, and it runs on the WebView that ships with Windows instead of a bundled browser, so the installer is about 6.5 MB.
+Codestamp is a desktop API client for HTTP, GraphQL, WebSocket, Server-Sent Events, gRPC, SOAP and MCP. The network core is written in Rust on Tauri 2, the interface in Svelte 5 and TypeScript, and it runs on the system's WebView (WebView2 on Windows, WebKitGTK on Linux) instead of a bundled browser, so the installer is about 6.5 MB.
 
-Current release: **0.4.0, Windows 10 and 11 (x64)**. macOS and Linux builds are planned.
+Current release: **0.4.0, Windows 10 and 11 (x64)**. Linux packages come with the next release, and a macOS build is planned.
 
 ## What You Need To Know
 
@@ -95,6 +95,8 @@ The code is open under Apache-2.0, so you can read how Codestamp handles your se
 
 ## Install
 
+### Windows
+
 1. Download `Codestamp_<version>_x64-setup.exe` from the [Releases](../../releases) page.
 2. Run it. It installs for the current user, needs no administrator rights, and installs WebView2 only if it is missing.
 3. When updating, choose **Do not uninstall** if the installer asks, so your data stays in place.
@@ -102,6 +104,23 @@ The code is open under Apache-2.0, so you can read how Codestamp handles your se
 The installer is signed with a self-signed certificate for now, so Windows SmartScreen may show "Windows protected your PC". Choose **More info**, then **Run anyway**.
 
 Your data is stored in `%APPDATA%\dev.codestamp.desktop`.
+
+### Linux
+
+For Debian 12, Ubuntu 22.04 and later, and the distributions built on them, such as Linux Mint and Pop!_OS (x64).
+
+1. Download `Codestamp_<version>_amd64.deb` from the [Releases](../../releases) page.
+2. Install it with apt, which also installs WebKitGTK if it is missing:
+
+   ```bash
+   sudo apt install ./Codestamp_<version>_amd64.deb
+   ```
+
+3. Open Codestamp from the application menu. `codestamp-cli` is installed too.
+
+Secret values are kept with a key in the system keyring, so a keyring such as GNOME Keyring or KWallet needs to be running. Desktop editions start one when you sign in.
+
+Your data is stored in `~/.local/share/dev.codestamp.desktop`.
 
 ## Build from source
 
@@ -111,6 +130,12 @@ Requirements on Windows:
 - Rust stable from [rustup](https://rustup.rs), with `clippy` and `rustfmt`
 - Visual Studio Build Tools with the "Desktop development with C++" workload
 - WebView2 Runtime (included in Windows 11)
+
+Requirements on Linux: Node.js 24 or later, Rust stable, and the WebKitGTK build libraries. On Debian and Ubuntu:
+
+```bash
+sudo apt install build-essential libwebkit2gtk-4.1-dev libxdo-dev libssl-dev librsvg2-dev
+```
 
 Run the app in development mode:
 
@@ -122,7 +147,7 @@ npm install
 npm run tauri dev
 ```
 
-Build the installer. It signs the files with a `CN=Codestamp` certificate from your Windows certificate store, so create one first:
+Build the installer. On Windows it signs the files with a `CN=Codestamp` certificate from your Windows certificate store, so create one first:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File src-tauri/windows/new-signing-certificate.ps1
@@ -132,7 +157,11 @@ powershell -ExecutionPolicy Bypass -File src-tauri/windows/new-signing-certifica
 npm run installer
 ```
 
-The installer is written to `src-tauri/target/release/bundle/nsis/`.
+The Windows installer is written to `src-tauri/target/release/bundle/nsis/`. On Linux the same command writes the `.deb` to `src-tauri/target/release/bundle/deb/`, and this packs it with xz the way the release does, at about half the size:
+
+```bash
+bash scripts/recompress-deb.sh
+```
 
 ## Command-line runner
 
