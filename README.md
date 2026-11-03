@@ -109,14 +109,29 @@ Your data is stored in `%APPDATA%\dev.codestamp.desktop`.
 
 For Debian 12, Ubuntu 22.04 and later, and the distributions built on them, such as Linux Mint and Pop!_OS (x64).
 
-1. Download `Codestamp_<version>_amd64.deb` from the [Releases](../../releases) page.
-2. Install it with apt, which also installs WebKitGTK if it is missing:
+Add the Codestamp APT repository once, then install. Later versions arrive with `sudo apt upgrade`, like the rest of the system.
+
+1. Trust the key that signs the repository:
 
    ```bash
-   sudo apt install ./Codestamp_<version>_amd64.deb
+   wget -qO- https://oneshield7.github.io/codestamp/apt/codestamp.gpg | sudo tee /usr/share/keyrings/codestamp.gpg > /dev/null
    ```
 
-3. Open Codestamp from the application menu. `codestamp-cli` is installed too.
+2. Add the repository:
+
+   ```bash
+   echo "deb [arch=amd64 signed-by=/usr/share/keyrings/codestamp.gpg] https://oneshield7.github.io/codestamp/apt stable main" | sudo tee /etc/apt/sources.list.d/codestamp.list
+   ```
+
+3. Install Codestamp. apt also installs WebKitGTK if it is missing:
+
+   ```bash
+   sudo apt update && sudo apt install codestamp
+   ```
+
+4. Open Codestamp from the application menu. `codestamp-cli` is installed too.
+
+To install one version by hand instead, download `Codestamp_<version>_amd64.deb` from the [Releases](../../releases) page and run `sudo apt install ./Codestamp_<version>_amd64.deb`.
 
 Secret values are kept with a key in the system keyring, so a keyring such as GNOME Keyring or KWallet needs to be running. Desktop editions start one when you sign in.
 
