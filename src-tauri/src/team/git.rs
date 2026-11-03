@@ -325,7 +325,10 @@ fn classify(stderr: &str) -> GitError {
         "repository not found",
         "does not appear to be a git repository",
         "returned error: 404",
-    ]) {
+    ])
+        // A folder remote that is gone: "fatal: repository '/srv/team.git' does not exist".
+        || (text.contains("fatal: repository '") && text.contains("' does not exist"))
+    {
         GitError::NotFound
     } else if has(&[
         "[rejected]",
@@ -506,8 +509,13 @@ mod tests {
         assert!(check_remote("https://github.com/team/api.git").is_ok());
         assert!(check_remote("ssh://git@github.com/team/api.git").is_ok());
         assert!(check_remote("git@github.com:team/api.git").is_ok());
-        assert!(check_remote("\\\\server\\share\\api.git").is_ok());
-        assert!(check_remote("C:\\repos\\api.git").is_ok());
+        #[cfg(windows)]
+        {
+            assert!(check_remote("\\\\server\\share\\api.git").is_ok());
+            assert!(check_remote("C:\\repos\\api.git").is_ok());
+        }
+        #[cfg(unix)]
+        assert!(check_remote("/srv/git/api.git").is_ok());
 
         assert!(check_remote("ext::sh -c touch% /tmp/pwned").is_err());
         assert!(check_remote("file:///C:/repos/api.git").is_err());
@@ -535,6 +543,10 @@ mod tests {
         );
         assert_eq!(
             classify("remote: Repository not found.\nfatal: repository 'x' not found"),
+            GitError::NotFound
+        );
+        assert_eq!(
+            classify("fatal: repository '/srv/git/team.git' does not exist"),
             GitError::NotFound
         );
         assert_eq!(
