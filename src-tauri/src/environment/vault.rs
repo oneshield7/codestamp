@@ -90,12 +90,14 @@ pub struct CredentialStoreKey;
 
 impl KeySource for CredentialStoreKey {
     fn load_or_create(&self) -> Result<Vec<u8>, AppError> {
-        let entry = credential(KEY_SERVICE, KEY_ACCOUNT)?;
-        match entry.get_secret() {
-            Ok(bytes) => Ok(bytes),
-            Err(keyring_core::Error::NoEntry) => adopt_or_create(&entry),
-            Err(_) => Err(AppError::SecretStore),
-        }
+        off_runtime(|| {
+            let entry = credential(KEY_SERVICE, KEY_ACCOUNT)?;
+            match entry.get_secret() {
+                Ok(bytes) => Ok(bytes),
+                Err(keyring_core::Error::NoEntry) => adopt_or_create(&entry),
+                Err(_) => Err(AppError::SecretStore),
+            }
+        })
     }
 }
 
@@ -105,17 +107,25 @@ pub struct DeviceCredential;
 
 impl KeySource for DeviceCredential {
     fn load_or_create(&self) -> Result<Vec<u8>, AppError> {
-        let entry = credential(KEY_SERVICE, DEVICE_ACCOUNT)?;
-        match entry.get_secret() {
-            Ok(bytes) => Ok(bytes),
-            Err(keyring_core::Error::NoEntry) => {
-                let key = Key::<ChaCha20Poly1305>::generate();
-                entry.set_secret(&key).map_err(|_| AppError::SecretStore)?;
-                Ok(key.to_vec())
+        off_runtime(|| {
+            let entry = credential(KEY_SERVICE, DEVICE_ACCOUNT)?;
+            match entry.get_secret() {
+                Ok(bytes) => Ok(bytes),
+                Err(keyring_core::Error::NoEntry) => {
+                    let key = Key::<ChaCha20Poly1305>::generate();
+                    entry.set_secret(&key).map_err(|_| AppError::SecretStore)?;
+                    Ok(key.to_vec())
+                }
+                Err(_) => Err(AppError::SecretStore),
             }
-            Err(_) => Err(AppError::SecretStore),
-        }
+        })
     }
+}
+
+/// Runs credential store calls on a thread of their own: the Linux store (Secret Service) blocks
+/// on a runtime of its own, which panics on one of tokio's worker threads.
+fn off_runtime<T: Send>(call: impl FnOnce() -> Result<T, AppError> + Send) -> Result<T, AppError> {
+    std::thread::scope(|scope| scope.spawn(call).join()).unwrap_or(Err(AppError::SecretStore))
 }
 
 /// Moves the key kept under the pre-rename name, so secrets saved before the rename still open.
@@ -199,6 +209,22 @@ mod tests {
             vault.decrypt("var-1", &blob).expect("decrypt"),
             "s3cr3t-token"
         );
+    }
+
+    #[test]
+    fn credential_calls_may_block_on_a_runtime_of_their_own() {
+        let runtime = tokio::runtime::Builder::new_multi_thread()
+            .build()
+            .expect("runtime");
+        let value = runtime.block_on(async {
+            off_runtime(|| {
+                let store = tokio::runtime::Builder::new_current_thread()
+                    .build()
+                    .map_err(|_| AppError::SecretStore)?;
+                Ok(store.block_on(async { 7 }))
+            })
+        });
+        assert_eq!(value.expect("value"), 7);
     }
 
     #[test]
