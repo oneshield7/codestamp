@@ -1,7 +1,7 @@
 name: Release
 
-# Pushing a tag such as v0.4.0 builds the Windows installer and attaches it to a draft release,
-# which stays unpublished until someone reviews it.
+# Pushing a tag such as v0.4.0 builds the Windows installer and the Linux packages and attaches them
+# to a draft release, which stays unpublished until someone reviews it.
 on:
   push:
     tags: ['v*']
@@ -64,3 +64,46 @@ jobs:
         with:
           draft: true
           files: src-tauri/target/release/bundle/nsis/*-setup.exe
+
+  linux:
+    name: Linux packages
+    # After Windows, so both attach to the one draft release instead of racing to create it.
+    needs: windows
+    # The oldest supported Ubuntu, so the packages also run on newer distributions.
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install the Linux build libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev librsvg2-dev patchelf
+
+      - name: Install dependencies
+        run: npm ci
+
+      # The bundler packs every binary of the crate, so the .deb puts codestamp-cli in /usr/bin.
+      - name: Build codestamp-cli
+        run: cargo build --release --manifest-path src-tauri/Cargo.toml --bin codestamp-cli
+
+      - name: Build the .deb and AppImage
+        run: npx tauri build
+
+      - name: Attach the packages to the draft release
+        uses: softprops/action-gh-release@v3
+        with:
+          draft: true
+          files: |
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/appimage/*.AppImage

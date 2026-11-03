@@ -1,6 +1,6 @@
 import { tick } from 'svelte';
 
-/** Scrolls `target` to the top and focuses it; instant when Windows asks for less motion.
+/** Scrolls `target` to the top and focuses it; instant when the OS asks for less motion.
  *  `target` needs a `tabindex` and a `scroll-margin-top` that clears the title bar. */
 export function revealElement(target: HTMLElement): void {
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

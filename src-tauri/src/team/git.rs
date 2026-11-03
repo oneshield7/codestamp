@@ -40,6 +40,15 @@ const BASE_CONFIG: [&str; 12] = [
 #[cfg(windows)]
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
+#[cfg(windows)]
+const GIT_MISSING: &str =
+    "Git is not installed. Install Git for Windows (git-scm.com), then try again";
+#[cfg(target_os = "macos")]
+const GIT_MISSING: &str = "Git is not installed. Install Git (git-scm.com), then try again";
+#[cfg(not(any(windows, target_os = "macos")))]
+const GIT_MISSING: &str =
+    "Git is not installed. Install it with your package manager (the git package), then try again";
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GitError {
     Missing,
@@ -56,10 +65,7 @@ pub enum GitError {
 impl From<GitError> for AppError {
     fn from(error: GitError) -> Self {
         Self::InvalidInput(match error {
-            GitError::Missing => {
-                "Git is not installed. Install Git for Windows (git-scm.com), then try again"
-                    .to_owned()
-            }
+            GitError::Missing => GIT_MISSING.to_owned(),
             GitError::Timeout => "Git took too long to answer".to_owned(),
             GitError::Offline => "Could not reach the repository. Check the connection".to_owned(),
             GitError::SignIn => {

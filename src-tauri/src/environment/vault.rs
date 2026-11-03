@@ -85,7 +85,7 @@ impl Vault {
     }
 }
 
-/// Keeps the key in Windows Credential Manager (via keyring-core), never in the database.
+/// Keeps the key in the OS credential store (via keyring-core), never in the database.
 pub struct CredentialStoreKey;
 
 impl KeySource for CredentialStoreKey {

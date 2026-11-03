@@ -2,6 +2,7 @@
   import NavIcon from './NavIcon.svelte';
   import { exportEnvironment, type ExportResult } from '../api/export';
   import { dialogIsOpen, isSaveShortcut } from '../dom/keys';
+  import { forPlatform } from '../dom/platform';
   import type { EnvironmentSummary } from '../api/environments';
   import { accessGroups } from '../state/access.svelte';
   import type { Environments } from '../state/environments.svelte';
@@ -22,6 +23,11 @@
   let { environments, workspace, team }: Props = $props();
 
   const THIS_DEVICE = '';
+  const keyStore = forPlatform({
+    windows: 'Windows Credential Manager',
+    macos: 'the macOS Keychain',
+    linux: 'the system keyring (GNOME Keyring or KWallet)',
+  });
 
   /** This device's environments first, then each collection's own, under its name. */
   const groups = $derived.by(() => {
@@ -274,8 +280,8 @@
           <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
             <rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" />
           </svg>
-          Secret values are encrypted on this device. The key lives in Windows Credential Manager, and
-          secrets are never shown unless you choose to reveal them.
+          Secret values are encrypted on this device. The key lives in {keyStore}, and secrets are
+          never shown unless you choose to reveal them.
         </p>
       </section>
     {/if}

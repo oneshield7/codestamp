@@ -74,7 +74,9 @@ pub fn run() {
         .manage(FlowRuns::default())
         .manage(PendingUpdate::default())
         .setup(|app| {
-            install_platform_credential_store()?;
+            // Without a credential store (a Linux desktop with no keyring, say) Codestamp still
+            // opens; anything that needs the key then reports that the store is unavailable.
+            let _ = install_platform_credential_store();
             let data_dir = app.path().app_data_dir()?;
             legacy::adopt_folder(&data_dir)?;
             legacy::adopt_database(&data_dir, DATABASE_FILE)?;

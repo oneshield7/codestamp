@@ -6,6 +6,7 @@
   import { notices } from '../state/notices.svelte';
   import type { TeamSync } from '../state/team.svelte';
   import { accountFor, usesSignIn } from '../team/account';
+  import { INSTALL_GIT } from '../team/install';
   import { describeChanges, summarizeSync } from '../team/status';
   import AccessSection from './AccessSection.svelte';
   import AccountFields from './AccountFields.svelte';
@@ -171,7 +172,7 @@
             Git is not installed on this device. Codestamp syncs through Git and leaves signing in
             to it, so no password or token is stored here.
           </p>
-          <p>Install Git for Windows from git-scm.com, then check again.</p>
+          <p>{INSTALL_GIT}, then check again.</p>
           <button
             type="button"
             class="secondary"

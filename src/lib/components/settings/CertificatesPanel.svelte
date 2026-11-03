@@ -8,6 +8,7 @@
     listCertificates,
     type CertificateInfo,
   } from '../../api/preferences';
+  import { systemName } from '../../dom/platform';
   import { notices } from '../../state/notices.svelte';
   import ConfirmDialog from '../ConfirmDialog.svelte';
   import CertificateRow from './CertificateRow.svelte';
@@ -63,7 +64,7 @@
 <section class="panel" aria-labelledby="ca-title">
   <h2 id="ca-title">CA certificates</h2>
   <p class="hint">
-    Trusted on top of the certificates Windows trusts, for servers with an internal or self-signed
+    Trusted on top of the certificates {systemName} trusts, for servers with an internal or self-signed
     certificate.
   </p>
   {#if authorities.length > 0}
