@@ -4,6 +4,14 @@ All notable changes to Codestamp are listed here. Versions follow [Semantic Vers
 
 ## [Unreleased]
 
+### Added
+
+- An APT repository for Debian and Ubuntu. After adding it once, `sudo apt upgrade` installs new versions of Codestamp with the rest of the system.
+
+### Changed
+
+- The `.deb` describes Codestamp in `apt show codestamp` and is listed in the devel section.
+
 ## [0.5.0] - 2026-11-03
 
 Codestamp now runs on Linux. The database format is the same as in 0.4.0.

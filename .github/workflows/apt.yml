@@ -1,0 +1,57 @@
+name: APT repository
+
+# Publishing a release rebuilds the APT repository on GitHub Pages from the .deb of every published
+# release, so `apt upgrade` finds the new version. It can also be run by hand.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build the repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download the .deb of every published release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p debs
+          for tag in $(gh release list --exclude-drafts --exclude-pre-releases --limit 100 --json tagName --jq '.[].tagName'); do
+            if gh release view "$tag" --json assets --jq '.assets[].name' | grep -q '_amd64\.deb$'; then
+              gh release download "$tag" --pattern '*_amd64.deb' --dir debs
+            fi
+          done
+
+      # APT_SIGNING_KEY is the armored private key made by scripts/new-apt-signing-key.sh.
+      - name: Build and sign the repository
+        env:
+          APT_SIGNING_KEY: ${{ secrets.APT_SIGNING_KEY }}
+        run: bash scripts/apt-repository.sh site/apt debs
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: site
+
+  deploy:
+    name: Publish on GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

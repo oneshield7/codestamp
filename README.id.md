@@ -683,6 +683,14 @@ Di Linux, perintah pertama membuild `codestamp-cli` lalu Codestamp dan menulis `
 - Prasyarat build: Node.js 24+, Rust stable, dan `build-essential libwebkit2gtk-4.1-dev libxdo-dev libssl-dev librsvg2-dev`.
 - Workflow _CI_ juga menjalankan `npm run verify` di `ubuntu-22.04` dan membuat `.deb` sebagai artifact di setiap pull request. Workflow _Release_ melampirkan `.deb` ke draft release yang sama dengan installer Windows. Paket dibuat di Ubuntu 22.04 supaya juga jalan di distro yang lebih baru.
 
+### Repository APT
+
+Pengguna Debian dan Ubuntu bisa memasang Codestamp lewat repository APT di GitHub Pages (`https://oneshield7.github.io/codestamp/apt`), sehingga versi baru datang lewat `sudo apt upgrade`. Perintah pemasangannya ada di [README.md](README.md#linux).
+
+- Workflow _APT repository_ (`.github/workflows/apt.yml`) berjalan setiap kali sebuah rilis dipublikasikan, atau dijalankan manual. Ia mengunduh `.deb` dari semua rilis yang sudah terbit, menyusun indeks paket dan file `Release` dengan `scripts/apt-repository.sh`, menandatanganinya dengan GPG (`InRelease` dan `Release.gpg`), lalu menerbitkannya ke GitHub Pages.
+- Kunci GPG dibuat sekali dengan `bash scripts/new-apt-signing-key.sh <file backup di luar repository>`. Skrip ini membuat kunci ed25519 tanpa masa kedaluwarsa, menyimpan kunci privatnya sebagai secret `APT_SIGNING_KEY` di GitHub, dan menulis backup-nya. Kunci publiknya diterbitkan sebagai `codestamp.gpg` di repository APT. Simpan backup-nya di tempat aman: sistem yang sudah menambahkan repository hanya menerima update yang ditandatangani kunci ini.
+- Sekali saja di pengaturan GitHub: _Settings › Pages › Source_ diisi _GitHub Actions_, lalu di _Settings › Environments › github-pages_ tambahkan aturan tag `v*`, karena workflow ini berjalan dari tag rilis.
+
 ## CLI untuk CI
 
 `codestamp-cli` menjalankan request HTTP dan GraphQL sebuah collection sesuai urutan notebook, lengkap dengan script dan test, seperti Run all. Database-nya hanya ada di memori selama run berjalan (dengan kunci enkripsi acak sementara), jadi data aplikasi di mesin itu tidak dibaca maupun diubah.

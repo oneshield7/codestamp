@@ -1,6 +1,12 @@
 {
   "bundle": {
     "targets": ["deb", "appimage"],
-    "category": "DeveloperTool"
+    "category": "DeveloperTool",
+    "longDescription": "A desktop API client for HTTP, GraphQL, WebSocket, Server-Sent Events, gRPC, SOAP and MCP. Requests are kept in a local database, with no account and no cloud.",
+    "linux": {
+      "deb": {
+        "section": "devel"
+      }
+    }
   }
 }
