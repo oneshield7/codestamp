@@ -1,6 +1,6 @@
 name: Release
 
-# Pushing a tag such as v0.4.0 builds the Windows installer and the Linux packages and attaches them
+# Pushing a tag such as v0.5.0 builds the Windows installer and the Linux packages and attaches them
 # to a draft release, which stays unpublished until someone reviews it.
 on:
   push:
