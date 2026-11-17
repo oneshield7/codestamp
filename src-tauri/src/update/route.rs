@@ -4,7 +4,6 @@ use tauri::utils::config::BundleType;
 /// Only used to read the version for a .deb install, which never downloads it.
 pub const APT_TARGET: &str = "linux-x86_64-appimage";
 
-/// How an available update gets installed on this copy of Codestamp.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum UpdateRoute {

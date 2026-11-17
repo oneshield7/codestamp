@@ -82,7 +82,7 @@
           onclick={() => (activeTab = 'trailers')}>Trailers · {reply.trailers.length}</button
         >
       </div>
-      <!-- Several messages are listed as wrapped text already; only the single-message viewer wraps on request. -->
+      <!-- A list of several messages already wraps. -->
       {#if activeTab === 'messages' && reply.messages.length === 1}
         <WrapToggle />
       {/if}
