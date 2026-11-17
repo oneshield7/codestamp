@@ -1,7 +1,8 @@
 name: Release
 
-# Pushing a tag such as v0.5.0 builds the Windows installer and the Linux packages and attaches them
-# to a draft release, which stays unpublished until someone reviews it.
+# Pushing a tag such as v0.5.0 builds the Windows installer and the Linux packages and attaches them,
+# with the latest.json that installed copies check for updates, to a draft release. Nothing reaches
+# users until someone reviews and publishes it: GitHub serves latest.json from published releases only.
 on:
   push:
     tags: ['v*']
@@ -16,6 +17,9 @@ jobs:
     env:
       # Secrets cannot be read in `if:`, so whether a certificate is configured is noted here.
       HAS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE != '' }}
+      # The build fails without these, since createUpdaterArtifacts makes it sign the installer.
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v7
 
@@ -65,12 +69,22 @@ jobs:
           draft: true
           files: src-tauri/target/release/bundle/nsis/*-setup.exe
 
+      - name: Keep the update signature for latest.json
+        uses: actions/upload-artifact@v7
+        with:
+          name: updater-windows
+          path: src-tauri/target/release/bundle/nsis/*-setup.exe.sig
+          if-no-files-found: error
+
   linux:
     name: Linux packages
     # After Windows, so both attach to the one draft release instead of racing to create it.
     needs: windows
     # The oldest supported Ubuntu, so the packages also run on newer distributions.
     runs-on: ubuntu-22.04
+    env:
+      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v7
 
@@ -110,3 +124,38 @@ jobs:
           files: |
             src-tauri/target/release/bundle/deb/*.deb
             src-tauri/target/release/bundle/appimage/*.AppImage
+
+      # The .deb has no entry in latest.json: apt updates it from the APT repository.
+      - name: Keep the update signature for latest.json
+        uses: actions/upload-artifact@v7
+        with:
+          name: updater-linux
+          path: src-tauri/target/release/bundle/appimage/*.AppImage.sig
+          if-no-files-found: error
+
+  updates:
+    name: Update manifest
+    needs: [windows, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      # The script uses Node's own modules only, so there is nothing to install.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: updater-*
+          merge-multiple: true
+          path: signatures
+
+      - name: Write latest.json
+        run: node scripts/updates.ts manifest --tag "$GITHUB_REF_NAME" --signatures signatures --out latest.json
+
+      - name: Attach latest.json to the draft release
+        uses: softprops/action-gh-release@v3
+        with:
+          draft: true
+          files: latest.json
