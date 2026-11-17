@@ -17,7 +17,6 @@ interface UpdaterConfig {
 interface TauriConfig {
   productName: string;
   version: string;
-  bundle: Record<string, unknown>;
   plugins: { updater: UpdaterConfig };
   [key: string]: unknown;
 }
@@ -80,7 +79,7 @@ function setup(rawUrl: string | undefined): void {
   const config = readConfig();
   config.plugins.updater.pubkey = pubkey;
   config.plugins.updater.endpoints = [url.href];
-  config.bundle.createUpdaterArtifacts = true;
+  // Signing stays in src-tauri/tauri.updater.conf.json, so builds without the key still work.
   fs.writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
   console.log(`Updates are set up: builds now look for ${url.href}.`);
   console.log(

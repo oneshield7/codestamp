@@ -646,7 +646,7 @@ npm run updates:setup -- https://github.com/oneshield7/codestamp/releases/latest
 ```
 
 - Membuat kunci tanda tangan update di `%USERPROFILE%\.codestamp\updater.key` (password ditanyakan oleh Tauri CLI), kecuali file itu sudah ada. Lokasi lain: setel `CODESTAMP_UPDATER_KEY`.
-- Menulis kunci publik dan alamat itu ke `plugins.updater` di `src-tauri/tauri.conf.json`, dan menyalakan `bundle.createUpdaterArtifacts`. File itu ditulis ulang dengan format `JSON.stringify` (indentasi 2 spasi). Commit perubahan ini.
+- Menulis kunci publik dan alamat itu ke `plugins.updater` di `src-tauri/tauri.conf.json`. File itu ditulis ulang dengan format `JSON.stringify` (indentasi 2 spasi). Commit perubahan ini.
 - **Cadangkan `updater.key` beserta passwordnya.** Tanpa keduanya, Codestamp yang sudah terpasang tidak bisa menerima update lagi dan harus dipasang ulang manual. Kunci ini terpisah dari sertifikat code signing dan tidak boleh masuk repository.
 - Isi dua secret di GitHub (Settings › Secrets and variables › Actions): `TAURI_SIGNING_PRIVATE_KEY` berisi isi file `updater.key`, dan `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` berisi passwordnya. Tanpa keduanya, workflow _Release_ gagal saat build.
 - Versi 0.5.0 dan sebelumnya belum punya alamat update. Pengguna memasang versi berikutnya secara manual satu kali; sesudah itu update datang dari dalam aplikasi.
@@ -659,12 +659,13 @@ Setiap rilis:
 
 `latest.json` memuat target `windows-x86_64`, `windows-x86_64-nsis`, dan `linux-x86_64-appimage`, dengan alamat unduhan yang dikunci ke tag (`releases/download/vX.Y.Z/…`). Tidak ada target `linux-x86_64` polos, supaya instalasi .deb tidak pernah jatuh ke AppImage.
 
-Build installer lokal (`npm run installer`) kini juga butuh kunci update, karena `createUpdaterArtifacts` menyala:
+Tanda tangan update hanya dinyalakan di build rilis, lewat `--config src-tauri/tauri.updater.conf.json` (`bundle.createUpdaterArtifacts`). Build lain, termasuk `npm run installer`, job _Linux packages_ di CI, dan build kontributor, tetap jalan tanpa kunci. Untuk membuat installer bertanda tangan update secara lokal:
 
 ```powershell
 $env:TAURI_SIGNING_PRIVATE_KEY = "$env:USERPROFILE\.codestamp\updater.key"
 $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = [Net.NetworkCredential]::new('', (Read-Host 'Update key password' -AsSecureString)).Password
-npm run installer
+cargo build --release --manifest-path src-tauri/Cargo.toml --bin codestamp-cli
+npx tauri build --config src-tauri/tauri.updater.conf.json
 ```
 
 ## Paket Linux

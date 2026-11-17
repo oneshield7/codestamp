@@ -17,9 +17,6 @@ jobs:
     env:
       # Secrets cannot be read in `if:`, so whether a certificate is configured is noted here.
       HAS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE != '' }}
-      # The build fails without these, since createUpdaterArtifacts makes it sign the installer.
-      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v7
 
@@ -55,13 +52,21 @@ jobs:
       - name: Build codestamp-cli
         run: cargo build --release --manifest-path src-tauri/Cargo.toml --bin codestamp-cli
 
+      # The update key goes to the build steps only, never to the third-party actions around them.
+      # tauri.updater.conf.json turns on update signing, which fails without the key.
       - name: Build the signed installer
         if: env.HAS_CERTIFICATE == 'true'
-        run: npx tauri build
+        run: npx tauri build --config src-tauri/tauri.updater.conf.json
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
       - name: Build the unsigned installer
         if: env.HAS_CERTIFICATE != 'true'
-        run: npx tauri build --config src-tauri/tauri.unsigned.conf.json
+        run: npx tauri build --config src-tauri/tauri.unsigned.conf.json --config src-tauri/tauri.updater.conf.json
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
       - name: Attach the installer to a draft release
         uses: softprops/action-gh-release@v3
@@ -82,9 +87,6 @@ jobs:
     needs: windows
     # The oldest supported Ubuntu, so the packages also run on newer distributions.
     runs-on: ubuntu-22.04
-    env:
-      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-      TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v7
 
@@ -112,7 +114,10 @@ jobs:
         run: cargo build --release --manifest-path src-tauri/Cargo.toml --bin codestamp-cli
 
       - name: Build the .deb and AppImage
-        run: npx tauri build
+        run: npx tauri build --config src-tauri/tauri.updater.conf.json
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
       - name: Recompress the .deb with xz
         run: bash scripts/recompress-deb.sh
