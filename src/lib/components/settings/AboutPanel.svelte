@@ -1,7 +1,8 @@
 <script lang="ts">
+  import { openUrl } from '@tauri-apps/plugin-opener';
   import { onMount } from 'svelte';
   import { aboutApp, type AboutInfo } from '../../api/preferences';
-  import { APT_UPGRADE_COMMAND } from '../../api/update';
+  import { APT_UPGRADE_COMMAND, RELEASES_URL } from '../../api/update';
   import { formatDateTime } from '../../format/time';
   import { formatBytes } from '../../format/units';
   import { notices } from '../../state/notices.svelte';
@@ -88,8 +89,19 @@
       {/if}
       {#if update.via === 'apt'}
         <div class="apt">
-          <p>Codestamp was installed from the APT repository, so apt installs the update:</p>
+          <p>
+            Codestamp was installed as a .deb package, so apt installs the update from the Codestamp
+            APT repository:
+          </p>
           <CopyCommand command={APT_UPGRADE_COMMAND} />
+          <p>
+            If you installed the .deb by hand, without the repository, download the new one from the
+            <button
+              type="button"
+              class="inline-link"
+              onclick={() => void notices.guard(() => openUrl(RELEASES_URL))}>Releases page</button
+            >.
+          </p>
         </div>
       {/if}
     {:else if updates.result?.kind === 'upToDate'}
@@ -190,5 +202,23 @@
 
   .apt p {
     margin: 0;
+  }
+
+  .inline-link {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .inline-link:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  .inline-link:active {
+    color: var(--text-2);
   }
 </style>

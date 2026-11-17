@@ -16,6 +16,7 @@ export type UpdateCheck =
     };
 
 export const APT_UPGRADE_COMMAND = 'sudo apt update && sudo apt upgrade';
+export const RELEASES_URL = 'https://github.com/oneshield7/codestamp/releases/latest';
 
 export interface DownloadProgress {
   received: number;
