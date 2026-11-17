@@ -1,5 +1,7 @@
 use serde::Serialize;
 
+use super::route::UpdateRoute;
+
 #[derive(Debug, Serialize, PartialEq, Eq)]
 #[serde(tag = "kind", rename_all = "camelCase")]
 pub enum UpdateCheck {
@@ -14,6 +16,7 @@ pub enum UpdateCheck {
         version: String,
         notes: Option<String>,
         date: Option<String>,
+        via: UpdateRoute,
     },
 }
 
