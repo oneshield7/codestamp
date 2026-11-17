@@ -5,6 +5,7 @@
   import { formatBytes } from '../format/units';
   import type { ExampleList } from '../state/examples.svelte';
   import { notices } from '../state/notices.svelte';
+  import { preferenceSettings } from '../state/preferences.svelte';
   import CodeEditor from './CodeEditor.svelte';
   import EditableText from './EditableText.svelte';
 
@@ -108,6 +109,7 @@
                 label="Example body"
                 language={openedIsJson ? 'json' : 'text'}
                 readOnly
+                wrap={preferenceSettings.editor.wrapResponses}
               />
             </div>
           {/if}

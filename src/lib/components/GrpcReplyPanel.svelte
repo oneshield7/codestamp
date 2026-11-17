@@ -5,7 +5,9 @@
   import { formatDuration } from '../format/units';
   import { isSensitiveName, maskAny, maskSecret } from '../privacy/secrets';
   import type { GrpcCall } from '../state/grpc.svelte';
+  import { preferenceSettings } from '../state/preferences.svelte';
   import CodeEditor from './CodeEditor.svelte';
+  import WrapToggle from './WrapToggle.svelte';
 
   interface Props {
     call: GrpcCall;
@@ -56,28 +58,34 @@
         {maskSecrets ? maskAny(reply.message, 0).text : reply.message}
       </p>
     {/if}
-    <div class="tabs" role="tablist" aria-label="Response sections">
-      <button
-        type="button"
-        role="tab"
-        aria-selected={activeTab === 'messages'}
-        class:on={activeTab === 'messages'}
-        onclick={() => (activeTab = 'messages')}>Messages · {reply.messages.length}</button
-      >
-      <button
-        type="button"
-        role="tab"
-        aria-selected={activeTab === 'headers'}
-        class:on={activeTab === 'headers'}
-        onclick={() => (activeTab = 'headers')}>Headers · {reply.headers.length}</button
-      >
-      <button
-        type="button"
-        role="tab"
-        aria-selected={activeTab === 'trailers'}
-        class:on={activeTab === 'trailers'}
-        onclick={() => (activeTab = 'trailers')}>Trailers · {reply.trailers.length}</button
-      >
+    <div class="tab-row">
+      <div class="tabs" role="tablist" aria-label="Response sections">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'messages'}
+          class:on={activeTab === 'messages'}
+          onclick={() => (activeTab = 'messages')}>Messages · {reply.messages.length}</button
+        >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'headers'}
+          class:on={activeTab === 'headers'}
+          onclick={() => (activeTab = 'headers')}>Headers · {reply.headers.length}</button
+        >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'trailers'}
+          class:on={activeTab === 'trailers'}
+          onclick={() => (activeTab = 'trailers')}>Trailers · {reply.trailers.length}</button
+        >
+      </div>
+      <!-- Several messages are listed as wrapped text already; only the single-message viewer wraps on request. -->
+      {#if activeTab === 'messages' && reply.messages.length === 1}
+        <WrapToggle />
+      {/if}
     </div>
 
     {#if reply.warning}
@@ -92,6 +100,7 @@
             label="Response message"
             language="json"
             readOnly
+            wrap={preferenceSettings.editor.wrapResponses}
           />
         </div>
       {:else}
@@ -187,11 +196,21 @@
     font-size: 13px;
   }
 
+  /* The toggle sits beside the tablist, not in it: a tablist holds tabs only. */
+  .tab-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 12px;
+    padding-right: 16px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
   .tabs {
     display: flex;
+    flex: 1 1 auto;
     gap: 16px;
     padding: 0 16px;
-    border-bottom: 1px solid var(--border-soft);
   }
 
   .tabs button {
