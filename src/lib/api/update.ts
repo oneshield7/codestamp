@@ -11,7 +11,11 @@ export type UpdateCheck =
       notes: string | null;
       /** As written in the release file (RFC 3339). */
       date: string | null;
+      /** `apt`: a .deb install, which apt updates; the app never installs it. */
+      via: 'app' | 'apt';
     };
+
+export const APT_UPGRADE_COMMAND = 'sudo apt update && sudo apt upgrade';
 
 export interface DownloadProgress {
   received: number;
