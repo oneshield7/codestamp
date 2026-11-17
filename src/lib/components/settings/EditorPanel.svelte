@@ -59,7 +59,7 @@
         preferenceSettings.updateEditor({ wrapLines: event.currentTarget.checked });
       }}
     />
-    Wrap long lines
+    Wrap long lines while editing
   </label>
 </section>
 

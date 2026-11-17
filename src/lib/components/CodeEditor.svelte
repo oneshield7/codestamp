@@ -24,6 +24,8 @@
     variablesOf?: string | null;
     /** GraphQL: the schema behind completion and checks. */
     schema?: GraphQLSchema | null;
+    /** Response viewers pass their own setting instead of Settings › Editor's wrapping. */
+    wrap?: boolean;
     onChange?: (value: string) => void;
   }
 
@@ -34,6 +36,7 @@
     readOnly = false,
     variablesOf,
     schema = null,
+    wrap,
     onChange,
   }: Props = $props();
 
@@ -78,7 +81,7 @@
         extensions: [
           baseExtensions(label, readOnly),
           languageSlot.of(languageExtension(language)),
-          preferenceSlot.of(preferenceExtensions(preferenceSettings.editor, readOnly)),
+          preferenceSlot.of(preferenceExtensions(preferenceSettings.editor, readOnly, wrap)),
           variableSlot.of([]),
           EditorView.updateListener.of((update) => {
             if (update.docChanged) {
@@ -147,7 +150,7 @@
   });
 
   $effect(() => {
-    const extensions = preferenceExtensions(preferenceSettings.editor, readOnly);
+    const extensions = preferenceExtensions(preferenceSettings.editor, readOnly, wrap);
     view?.dispatch({ effects: preferenceSlot.reconfigure(extensions) });
   });
 

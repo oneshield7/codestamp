@@ -26,7 +26,9 @@ pub enum CardLayout {
 pub struct EditorPreferences {
     pub indent: Indent,
     pub close_brackets: bool,
+    /// Editors you type in; response viewers follow `wrap_responses`.
     pub wrap_lines: bool,
+    pub wrap_responses: bool,
     pub layout: CardLayout,
     pub variable_hints: bool,
 }
@@ -37,6 +39,7 @@ impl Default for EditorPreferences {
             indent: Indent::None,
             close_brackets: true,
             wrap_lines: false,
+            wrap_responses: true,
             layout: CardLayout::Stacked,
             variable_hints: true,
         }
@@ -187,4 +190,21 @@ pub struct AboutInfo {
     pub version: String,
     pub data_dir: String,
     pub database_bytes: u64,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn responses_wrap_unless_turned_off() {
+        assert!(EditorPreferences::default().wrap_responses);
+        let saved: EditorPreferences = serde_json::from_str(
+            r#"{"indent":"two","closeBrackets":false,"wrapLines":true,"layout":"side","variableHints":false}"#,
+        )
+        .expect("preferences saved before wrapResponses");
+        assert!(saved.wrap_responses);
+        assert_eq!(saved.indent, Indent::Two);
+        assert!(saved.wrap_lines && !saved.close_brackets);
+    }
 }

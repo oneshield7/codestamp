@@ -9,6 +9,7 @@ export const DEFAULT_PREFERENCES: api.Preferences = {
     indent: 'none',
     closeBrackets: true,
     wrapLines: false,
+    wrapResponses: true,
     layout: 'stacked',
     variableHints: true,
   },
