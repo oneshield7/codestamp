@@ -101,6 +101,8 @@ The code is open under Apache-2.0, so you can read how Codestamp handles your se
 2. Run it. It installs for the current user, needs no administrator rights, and installs WebView2 only if it is missing.
 3. When updating, choose **Do not uninstall** if the installer asks, so your data stays in place.
 
+After that, Codestamp updates itself. A few seconds after it opens, it checks GitHub for a newer release and offers **Update and restart**; Settings › About › Updates checks on request. The installer is checked against Codestamp's update key before it runs. Version 0.5.0 and earlier have no update check, so install the next version by hand once.
+
 The installer is signed with a self-signed certificate for now, so Windows SmartScreen may show "Windows protected your PC". Choose **More info**, then **Run anyway**.
 
 Your data is stored in `%APPDATA%\dev.codestamp.desktop`.
@@ -131,7 +133,11 @@ Add the Codestamp APT repository once, then install. Later versions arrive with 
 
 4. Open Codestamp from the application menu. `codestamp-cli` is installed too.
 
+When a new version is out, Codestamp says so and shows the command that installs it: `sudo apt update && sudo apt upgrade`. It never installs a `.deb` itself.
+
 To install one version by hand instead, download `Codestamp_<version>_amd64.deb` from the [Releases](../../releases) page and run `sudo apt install ./Codestamp_<version>_amd64.deb`.
+
+The `Codestamp_<version>_amd64.AppImage` on the same page runs without installing, and updates itself from inside Codestamp like the Windows installer.
 
 Secret values are kept with a key in the system keyring, so a keyring such as GNOME Keyring or KWallet needs to be running. Desktop editions start one when you sign in.
 

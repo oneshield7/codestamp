@@ -29,11 +29,11 @@ Pengguna publik yang memasang Codestamp dari GitHub Releases atau APT mendapat v
 
 ### Pendekatan
 
-| | Pendekatan | Untung rugi |
-|---|---|---|
+|                 | Pendekatan                                                                                                               | Untung rugi                                                                                                                            |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
 | **A (dipilih)** | Workflow rilis yang ada ditambah langkah tanda tangan dan satu job yang menulis `latest.json` lewat `scripts/updates.ts` | Perubahan kecil. Nama target per platform bisa diatur penuh, dan langkah build `codestamp-cli` serta kompres ulang .deb tidak berubah. |
-| B | Ganti ke `tauri-action`, yang membangun dan menulis `latest.json` sendiri | Script lebih sedikit, tapi seluruh workflow ditulis ulang dan nama target kurang bisa diatur. |
-| Dicoret | .deb memasang update sendiri lewat `pkexec dpkg -i` | Menduplikasi APT. Selain itu .deb dikompres ulang setelah build, jadi perlu langkah tanda tangan terpisah. |
+| B               | Ganti ke `tauri-action`, yang membangun dan menulis `latest.json` sendiri                                                | Script lebih sedikit, tapi seluruh workflow ditulis ulang dan nama target kurang bisa diatur.                                          |
+| Dicoret         | .deb memasang update sendiri lewat `pkexec dpkg -i`                                                                      | Menduplikasi APT. Selain itu .deb dikompres ulang setelah build, jadi perlu langkah tanda tangan terpisah.                             |
 
 Pemilik memilih A.
 
@@ -42,11 +42,13 @@ Pemilik memilih A.
 **Konfigurasi.** Pemilik menjalankan `npm run updates:setup -- <alamat update>` (sudah ada). Perintah itu membuat kunci di `~/.codestamp/updater.key` bila belum ada, lalu menulis pubkey, alamat, dan `createUpdaterArtifacts: true` ke `tauri.conf.json`. Perubahan itu di-commit.
 
 **Workflow rilis (`.github/workflows/release.yml`).**
+
 - Langkah build Windows (bertanda tangan dan tanpa tanda tangan) dan Linux mendapat env `TAURI_SIGNING_PRIVATE_KEY` dan `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` dari secret.
 - Kedua job mengunggah file `.sig` sebagai artifact workflow: `*-setup.exe.sig` dari Windows, `*.AppImage.sig` dari Linux.
 - Job baru (`needs: [windows, linux]`) mengunduh kedua `.sig`, menjalankan `scripts/updates.ts` untuk menulis `latest.json`, lalu melampirkannya ke draft release yang sama.
 
 **Isi `latest.json`.**
+
 - `version` diambil dari `tauri.conf.json`. Script gagal bila tidak sama dengan tag tanpa awalan `v`.
 - `notes` diambil dari bagian `## [X.Y.Z]` di `CHANGELOG.md` sebagai teks biasa. Bila bagian itu tidak ada, `notes` dikosongkan. Bila lebih dari 4000 byte, script gagal, sama seperti sekarang.
 - Setiap URL dikunci ke tag: `https://github.com/oneshield7/codestamp/releases/download/vX.Y.Z/<file>`. Dengan begitu, rilis yang lebih baru tidak bisa menggeser file di tengah unduhan dan membuat tanda tangannya tidak cocok.
@@ -57,14 +59,16 @@ Pemilik memilih A.
 - Mode `manifest` lama (server sendiri, membaca folder bundle lokal) diganti mode untuk rilis GitHub ini. Mode `setup` tetap.
 
 **Aplikasi (Rust, `src-tauri/src/update/`).**
+
 - Pada Linux, bila `tauri::utils::platform::bundle_type()` adalah `Deb`, `check_for_update` membangun updater dengan `.target("linux-x86_64-appimage")`. Updater itu hanya dipakai untuk membaca versi dan catatan rilis.
 - Hasil `Available` membawa cara update-nya: lewat aplikasi atau lewat APT.
 - Untuk APT, update yang ditemukan tidak disimpan sebagai pending, sehingga `install_update` menolak.
 - Logika memilih cara update dibuat fungsi murni supaya bisa diuji.
 
-**Aplikasi (UI).** Untuk cara APT, banner dan Settings › About menulis versi baru, lalu menampilkan perintah `sudo apt update && sudo apt upgrade` dengan tombol untuk menyalin perintah itu. Tidak ada tombol *Update and restart*. Tombol *What's new* dan *Later* tetap.
+**Aplikasi (UI).** Untuk cara APT, banner dan Settings › About menulis versi baru, lalu menampilkan perintah `sudo apt update && sudo apt upgrade` dengan tombol untuk menyalin perintah itu. Tidak ada tombol _Update and restart_. Tombol _What's new_ dan _Later_ tetap.
 
 **Dokumentasi.**
+
 - `README.md`: cara update per jenis pemasangan.
 - `README.id.md`: bagian "Pembaruan otomatis" ditulis ulang untuk alur GitHub: setup kunci, secret, dan langkah rilis.
 - `CHANGELOG.md`: di `[Unreleased]`, catat bahwa pengguna 0.5.0 perlu memasang manual sekali.
@@ -73,7 +77,7 @@ Pemilik memilih A.
 
 ### Tujuan dan alasan
 
-Output yang panjang, misalnya bearer token, harus bisa dibaca dan di-copy tanpa scroll ke kanan. Setting *Wrap long lines* sudah ada di Settings › Editor, tapi defaultnya mati dan berlaku untuk semua editor sekaligus.
+Output yang panjang, misalnya bearer token, harus bisa dibaca dan di-copy tanpa scroll ke kanan. Setting _Wrap long lines_ sudah ada di Settings › Editor, tapi defaultnya mati dan berlaku untuk semua editor sekaligus.
 
 - **Goals**
   - Tampilan respons wrap secara default.
@@ -83,11 +87,11 @@ Output yang panjang, misalnya bearer token, harus bisa dibaca dan di-copy tanpa 
 
 ### Pendekatan
 
-| | Pendekatan | Untung rugi |
-|---|---|---|
-| **A (dipilih)** | Tombol *Wrap* di bar setiap tampilan respons, dengan satu setting bersama yang diingat dan menyala secara default | Mudah ditemukan, dan tidak mengubah editor request. |
-| B | Ubah default *Wrap long lines* menjadi menyala | Satu baris kode, tapi editor body dan script ikut ter-wrap, dan tidak ada tombol cepat. |
-| C | Respons selalu wrap, tanpa tombol | Paling sederhana, tapi tidak bisa dimatikan untuk output lebar seperti tabel teks. |
+|                 | Pendekatan                                                                                                        | Untung rugi                                                                             |
+| --------------- | ----------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| **A (dipilih)** | Tombol _Wrap_ di bar setiap tampilan respons, dengan satu setting bersama yang diingat dan menyala secara default | Mudah ditemukan, dan tidak mengubah editor request.                                     |
+| B               | Ubah default _Wrap long lines_ menjadi menyala                                                                    | Satu baris kode, tapi editor body dan script ikut ter-wrap, dan tidak ada tombol cepat. |
+| C               | Respons selalu wrap, tanpa tombol                                                                                 | Paling sederhana, tapi tidak bisa dimatikan untuk output lebar seperti tabel teks.      |
 
 Pemilik memilih A.
 
@@ -95,7 +99,7 @@ Pemilik memilih A.
 
 - Preference baru `editor.wrapResponses`, default `true`, di `EditorPreferences` Rust (`src-tauri/src/preferences/models.rs`), tipe TS, dan `DEFAULT_PREFERENCES`. File preferences lama yang tidak punya field ini dibaca sebagai `true`. Disimpan lewat mekanisme preferences yang sudah ada.
 - `CodeEditor` mendapat prop opsional `wrap`. Bila diisi, nilainya menggantikan `wrapLines` untuk editor itu.
-- Tombol *Wrap* berupa toggle (`aria-pressed`), satu komponen kecil yang dipakai di tiga tempat:
+- Tombol _Wrap_ berupa toggle (`aria-pressed`), satu komponen kecil yang dipakai di tiga tempat:
   - body di `ResponsePanel` (dipakai HTTP, GraphQL, SOAP), hanya saat tampilan kode, bukan tampilan halaman HTML;
   - satu pesan di `GrpcReplyPanel`;
   - body yang dibuka di `ExamplesPanel`.

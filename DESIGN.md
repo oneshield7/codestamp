@@ -486,7 +486,7 @@ Fold button (chevron, `aria-expanded`), dotted drag handle, `EditableText` name 
 - A request goes back to its section if that section still exists; if not, it goes outside any section. A collection that was shared reconnects to its repository, and its clone is rebuilt from the last synced commit.
 - Error: `--err-bg` / `--err`, border `--err-line`, `role="alert"`.
 - Info: `--accent-soft` / `--accent-text`, `role="status"`. Examples: a teammate deletes the request that is open, or Sync now brings access to a group this device asked for ("Mate gave this device access to Ops. Its restricted values are ready to use.").
-- The update banner (`UpdateBanner`) stands on its own above the `notices` banner, with the same info colors: version text, then a _What's new_ text button (when there are notes), _Update and restart_, and _Later_. While downloading, the buttons are replaced by a percentage and a 6px `<progress>` (fill `--accent` over `--surface`). On failure: error colors, `role="alert"`, _Try again_ and _Later_ buttons.
+- The update banner (`UpdateBanner`) stands on its own above the `notices` banner, with the same info colors: version text, then a _What's new_ text button (when there are notes), _Update and restart_, and _Later_. A .deb install gets no _Update and restart_: the text ends with "Update it from a terminal:", followed by `CopyCommand` (the command in a mono `--surface-muted` chip and a 26px _Copy command_ button that reads _Copied_ afterwards). While downloading, the buttons are replaced by a percentage and a 6px `<progress>` (fill `--accent` over `--surface`). On failure: error colors, `role="alert"`, _Try again_ and _Later_ buttons.
 
 ### Inline status box
 
@@ -518,7 +518,8 @@ Fold button (chevron, `aria-expanded`), dotted drag handle, `EditableText` name 
 
 CodeMirror with a transparent background inside a `--surface-muted` frame (border and radius md). The gutter has no border, active line `--code-active-line`, selection `--accent-soft`, syntax colors from the `--code-*` tokens.
 
-- Follows Settings › Editor: indentation (None by default, 2 spaces, 4 spaces, Tab; also used by Beautify), auto-closing brackets/quotes, and wrapping of long lines. Changes apply at once without reopening the card. With None, Enter starts at column 0 and Tab moves focus to the next control.
+- Follows Settings › Editor: indentation (None by default, 2 spaces, 4 spaces, Tab; also used by Beautify), auto-closing brackets/quotes, and wrapping of long lines while editing. Changes apply at once without reopening the card. With None, Enter starts at column 0 and Tab moves focus to the next control.
+- Response viewers (the HTTP, GraphQL and SOAP body, a single gRPC message, an example body) wrap long lines by default, whatever the editor setting. The **Wrap lines** toggle (`WrapToggle`) sits at the right end of the response tab row, outside the `tablist`, and only while the code viewer is showing: 28px, border `--border`, 12px `--text-2`, a 14px line-break icon; pressed (`aria-pressed="true"`) it is lit like the Find toggles, with `--accent-soft` and a `--border-strong` border. One setting (`editor.wrapResponses`) covers every viewer, so turning it off in one panel turns it off in all. Wrapping is visual only: copying a wrapped token gives the original single line.
 - The body editor, WebSocket messages, and MCP arguments color `{{variable}}` the same way input fields do.
 - **Find** (`editor/search.ts`, Ctrl+F): a panel above the editor, `--surface-muted` background with a `--border-soft` bottom border. It holds a 28px mono field (border `--border-strong`), a 12px muted match count with tabular numbers ("3 of 12", "No matches", or "Invalid pattern" in `--err`), 28px Previous/Next icon buttons, the mono toggles `Aa` `ab` `.*` (`aria-pressed`; lit with `--accent-soft` and a `--border-strong` ring), then Close.
   - Clicking a button does not move focus out of the field.
@@ -532,7 +533,7 @@ CodeMirror with a transparent background inside a `--surface-muted` frame (borde
 - Editor, Requests, and Data & history save automatically 400 ms after the last change; Rust checks the values, and error messages show in the panel. Proxy has a Save button because the address and password are typed in gradually.
 - Server certificate verification cannot be turned off; the Requests panel explains this and points to SSL/TLS (minimum TLS version, CA certificate, client certificate).
 - Actions that cannot be undone (Clear history, Restore from backup, Remove certificate) go through a confirmation dialog.
-- About › Updates: a status sentence (a new version, or a green `.status` "You have the latest version"), release notes as plain text in a `--surface-muted` box (max height 240px, scrollable), then _Update and restart_ (`.primary`) and _Check for updates_ (`.button`).
+- About › Updates: a status sentence (a new version, or a green `.status` "You have the latest version"), release notes as plain text in a `--surface-muted` box (max height 240px, scrollable), then _Update and restart_ (`.primary`) and _Check for updates_ (`.button`). For a .deb install, a line saying apt installs the update and the same `CopyCommand` take the place of _Update and restart_.
 
 ### Theme picker (`ThemePicker`)
 

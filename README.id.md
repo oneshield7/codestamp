@@ -634,35 +634,38 @@ Perintah ini membuild `codestamp-cli` lalu Codestamp; bundler Tauri menyertakan 
 
 ### Pembaruan otomatis
 
-Codestamp membaca `latest.json` dari server update, lalu mengunduh installer yang alamatnya tertulis di sana. Keduanya harus bisa diunduh lewat **HTTPS tanpa login** (updater tidak membawa akun atau token). Folder share Windows tidak bisa dipakai.
+Codestamp membaca `latest.json` dari rilis GitHub terbaru (`https://github.com/oneshield7/codestamp/releases/latest/download/latest.json`), lalu mengunduh installer atau AppImage yang alamatnya tertulis di sana. GitHub hanya menyajikan file dari rilis yang sudah dipublish, jadi draft yang belum ditinjau tidak pernah sampai ke pengguna.
 
-Sekali saja, setelah server siap:
+- **Windows (NSIS) dan AppImage** meng-update diri dari aplikasi: banner _Update and restart_, atau Settings › About › Updates.
+- **.deb** hanya diberi tahu bahwa ada versi baru. Banner dan About menampilkan `sudo apt update && sudo apt upgrade` dengan tombol _Copy command_, karena .deb dipasang ulang oleh apt dari repository APT. Codestamp tidak pernah memasang .deb sendiri (`src-tauri/src/update/route.rs`).
+
+Sekali saja:
 
 ```bash
-npm run updates:setup -- https://server-anda/codestamp/latest.json
+npm run updates:setup -- https://github.com/oneshield7/codestamp/releases/latest/download/latest.json
 ```
 
 - Membuat kunci tanda tangan update di `%USERPROFILE%\.codestamp\updater.key` (password ditanyakan oleh Tauri CLI), kecuali file itu sudah ada. Lokasi lain: setel `CODESTAMP_UPDATER_KEY`.
-- Menulis kunci publik dan alamat itu ke `plugins.updater` di `src-tauri/tauri.conf.json`, dan menyalakan `bundle.createUpdaterArtifacts`. File itu ditulis ulang dengan format `JSON.stringify` (indentasi 2 spasi).
+- Menulis kunci publik dan alamat itu ke `plugins.updater` di `src-tauri/tauri.conf.json`, dan menyalakan `bundle.createUpdaterArtifacts`. File itu ditulis ulang dengan format `JSON.stringify` (indentasi 2 spasi). Commit perubahan ini.
 - **Cadangkan `updater.key` beserta passwordnya.** Tanpa keduanya, Codestamp yang sudah terpasang tidak bisa menerima update lagi dan harus dipasang ulang manual. Kunci ini terpisah dari sertifikat code signing dan tidak boleh masuk repository.
-- Satu kali lagi, pasang installer hasil build setelah langkah ini secara manual di setiap PC (versi sebelumnya belum punya alamat update). Sesudah itu update datang dari dalam aplikasi.
+- Isi dua secret di GitHub (Settings › Secrets and variables › Actions): `TAURI_SIGNING_PRIVATE_KEY` berisi isi file `updater.key`, dan `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` berisi passwordnya. Tanpa keduanya, workflow _Release_ gagal saat build.
+- Versi 0.5.0 dan sebelumnya belum punya alamat update. Pengguna memasang versi berikutnya secara manual satu kali; sesudah itu update datang dari dalam aplikasi.
 
 Setiap rilis:
 
-1. Naikkan versi di tiga tempat (lihat di atas).
-2. Build dengan kunci update (PowerShell):
-   ```powershell
-   $env:TAURI_SIGNING_PRIVATE_KEY = "$env:USERPROFILE\.codestamp\updater.key"
-   $env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = [Net.NetworkCredential]::new('', (Read-Host 'Update key password' -AsSecureString)).Password
-   npm run installer
-   ```
-   Selain `setup.exe`, bundler menulis `setup.exe.sig` (tanda tangan yang terikat ke nomor versi).
-3. Tulis `latest.json` di folder `src-tauri/target/release/bundle/nsis`:
-   ```bash
-   npm run updates:manifest -- --notes "Ringkasan perubahan"
-   ```
-   (`--notes-file catatan.txt` untuk catatan panjang, maksimal 4000 byte.)
-4. Unggah `Codestamp_<versi>_x64-setup.exe` dan `latest.json` ke folder yang sama di server. Codestamp yang sudah terpasang menemukannya saat dibuka berikutnya, atau lewat _Check for updates_.
+1. Naikkan versi di tiga tempat (lihat di atas), dan tulis bagian `## [X.Y.Z]` di `CHANGELOG.md`. Bagian itu menjadi catatan _What's new_ di aplikasi (teks biasa, maksimal 4000 byte; lebih dari itu, job gagal).
+2. Push tag `vX.Y.Z`. Workflow _Release_ membuild dan menandatangani installer serta AppImage, lalu job _Update manifest_ menulis `latest.json` (`npm run updates:manifest`, modul `scripts/release-manifest.ts`) dan melampirkannya ke draft. Job itu gagal bila tag tidak sama dengan versi di `tauri.conf.json`.
+3. Tinjau draft: pastikan installer, `.deb`, AppImage, dan `latest.json` ada, lalu publish. Codestamp yang sudah terpasang menemukannya saat dibuka berikutnya, atau lewat _Check for updates_. Publish juga menjalankan workflow _APT repository_.
+
+`latest.json` memuat target `windows-x86_64`, `windows-x86_64-nsis`, dan `linux-x86_64-appimage`, dengan alamat unduhan yang dikunci ke tag (`releases/download/vX.Y.Z/…`). Tidak ada target `linux-x86_64` polos, supaya instalasi .deb tidak pernah jatuh ke AppImage.
+
+Build installer lokal (`npm run installer`) kini juga butuh kunci update, karena `createUpdaterArtifacts` menyala:
+
+```powershell
+$env:TAURI_SIGNING_PRIVATE_KEY = "$env:USERPROFILE\.codestamp\updater.key"
+$env:TAURI_SIGNING_PRIVATE_KEY_PASSWORD = [Net.NetworkCredential]::new('', (Read-Host 'Update key password' -AsSecureString)).Password
+npm run installer
+```
 
 ## Paket Linux
 

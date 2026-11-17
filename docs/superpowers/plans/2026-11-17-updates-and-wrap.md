@@ -5,6 +5,7 @@
 **Goal:** Menyalakan update otomatis di rilis publik GitHub (NSIS dan AppImage update dari aplikasi; .deb diarahkan ke `apt`), dan membuat tampilan respons wrap secara default dengan tombol untuk mematikannya.
 
 **Architecture:**
+
 - `latest.json` ditulis job baru di workflow rilis, dari file `.sig` hasil build, lewat modul murni `scripts/release-manifest.ts`. File itu dilampirkan ke draft release, dan aplikasi membacanya dari `releases/latest/download/latest.json`.
 - Aplikasi memilih cara update dari jenis bundle (`tauri::utils::platform::bundle_type()`).
 - Wrap respons adalah satu preference editor baru (`wrapResponses`). Preference itu diteruskan ke `CodeEditor` lewat prop `wrap`, dan diubah lewat komponen `WrapToggle`.
@@ -45,12 +46,14 @@
 ### Task 1: Modul manifest rilis dan perintah `manifest`
 
 **Files:**
+
 - Create: `scripts/release-manifest.ts`
 - Create: `scripts/release-manifest.test.ts`
 - Modify: `scripts/updates.ts`: ganti `manifest()` dan `readNotes()`; usage di header dan di `fail(...)` terakhir.
 - Modify: `package.json`: script `"test:scripts": "node --test scripts/"`, lalu sisipkan `npm run test:scripts` di `verify` setelah `npm run lint`.
 
 **Interfaces:**
+
 - Produces (dipakai Task 2):
   - `node scripts/updates.ts manifest --tag <vX.Y.Z> --signatures <dir> [--out <file>]`. Default `--out`: `latest.json` di folder kerja.
   - `<dir>` berisi `<installer>.sig` dan `<appimage>.sig`.
@@ -88,8 +91,8 @@
   - `buildManifest` dengan tag `v0.5.9` dan version `0.6.0` melempar, dan pesannya memuat `0.6.0`.
 
 - [ ] **Step 2: Jalankan dan pastikan gagal**
-  Run: `/c/laragon/bin/nodejs/node-v24/node.exe --test scripts/`
-  Expected: FAIL (modul `./release-manifest.ts` tidak ada)
+      Run: `/c/laragon/bin/nodejs/node-v24/node.exe --test scripts/`
+      Expected: FAIL (modul `./release-manifest.ts` tidak ada)
 
 - [ ] **Step 3: Implementasikan `scripts/release-manifest.ts`** sesuai Interfaces. Tanpa dependensi, hanya JS standar. `Buffer.byteLength` untuk batas byte boleh lewat `node:buffer`.
 
@@ -101,8 +104,8 @@
   - Hapus `readNotes`, `bundleDir`, dan konstanta lokal `MAX_NOTES_BYTES` (pakai yang di modul).
 
 - [ ] **Step 5: Jalankan test dan pemeriksaan tipe**
-  Run: `/c/laragon/bin/nodejs/node-v24/node.exe --test scripts/` lalu `npx tsc -p tsconfig.node.json` (dengan folder Node di `PATH`)
-  Expected: semua test PASS, `tsc` tanpa error
+      Run: `/c/laragon/bin/nodejs/node-v24/node.exe --test scripts/` lalu `npx tsc -p tsconfig.node.json` (dengan folder Node di `PATH`)
+      Expected: semua test PASS, `tsc` tanpa error
 
 - [ ] **Step 6: Coba perintahnya dengan file `.sig` palsu**
   - Script mencari root di `scripts/..`. Endpoint di config asli masih kosong sampai Task 8, jadi bangun salinan kecil di scratchpad:
@@ -124,9 +127,11 @@
 ### Task 2: Workflow rilis menandatangani update dan menerbitkan `latest.json`
 
 **Files:**
+
 - Modify: `.github/workflows/release.yml`
 
 **Interfaces:**
+
 - Consumes: perintah `manifest` dari Task 1.
 
 - [ ] **Step 1: Tanda tangan di build**
@@ -142,18 +147,20 @@
   - `softprops/action-gh-release@v3` dengan `draft: true` dan `files: latest.json`.
 - [ ] **Step 4: Perbarui komentar header workflow**: `latest.json` ikut di draft, dan update sampai ke pengguna saat draft dipublish.
 - [ ] **Step 5: Periksa YAML**
-  Run: `/c/laragon/bin/nodejs/node-v24/node.exe -e "require('node:fs').readFileSync('.github/workflows/release.yml','utf8')"`, lalu baca ulang indentasi dan `needs` secara manual. Repo tidak punya parser YAML atau actionlint, dan tidak boleh mengunduh alat baru.
-  Expected: `needs` job `updates` = `[windows, linux]`, nama artifact cocok dengan `pattern`.
+      Run: `/c/laragon/bin/nodejs/node-v24/node.exe -e "require('node:fs').readFileSync('.github/workflows/release.yml','utf8')"`, lalu baca ulang indentasi dan `needs` secara manual. Repo tidak punya parser YAML atau actionlint, dan tidak boleh mengunduh alat baru.
+      Expected: `needs` job `updates` = `[windows, linux]`, nama artifact cocok dengan `pattern`.
 - [ ] **Step 6: Commit** `git commit -m "Sign updates and attach latest.json to the draft release"`
 
 ### Task 3: Rust memilih cara update per jenis bundle
 
 **Files:**
+
 - Modify: `src-tauri/src/update/settings.rs`: tambah `UpdateRoute`, `route_for`, `APT_TARGET`, dan test.
 - Modify: `src-tauri/src/update/models.rs`: field `via` di `Available`.
 - Modify: `src-tauri/src/update/commands.rs`: `check_for_update`.
 
 **Interfaces:**
+
 - Produces (dipakai Task 4, lewat JSON):
   - `UpdateCheck::Available` mendapat `via: UpdateRoute`, diserialisasi sebagai `"via": "app"` atau `"via": "apt"`.
   - `#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)] #[serde(rename_all = "lowercase")] pub enum UpdateRoute { App, Apt }` (di `settings.rs`, re-export dari `models.rs` atau sebaliknya; pilih satu tempat).
@@ -187,6 +194,7 @@
 Muat `antislop:antislop`, `antislop:antislop-ui`, `antislop:antislop-copywriting`, `antislop:antislop-human`, dan `antislop:antislop-code`.
 
 **Files:**
+
 - Modify: `src/lib/api/update.ts`: `via: 'app' | 'apt'` di varian `available`, plus `export const APT_UPGRADE_COMMAND = 'sudo apt update && sudo apt upgrade';`
 - Modify: `src/lib/state/updates.svelte.ts`: `install()` keluar bila `this.available?.via !== 'app'`.
 - Create: `src/lib/components/CopyCommand.svelte`
@@ -194,6 +202,7 @@ Muat `antislop:antislop`, `antislop:antislop-ui`, `antislop:antislop-copywriting
 - Modify: `src/lib/components/settings/AboutPanel.svelte`
 
 **Interfaces:**
+
 - Consumes: JSON `via` dari Task 3.
 - Produces: `CopyCommand` dengan props `{ command: string }`.
   - Isinya `<code class="mono">` yang memuat perintah, lalu `<button type="button">` "Copy" yang berubah menjadi "Copied" setelah berhasil.
@@ -203,12 +212,12 @@ Muat `antislop:antislop`, `antislop:antislop-ui`, `antislop:antislop-copywriting
 - [ ] **Step 1: Ubah tipe dan guard**, lalu jalankan `npm run check`. Expected: error di tempat yang belum menangani `via`, atau lolos bila tidak ada. Catat hasilnya.
 - [ ] **Step 2: Banner** untuk `update.via === 'apt'` (bukan sedang memasang dan bukan error):
   - Teks: `Codestamp {version} is available. You have {current}. Update it from a terminal:`, lalu `<CopyCommand command={APT_UPGRADE_COMMAND} />`.
-  - Tombol: *What's new* (bila ada notes) dan *Later*. Tanpa *Update and restart*.
+  - Tombol: _What's new_ (bila ada notes) dan _Later_. Tanpa _Update and restart_.
   - Varian `app` tidak berubah.
 - [ ] **Step 3: About** untuk `via === 'apt'`:
   - Baris berita dan catatan tetap.
   - Lalu `<p>Codestamp was installed from the APT repository, so apt installs the update:</p>` dan `<CopyCommand …/>`.
-  - Tombol *Update and restart* hanya untuk `via === 'app'`. *Check for updates* tetap.
+  - Tombol _Update and restart_ hanya untuk `via === 'app'`. _Check for updates_ tetap.
 - [ ] **Step 4: Teks privasi About**: `' and contacts the update server only to look for a newer version'` menjadi `' and contacts GitHub only to look for a newer version'`.
 - [ ] **Step 5: Gaya**
   - `code`: `--surface-muted`, border `--border-soft`, radius sm, padding `2px 6px`, `overflow-wrap: anywhere`, supaya perintah tidak melebar di jendela 720px.
@@ -220,14 +229,16 @@ Muat `antislop:antislop`, `antislop:antislop-ui`, `antislop:antislop-copywriting
 ### Task 5: Preference `wrapResponses` dan prop `wrap` di CodeEditor
 
 **Files:**
+
 - Modify: `src-tauri/src/preferences/models.rs`: field `wrap_responses: bool` di `EditorPreferences`, default `true`; `mod tests` baru.
 - Modify: `src/lib/api/preferences.ts`: `wrapResponses: boolean` di `EditorPreferences`.
 - Modify: `src/lib/state/preferences.svelte.ts`: `wrapResponses: true` di `DEFAULT_PREFERENCES.editor`.
 - Modify: `src/lib/editor/setup.ts`: `preferenceExtensions(preferences: EditorPreferences, readOnly: boolean, wrap?: boolean): Extension[]`. Wrap menyala bila `wrap ?? preferences.wrapLines`.
-- Modify: `src/lib/components/CodeEditor.svelte`: prop `wrap?: boolean` (komentar: untuk tampilan respons, menggantikan *Wrap long lines*), diteruskan ke kedua panggilan `preferenceExtensions`.
+- Modify: `src/lib/components/CodeEditor.svelte`: prop `wrap?: boolean` (komentar: untuk tampilan respons, menggantikan _Wrap long lines_), diteruskan ke kedua panggilan `preferenceExtensions`.
 - Modify: `src/lib/components/settings/EditorPanel.svelte`: label `Wrap long lines while editing`.
 
 **Interfaces:**
+
 - Produces (dipakai Task 6): `preferenceSettings.editor.wrapResponses: boolean`, `preferenceSettings.updateEditor({ wrapResponses })`, `<CodeEditor wrap={…} />`.
 
 - [ ] **Step 1: Tulis test yang gagal** di `models.rs`:
@@ -253,12 +264,14 @@ Muat `antislop:antislop`, `antislop:antislop-ui`, `antislop:antislop-copywriting
 Muat paket antislop UI yang sama dengan Task 4.
 
 **Files:**
+
 - Create: `src/lib/components/WrapToggle.svelte`
 - Modify: `src/lib/components/ResponsePanel.svelte`
 - Modify: `src/lib/components/GrpcReplyPanel.svelte`
 - Modify: `src/lib/components/ExamplesPanel.svelte`
 
 **Interfaces:**
+
 - Consumes: `preferenceSettings.editor.wrapResponses` dan `updateEditor` dari Task 5.
 - Produces: `WrapToggle` tanpa props.
   - Satu `<button type="button" aria-pressed={on}>` berisi ikon 14px (`aria-hidden`) dan teks `Wrap lines`.
@@ -283,6 +296,7 @@ Muat paket antislop UI yang sama dengan Task 4.
 ### Task 7: Dokumentasi
 
 **Files:**
+
 - Modify: `README.md`
   - Di bagian Install › Windows dan Linux, tambahkan satu kalimat tentang update: installer dan AppImage meng-update dari aplikasi, .deb lewat `sudo apt update && sudo apt upgrade`.
   - Tambahkan catatan bahwa pengguna 0.5.0 memasang manual sekali.
@@ -290,13 +304,13 @@ Muat paket antislop UI yang sama dengan Task 4.
   - setup sekali: `npm run updates:setup -- https://github.com/oneshield7/codestamp/releases/latest/download/latest.json`, cadangan kunci, dan dua secret;
   - setiap rilis: naikkan versi, isi bagian CHANGELOG, push tag, review draft (cek `latest.json` ada), lalu publish;
   - perilaku .deb.
-  Hapus langkah manual `updates:manifest` dan upload ke server.
+    Hapus langkah manual `updates:manifest` dan upload ke server.
 - Modify: `CHANGELOG.md`: di `[Unreleased]`:
   - Added: update otomatis dari GitHub (catat bahwa 0.5.0 perlu dipasang manual sekali);
-  - Added: tombol *Wrap lines* di tampilan respons, menyala secara default;
-  - Changed: *Wrap long lines* di Settings › Editor kini hanya berlaku saat mengedit.
+  - Added: tombol _Wrap lines_ di tampilan respons, menyala secara default;
+  - Changed: _Wrap long lines_ di Settings › Editor kini hanya berlaku saat mengedit.
 - Modify: `DESIGN.md`:
-  - `### Code editor`: tampilan respons mengikuti *Wrap lines*, bukan setting editor;
+  - `### Code editor`: tampilan respons mengikuti _Wrap lines_, bukan setting editor;
   - `### Banner` atau bagian update: varian APT dengan `CopyCommand`.
 
 - [ ] **Step 1: Tulis perubahan di atas** dengan gaya dokumen yang ada: kalimat pendek, tanpa em dash.
