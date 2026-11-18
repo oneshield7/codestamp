@@ -9,9 +9,11 @@
   import { formatBytes, formatDuration } from '../format/units';
   import { isSensitiveName, maskJson, maskSecret, maskText } from '../privacy/secrets';
   import { notices } from '../state/notices.svelte';
+  import { preferenceSettings } from '../state/preferences.svelte';
   import type { EventStreamView } from '../state/streams.svelte';
   import { formatClock } from '../format/time';
   import CodeEditor from './CodeEditor.svelte';
+  import WrapToggle from './WrapToggle.svelte';
 
   interface Props {
     response: HttpResponseOutput | null;
@@ -100,6 +102,10 @@
   const pageHtml = $derived(
     markup?.language === 'html' && response ? shown(response.bodyPreview) : null,
   );
+  // Only the code viewer wraps; events, headers and cookies always wrap, and a page lays itself out.
+  const wrappable = $derived(
+    tab === 'body' && !stream && !(pageHtml !== null && htmlView === 'page'),
+  );
 
   function headerValue(name: string, value: string): string {
     return maskSecrets && isSensitiveName(name) ? maskSecret(value) : value;
@@ -186,46 +192,52 @@
   {#if error && !sending}
     <p class="error" role="alert">{shown(error.message)}</p>
   {:else if response && !sending}
-    <div class="tabs" role="tablist" aria-label="Response sections">
-      <button
-        type="button"
-        role="tab"
-        aria-selected={tab === 'body'}
-        class:on={tab === 'body'}
-        onclick={() => (activeTab = 'body')}
-        >{stream ? `Events · ${String(stream.count)}` : 'Body'}</button
-      >
-      <button
-        type="button"
-        role="tab"
-        aria-selected={tab === 'headers'}
-        class:on={tab === 'headers'}
-        onclick={() => (activeTab = 'headers')}>Headers · {response.headers.length}</button
-      >
-      {#if cookies.length > 0}
+    <div class="tab-row">
+      <div class="tabs" role="tablist" aria-label="Response sections">
         <button
           type="button"
           role="tab"
-          aria-selected={tab === 'cookies'}
-          class:on={tab === 'cookies'}
-          onclick={() => (activeTab = 'cookies')}>Cookies · {cookies.length}</button
-        >
-      {/if}
-      {#if script}
-        <button
-          type="button"
-          role="tab"
-          aria-selected={tab === 'tests'}
-          class:on={tab === 'tests'}
-          onclick={() => (activeTab = 'tests')}>Tests · {passedCount}/{script.tests.length}</button
+          aria-selected={tab === 'body'}
+          class:on={tab === 'body'}
+          onclick={() => (activeTab = 'body')}
+          >{stream ? `Events · ${String(stream.count)}` : 'Body'}</button
         >
         <button
           type="button"
           role="tab"
-          aria-selected={tab === 'console'}
-          class:on={tab === 'console'}
-          onclick={() => (activeTab = 'console')}>Console · {script.logs.length}</button
+          aria-selected={tab === 'headers'}
+          class:on={tab === 'headers'}
+          onclick={() => (activeTab = 'headers')}>Headers · {response.headers.length}</button
         >
+        {#if cookies.length > 0}
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'cookies'}
+            class:on={tab === 'cookies'}
+            onclick={() => (activeTab = 'cookies')}>Cookies · {cookies.length}</button
+          >
+        {/if}
+        {#if script}
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'tests'}
+            class:on={tab === 'tests'}
+            onclick={() => (activeTab = 'tests')}
+            >Tests · {passedCount}/{script.tests.length}</button
+          >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'console'}
+            class:on={tab === 'console'}
+            onclick={() => (activeTab = 'console')}>Console · {script.logs.length}</button
+          >
+        {/if}
+      </div>
+      {#if wrappable}
+        <WrapToggle />
       {/if}
     </div>
 
@@ -316,6 +328,7 @@
             label="Response body"
             language={formattedJson === null ? (markup?.language ?? 'text') : 'json'}
             readOnly
+            wrap={preferenceSettings.editor.wrapResponses}
           />
         </div>
       {/if}
@@ -638,11 +651,21 @@
     font-size: 13px;
   }
 
+  /* The toggle sits beside the tablist, not in it: a tablist holds tabs only. */
+  .tab-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 12px;
+    padding-right: 16px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
   .tabs {
     display: flex;
+    flex: 1 1 auto;
     gap: 16px;
     padding: 0 16px;
-    border-bottom: 1px solid var(--border-soft);
   }
 
   .tabs button {

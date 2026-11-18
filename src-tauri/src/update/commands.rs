@@ -2,10 +2,12 @@ use std::sync::{Mutex, MutexGuard, PoisonError};
 use std::time::Duration;
 
 use tauri::ipc::Channel;
+use tauri::utils::platform::bundle_type;
 use tauri::{AppHandle, State};
 use tauri_plugin_updater::{Update, UpdaterExt};
 
 use super::models::{DownloadProgress, UpdateCheck};
+use super::route::{APT_TARGET, UpdateRoute, route_for};
 use super::settings::{describe, is_configured, release_date, release_notes};
 use crate::error::AppError;
 
@@ -33,11 +35,12 @@ pub async fn check_for_update(
     if !is_configured(app.config().plugins.0.get("updater")) {
         return Ok(UpdateCheck::NotConfigured { current });
     }
-    let updater = app
-        .updater_builder()
-        .timeout(CHECK_TIMEOUT)
-        .build()
-        .map_err(describe)?;
+    let route = route_for(bundle_type());
+    let mut builder = app.updater_builder().timeout(CHECK_TIMEOUT);
+    if route == UpdateRoute::Apt {
+        builder = builder.target(APT_TARGET);
+    }
+    let updater = builder.build().map_err(describe)?;
     let found = updater.check().await.map_err(describe)?;
     let check = match &found {
         None => UpdateCheck::UpToDate { current },
@@ -46,9 +49,11 @@ pub async fn check_for_update(
             version: update.version.clone(),
             notes: release_notes(update.body.as_deref()),
             date: release_date(&update.raw_json),
+            via: route,
         },
     };
-    *pending.lock() = found;
+    // Nothing is kept for apt, so install_update refuses instead of installing an AppImage.
+    *pending.lock() = found.filter(|_| route == UpdateRoute::App);
     Ok(check)
 }
 

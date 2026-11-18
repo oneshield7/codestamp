@@ -7,10 +7,14 @@ All notable changes to Codestamp are listed here. Versions follow [Semantic Vers
 ### Added
 
 - An APT repository for Debian and Ubuntu. After adding it once, `sudo apt upgrade` installs new versions of Codestamp with the rest of the system.
+- Updates from GitHub. The Windows installer and the AppImage check for a newer release a few seconds after they open and offer Update and restart. A .deb install shows the apt command instead. Version 0.5.0 and earlier have no update check, so install this version by hand once.
+- A Wrap lines toggle next to the response tabs. Long response lines, such as a bearer token, now wrap by default, and copying still gives the original single line.
 
 ### Changed
 
 - The `.deb` describes Codestamp in `apt show codestamp` and is listed in the devel section.
+- Settings › Editor › Wrap long lines now applies only to editors you type in. Response viewers follow Wrap lines.
+- Settings › About says Codestamp contacts GitHub, not an update server, to look for a newer version.
 
 ## [0.5.0] - 2026-11-03
 

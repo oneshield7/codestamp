@@ -1,4 +1,4 @@
-// A build without an update address or key (the shipped tauri.conf.json) starts normally,
+// A build without an update address or key (e2e/.work/updater/unset.conf.json) starts normally,
 // never shows the update banner and says so in Settings › About.
 import fs from 'node:fs';
 import path from 'node:path';

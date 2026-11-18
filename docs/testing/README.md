@@ -127,7 +127,7 @@ node e2e/stage34-e2e.mjs
 - `run-list.sh <minimum|maximize|default> <suite…>` runs the chosen suites at one window size, starting with a fresh test copy, the Light theme, and no leftover "E2E" collections.
 - `run-sweep.sh <minimum|maximize>` runs every suite at one size.
 - stage25 runs on its own because it closes the window at the end, and its native menu is tested only with `CODESTAMP_MENU_TEST=1` while the desktop is unlocked.
-- stage34 needs the dedicated updater build shown above (see also [its page](stages/stage-34.md)).
+- stage34 needs the dedicated updater build shown above (see also [its page](stages/stage-34.md)). stage34-unset needs a build made with `--config e2e/.work/updater/unset.conf.json` instead, which clears the update address the shipped configuration has.
 
 ## Window sizes
 

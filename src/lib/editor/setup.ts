@@ -179,10 +179,11 @@ const INDENT_UNITS = new Map([
   ['tab', TAB],
 ]);
 
-/** Settings › Editor: indentation, closing brackets and line wrapping. */
+/** Settings › Editor: indentation, closing brackets and line wrapping; `wrap` overrides the latter. */
 export function preferenceExtensions(
   preferences: EditorPreferences,
   readOnly: boolean,
+  wrap?: boolean,
 ): Extension[] {
   // CodeMirror needs a unit even with no indentation, for the explicit indent commands.
   const unit = INDENT_UNITS.get(preferences.indent) ?? '  ';
@@ -193,7 +194,7 @@ export function preferenceExtensions(
   if (!readOnly) {
     extensions.push(...indentKeys(preferences.indent));
   }
-  if (preferences.wrapLines) {
+  if (wrap ?? preferences.wrapLines) {
     extensions.push(EditorView.lineWrapping);
   }
   if (preferences.closeBrackets && !readOnly) {

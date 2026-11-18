@@ -40,7 +40,7 @@ export class Updates {
 
   /** `readyToClose` saves pending edits and names what still blocks closing Codestamp. */
   async install(readyToClose: () => Promise<string | null>): Promise<void> {
-    if (!this.available || this.installing) {
+    if (this.available?.via !== 'app' || this.installing) {
       return;
     }
     this.installError = await readyToClose();

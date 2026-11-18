@@ -2,7 +2,7 @@
 
 Suite [`stage34-e2e.mjs`](../../../e2e/stage34-e2e.mjs) · 21 checks
 
-Tested against a local update server with a dedicated build. `node updater/prepare.mjs` creates a single-use signing key, `test.conf.json` (the test public key, the address `http://127.0.0.1:9455`, and permission for plain http), a fake "installer" that only records its arguments and is signed for the next version, and `release.json` with the version the suite announces. The version is derived from the app version, so the suite does not need changes for each release. This page also covers `stage34-guard` and `stage34-unset`, which use the normal build.
+Tested against a local update server with a dedicated build. `node updater/prepare.mjs` creates a single-use signing key, `test.conf.json` (the test public key, the address `http://127.0.0.1:9455`, and permission for plain http), a fake "installer" that only records its arguments and is signed for the next version, and `release.json` with the version the suite announces. The version is derived from the app version, so the suite does not need changes for each release. This page also covers `stage34-guard`, which uses the normal build, and `stage34-unset`, which uses a build made with `--config e2e/.work/updater/unset.conf.json` (also written by `prepare.mjs`), since the shipped configuration has the GitHub update address.
 
 ## Requirements
 

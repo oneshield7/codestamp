@@ -1,6 +1,10 @@
 <script lang="ts">
+  import { openUrl } from '@tauri-apps/plugin-opener';
+  import { APT_UPGRADE_COMMAND, RELEASES_URL } from '../api/update';
   import { formatBytes } from '../format/units';
+  import { notices } from '../state/notices.svelte';
   import type { Updates } from '../state/updates.svelte';
+  import CopyCommand from './CopyCommand.svelte';
 
   interface Props {
     updates: Updates;
@@ -54,11 +58,23 @@
         }}>Later</button
       >
     {:else}
-      <span>Codestamp {update.version} is available. You have {update.current}.</span>
+      <span>
+        Codestamp {update.version} is available. You have {update.current}.{update.via === 'apt'
+          ? ' Update it with apt, or download the new .deb if you installed it by hand.'
+          : ''}
+      </span>
+      {#if update.via === 'apt'}
+        <CopyCommand command={APT_UPGRADE_COMMAND} />
+        <button type="button" onclick={() => void notices.guard(() => openUrl(RELEASES_URL))}
+          >Download .deb</button
+        >
+      {/if}
       {#if update.notes}
         <button type="button" onclick={onShowNotes}>What's new</button>
       {/if}
-      <button type="button" onclick={onInstall}>Update and restart</button>
+      {#if update.via === 'app'}
+        <button type="button" onclick={onInstall}>Update and restart</button>
+      {/if}
       <button
         type="button"
         onclick={() => {

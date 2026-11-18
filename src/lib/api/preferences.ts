@@ -6,7 +6,9 @@ export type CardLayout = 'stacked' | 'side';
 export interface EditorPreferences {
   indent: Indent;
   closeBrackets: boolean;
+  /** Editors you type in; response viewers follow `wrapResponses`. */
   wrapLines: boolean;
+  wrapResponses: boolean;
   layout: CardLayout;
   variableHints: boolean;
 }

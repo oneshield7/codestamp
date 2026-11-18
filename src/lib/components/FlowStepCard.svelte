@@ -19,6 +19,7 @@
   import { stampLabel } from '../request/kinds';
   import { stampTone } from '../request/methods';
   import type { StepRun } from '../state/flows.svelte';
+  import { preferenceSettings } from '../state/preferences.svelte';
   import CodeEditor from './CodeEditor.svelte';
   import Dropdown from './Dropdown.svelte';
   import FlowStepMark from './FlowStepMark.svelte';
@@ -333,6 +334,7 @@
             label="Step {number} response body"
             language={prettyJson(done.body) === null ? 'text' : 'json'}
             readOnly
+            wrap={preferenceSettings.editor.wrapResponses}
           />
         </div>
       </div>

@@ -48,5 +48,8 @@ const config = {
   },
 };
 fs.writeFileSync(path.join(out, 'test.conf.json'), `${JSON.stringify(config, null, 2)}\n`);
+// Releases ship with the GitHub address, so stage34-unset needs a build that clears it.
+const unset = { plugins: { updater: { pubkey: '', endpoints: [] } } };
+fs.writeFileSync(path.join(out, 'unset.conf.json'), `${JSON.stringify(unset, null, 2)}\n`);
 fs.writeFileSync(path.join(out, 'release.json'), `${JSON.stringify(versions, null, 2)}\n`);
 console.log(`stage34 is ready: the app is ${versions.current}, the update is ${versions.next}.`);

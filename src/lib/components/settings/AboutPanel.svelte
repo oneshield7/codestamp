@@ -1,10 +1,13 @@
 <script lang="ts">
+  import { openUrl } from '@tauri-apps/plugin-opener';
   import { onMount } from 'svelte';
   import { aboutApp, type AboutInfo } from '../../api/preferences';
+  import { APT_UPGRADE_COMMAND, RELEASES_URL } from '../../api/update';
   import { formatDateTime } from '../../format/time';
   import { formatBytes } from '../../format/units';
   import { notices } from '../../state/notices.svelte';
   import type { Updates } from '../../state/updates.svelte';
+  import CopyCommand from '../CopyCommand.svelte';
   import ShortcutList from '../ShortcutList.svelte';
 
   interface Props {
@@ -65,8 +68,8 @@
     Everything stays on this device; Codestamp sends no usage data{updates.result?.kind ===
     'notConfigured'
       ? ''
-      : ' and contacts the update server only to look for a newer version'}. Fonts: Geist and Geist
-    Mono (SIL Open Font License).
+      : ' and contacts GitHub only to look for a newer version'}. Fonts: Geist and Geist Mono (SIL
+    Open Font License).
   </p>
 </section>
 
@@ -84,6 +87,23 @@
       {#if update.notes}
         <div class="notes" aria-label="What's new in {update.version}">{update.notes}</div>
       {/if}
+      {#if update.via === 'apt'}
+        <div class="apt">
+          <p>
+            Codestamp was installed as a .deb package, so apt installs the update from the Codestamp
+            APT repository:
+          </p>
+          <CopyCommand command={APT_UPGRADE_COMMAND} />
+          <p>
+            If you installed the .deb by hand, without the repository, download the new one from the
+            <button
+              type="button"
+              class="inline-link"
+              onclick={() => void notices.guard(() => openUrl(RELEASES_URL))}>Releases page</button
+            >.
+          </p>
+        </div>
+      {/if}
     {:else if updates.result?.kind === 'upToDate'}
       <p class="status">You have the latest version, {updates.result.current}.</p>
     {:else}
@@ -96,7 +116,7 @@
       <p class="error" role="alert">{updates.installError}</p>
     {/if}
     <div class="actions">
-      {#if update}
+      {#if update?.via === 'app'}
         <button
           type="button"
           class="primary"
@@ -170,5 +190,35 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+  }
+
+  .apt {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .apt p {
+    margin: 0;
+  }
+
+  .inline-link {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .inline-link:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  .inline-link:active {
+    color: var(--text-2);
   }
 </style>

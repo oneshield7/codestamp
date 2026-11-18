@@ -27,5 +27,7 @@ dist-ssr
 *.pfx
 *.p12
 *.key
+# Armored GPG keys, such as an APT signing key export; the public APT key ships as codestamp.gpg.
+*.asc
 .env
 .env.*
