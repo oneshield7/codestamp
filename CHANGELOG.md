@@ -4,6 +4,10 @@ All notable changes to Codestamp are listed here. Versions follow [Semantic Vers
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-18
+
+Codestamp now updates itself from GitHub releases, and long response lines wrap. The database format is the same as in 0.5.0. Going back to 0.5.0 resets Settings to their defaults, because 0.5.0 does not read the new wrap setting.
+
 ### Added
 
 - An APT repository for Debian and Ubuntu. After adding it once, `sudo apt upgrade` installs new versions of Codestamp with the rest of the system.
@@ -85,7 +89,8 @@ The first version with public source code. It has no GitHub release.
 
 Versions 0.1.0 to 0.3.4 were built before the repository was public. Their changes are described stage by stage, in Indonesian, in [`README.id.md`](README.id.md).
 
-[Unreleased]: ../../compare/v0.5.0...HEAD
+[Unreleased]: ../../compare/v0.6.0...HEAD
+[0.6.0]: ../../releases/tag/v0.6.0
 [0.5.0]: ../../releases/tag/v0.5.0
 [0.4.0]: ../../releases/tag/v0.4.0
 [0.3.7]: ../../releases/tag/v0.3.7

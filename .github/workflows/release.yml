@@ -1,6 +1,6 @@
 name: Release
 
-# Pushing a tag such as v0.5.0 builds the Windows installer and the Linux packages and attaches them,
+# Pushing a tag such as v0.6.0 builds the Windows installer and the Linux packages and attaches them,
 # with the latest.json that installed copies check for updates, to a draft release. Nothing reaches
 # users until someone reviews and publishes it: GitHub serves latest.json from published releases only.
 on:
