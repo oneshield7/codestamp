@@ -53,9 +53,15 @@ jobs:
       - name: Type check, lint, format, clippy and Rust tests
         run: npm run verify
 
-      - name: Audit npm dependencies
+      # What ships in the app must have no known high-severity issue. Build tools only stop the build
+      # on critical ones, so an advisory with no patched release yet does not block every pull request.
+      - name: Audit npm dependencies the app ships
         if: runner.os == 'Windows'
-        run: npm audit --audit-level=high
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Audit npm build tools
+        if: runner.os == 'Windows'
+        run: npm audit --audit-level=critical
 
   # Builds the packages the release would attach, so they can be installed and tried first.
   linux-packages:
